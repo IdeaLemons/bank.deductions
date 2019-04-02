@@ -1,0 +1,4 @@
+date/time	script	user	action	table	field	key value	old value	new value
+2019/03/31 17:34:22	/bank.deductions/deductionsedit.php	-1	U	deductions	Acc_ID	4	1	8705
+2019/03/31 17:34:45	/bank.deductions/deductionsedit.php	-1	U	deductions	Acc_ID	4	8705	7890
+2019/03/31 17:35:13	/bank.deductions/deductionsedit.php	-1	U	deductions	Acc_ID	1	8705	0

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<configuration date="2019/03/31" author="e.World Technology Ltd.">
+  <project id="{163802B9-268A-4AFB-8FD6-7A7D18262A99}" file="C:\Users\Windya\Documents\PHPMaker\Projects\Bank_deductions.pmp" name="Bank_deductions" product="PHPMaker" version="12.0" datetime="2019/03/31 17:44:11" languagefolder="phplang" userlevel="-2,&quot;Anonymous&quot;,0;">
+    <table id="accounts" name="accounts" caption="Accounts" userlevel="-2,&quot;Anonymous&quot;,0;" priv="1"/>
+    <table id="banks" name="banks" caption="Banks" userlevel="-2,&quot;Anonymous&quot;,0;" priv="1"/>
+    <table id="deductions" name="deductions" caption="Deductions" userlevel="-2,&quot;Anonymous&quot;,0;" priv="1"/>
+    <table id="emp" name="emp" caption="Employees" userlevel="-2,&quot;Anonymous&quot;,0;" priv="1"/>
+  </project>
+</configuration>
