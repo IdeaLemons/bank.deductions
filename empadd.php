@@ -211,6 +211,7 @@ class cemp_add extends cemp {
 	//
 	function __construct() {
 		global $conn, $Language;
+		global $UserTable, $UserTableConn;
 		$GLOBALS["Page"] = &$this;
 		$this->TokenTimeout = ew_SessionTimeoutTime();
 
@@ -239,6 +240,12 @@ class cemp_add extends cemp {
 
 		// Open connection
 		if (!isset($conn)) $conn = ew_Connect($this->DBID);
+
+		// User table object (emp)
+		if (!isset($UserTable)) {
+			$UserTable = new cemp();
+			$UserTableConn = Conn($UserTable->DBID);
+		}
 	}
 
 	// 
@@ -246,6 +253,21 @@ class cemp_add extends cemp {
 	//
 	function Page_Init() {
 		global $gsExport, $gsCustomExport, $gsExportFile, $UserProfile, $Language, $Security, $objForm;
+
+		// Security
+		$Security = new cAdvancedSecurity();
+		if (!$Security->IsLoggedIn()) $Security->AutoLogin();
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
+		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
+		if (!$Security->CanAdd()) {
+			$Security->SaveLastUrl();
+			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
+			if ($Security->CanList())
+				$this->Page_Terminate(ew_GetUrl("emplist.php"));
+			else
+				$this->Page_Terminate(ew_GetUrl("login.php"));
+		}
 
 		// Create form object
 		$objForm = new cFormObj();
@@ -426,6 +448,12 @@ class cemp_add extends cemp {
 		$this->Name->OldValue = $this->Name->CurrentValue;
 		$this->NIC->CurrentValue = NULL;
 		$this->NIC->OldValue = $this->NIC->CurrentValue;
+		$this->Password->CurrentValue = NULL;
+		$this->Password->OldValue = $this->Password->CurrentValue;
+		$this->UserLevel->CurrentValue = NULL;
+		$this->UserLevel->OldValue = $this->UserLevel->CurrentValue;
+		$this->Activated->CurrentValue = NULL;
+		$this->Activated->OldValue = $this->Activated->CurrentValue;
 	}
 
 	// Load form values
@@ -442,6 +470,15 @@ class cemp_add extends cemp {
 		if (!$this->NIC->FldIsDetailKey) {
 			$this->NIC->setFormValue($objForm->GetValue("x_NIC"));
 		}
+		if (!$this->Password->FldIsDetailKey) {
+			$this->Password->setFormValue($objForm->GetValue("x_Password"));
+		}
+		if (!$this->UserLevel->FldIsDetailKey) {
+			$this->UserLevel->setFormValue($objForm->GetValue("x_UserLevel"));
+		}
+		if (!$this->Activated->FldIsDetailKey) {
+			$this->Activated->setFormValue($objForm->GetValue("x_Activated"));
+		}
 	}
 
 	// Restore form values
@@ -451,6 +488,9 @@ class cemp_add extends cemp {
 		$this->PF->CurrentValue = $this->PF->FormValue;
 		$this->Name->CurrentValue = $this->Name->FormValue;
 		$this->NIC->CurrentValue = $this->NIC->FormValue;
+		$this->Password->CurrentValue = $this->Password->FormValue;
+		$this->UserLevel->CurrentValue = $this->UserLevel->FormValue;
+		$this->Activated->CurrentValue = $this->Activated->FormValue;
 	}
 
 	// Load row based on key values
@@ -485,6 +525,9 @@ class cemp_add extends cemp {
 		$this->PF->setDbValue($rs->fields('PF'));
 		$this->Name->setDbValue($rs->fields('Name'));
 		$this->NIC->setDbValue($rs->fields('NIC'));
+		$this->Password->setDbValue($rs->fields('Password'));
+		$this->UserLevel->setDbValue($rs->fields('UserLevel'));
+		$this->Activated->setDbValue($rs->fields('Activated'));
 	}
 
 	// Load DbValue from recordset
@@ -494,6 +537,9 @@ class cemp_add extends cemp {
 		$this->PF->DbValue = $row['PF'];
 		$this->Name->DbValue = $row['Name'];
 		$this->NIC->DbValue = $row['NIC'];
+		$this->Password->DbValue = $row['Password'];
+		$this->UserLevel->DbValue = $row['UserLevel'];
+		$this->Activated->DbValue = $row['Activated'];
 	}
 
 	// Load old record
@@ -532,6 +578,9 @@ class cemp_add extends cemp {
 		// PF
 		// Name
 		// NIC
+		// Password
+		// UserLevel
+		// Activated
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
@@ -547,6 +596,44 @@ class cemp_add extends cemp {
 		$this->NIC->ViewValue = $this->NIC->CurrentValue;
 		$this->NIC->ViewCustomAttributes = "";
 
+		// Password
+		$this->Password->ViewValue = $this->Password->CurrentValue;
+		$this->Password->ViewCustomAttributes = "";
+
+		// UserLevel
+		if ($Security->CanAdmin()) { // System admin
+		if (strval($this->UserLevel->CurrentValue) <> "") {
+			$sFilterWrk = "`userlevelid`" . ew_SearchString("=", $this->UserLevel->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `userlevelid`, `userlevelname` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `userlevels`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->UserLevel, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->UserLevel->ViewValue = $this->UserLevel->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->UserLevel->ViewValue = $this->UserLevel->CurrentValue;
+			}
+		} else {
+			$this->UserLevel->ViewValue = NULL;
+		}
+		} else {
+			$this->UserLevel->ViewValue = $Language->Phrase("PasswordMask");
+		}
+		$this->UserLevel->ViewCustomAttributes = "";
+
+		// Activated
+		if (strval($this->Activated->CurrentValue) <> "") {
+			$this->Activated->ViewValue = $this->Activated->OptionCaption($this->Activated->CurrentValue);
+		} else {
+			$this->Activated->ViewValue = NULL;
+		}
+		$this->Activated->ViewCustomAttributes = "";
+
 			// PF
 			$this->PF->LinkCustomAttributes = "";
 			$this->PF->HrefValue = "";
@@ -561,6 +648,21 @@ class cemp_add extends cemp {
 			$this->NIC->LinkCustomAttributes = "";
 			$this->NIC->HrefValue = "";
 			$this->NIC->TooltipValue = "";
+
+			// Password
+			$this->Password->LinkCustomAttributes = "";
+			$this->Password->HrefValue = "";
+			$this->Password->TooltipValue = "";
+
+			// UserLevel
+			$this->UserLevel->LinkCustomAttributes = "";
+			$this->UserLevel->HrefValue = "";
+			$this->UserLevel->TooltipValue = "";
+
+			// Activated
+			$this->Activated->LinkCustomAttributes = "";
+			$this->Activated->HrefValue = "";
+			$this->Activated->TooltipValue = "";
 		} elseif ($this->RowType == EW_ROWTYPE_ADD) { // Add row
 
 			// PF
@@ -581,6 +683,39 @@ class cemp_add extends cemp {
 			$this->NIC->EditValue = ew_HtmlEncode($this->NIC->CurrentValue);
 			$this->NIC->PlaceHolder = ew_RemoveHtml($this->NIC->FldCaption());
 
+			// Password
+			$this->Password->EditAttrs["class"] = "form-control ewPasswordStrength";
+			$this->Password->EditCustomAttributes = "";
+			$this->Password->EditValue = ew_HtmlEncode($this->Password->CurrentValue);
+			$this->Password->PlaceHolder = ew_RemoveHtml($this->Password->FldCaption());
+
+			// UserLevel
+			$this->UserLevel->EditAttrs["class"] = "form-control";
+			$this->UserLevel->EditCustomAttributes = "";
+			if (!$Security->CanAdmin()) { // System admin
+				$this->UserLevel->EditValue = $Language->Phrase("PasswordMask");
+			} else {
+			if (trim(strval($this->UserLevel->CurrentValue)) == "") {
+				$sFilterWrk = "0=1";
+			} else {
+				$sFilterWrk = "`userlevelid`" . ew_SearchString("=", $this->UserLevel->CurrentValue, EW_DATATYPE_NUMBER, "");
+			}
+			$sSqlWrk = "SELECT `userlevelid`, `userlevelname` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `userlevels`";
+			$sWhereWrk = "";
+			ew_AddFilter($sWhereWrk, $sFilterWrk);
+			$this->Lookup_Selecting($this->UserLevel, $sWhereWrk); // Call Lookup selecting
+			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			$arwrk = ($rswrk) ? $rswrk->GetRows() : array();
+			if ($rswrk) $rswrk->Close();
+			array_unshift($arwrk, array("", $Language->Phrase("PleaseSelect"), "", "", "", "", "", "", ""));
+			$this->UserLevel->EditValue = $arwrk;
+			}
+
+			// Activated
+			$this->Activated->EditCustomAttributes = "";
+			$this->Activated->EditValue = $this->Activated->Options(FALSE);
+
 			// Edit refer script
 			// PF
 
@@ -591,6 +726,15 @@ class cemp_add extends cemp {
 
 			// NIC
 			$this->NIC->HrefValue = "";
+
+			// Password
+			$this->Password->HrefValue = "";
+
+			// UserLevel
+			$this->UserLevel->HrefValue = "";
+
+			// Activated
+			$this->Activated->HrefValue = "";
 		}
 		if ($this->RowType == EW_ROWTYPE_ADD ||
 			$this->RowType == EW_ROWTYPE_EDIT ||
@@ -625,6 +769,12 @@ class cemp_add extends cemp {
 		if (!$this->NIC->FldIsDetailKey && !is_null($this->NIC->FormValue) && $this->NIC->FormValue == "") {
 			ew_AddMessage($gsFormError, str_replace("%s", $this->NIC->FldCaption(), $this->NIC->ReqErrMsg));
 		}
+		if (!$this->UserLevel->FldIsDetailKey && !is_null($this->UserLevel->FormValue) && $this->UserLevel->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->UserLevel->FldCaption(), $this->UserLevel->ReqErrMsg));
+		}
+		if ($this->Activated->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->Activated->FldCaption(), $this->Activated->ReqErrMsg));
+		}
 
 		// Return validate result
 		$ValidateForm = ($gsFormError == "");
@@ -657,6 +807,17 @@ class cemp_add extends cemp {
 
 		// NIC
 		$this->NIC->SetDbValueDef($rsnew, $this->NIC->CurrentValue, "", FALSE);
+
+		// Password
+		$this->Password->SetDbValueDef($rsnew, $this->Password->CurrentValue, NULL, FALSE);
+
+		// UserLevel
+		if ($Security->CanAdmin()) { // System admin
+		$this->UserLevel->SetDbValueDef($rsnew, $this->UserLevel->CurrentValue, 0, FALSE);
+		}
+
+		// Activated
+		$this->Activated->SetDbValueDef($rsnew, $this->Activated->CurrentValue, 0, FALSE);
 
 		// Call Row Inserting event
 		$rs = ($rsold == NULL) ? NULL : $rsold->fields;
@@ -836,6 +997,14 @@ fempadd.Validate = function() {
 			elm = this.GetElements("x" + infix + "_NIC");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
 				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $emp->NIC->FldCaption(), $emp->NIC->ReqErrMsg)) ?>");
+			if ($(fobj.x_Password).hasClass("ewPasswordStrength") && !$(fobj.x_Password).data("validated"))
+				return this.OnError(fobj.x_Password, ewLanguage.Phrase("PasswordTooSimple"));
+			elm = this.GetElements("x" + infix + "_UserLevel");
+			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $emp->UserLevel->FldCaption(), $emp->UserLevel->ReqErrMsg)) ?>");
+			elm = this.GetElements("x" + infix + "_Activated");
+			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $emp->Activated->FldCaption(), $emp->Activated->ReqErrMsg)) ?>");
 
 			// Fire Form_CustomValidate event
 			if (!this.Form_CustomValidate(fobj))
@@ -869,8 +1038,11 @@ fempadd.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
-// Form object for search
+fempadd.Lists["x_UserLevel"] = {"LinkField":"x_userlevelid","Ajax":true,"AutoFill":false,"DisplayFields":["x_userlevelname","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+fempadd.Lists["x_Activated"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+fempadd.Lists["x_Activated"].Options = <?php echo json_encode($emp->Activated->Options()) ?>;
 
+// Form object for search
 </script>
 <script type="text/javascript">
 
@@ -891,6 +1063,9 @@ $emp_add->ShowMessage();
 <?php } ?>
 <input type="hidden" name="t" value="emp">
 <input type="hidden" name="a_add" id="a_add" value="A">
+<!-- Fields to prevent google autofill -->
+<input class="hidden" type="text" name="<?php echo ew_Encrypt(ew_Random()) ?>">
+<input class="hidden" type="password" name="<?php echo ew_Encrypt(ew_Random()) ?>">
 <div class="ewDesktop">
 <div>
 <table id="tbl_empadd" class="table table-bordered table-striped ewDesktopTable">
@@ -922,6 +1097,108 @@ $emp_add->ShowMessage();
 <input type="text" data-table="emp" data-field="x_NIC" name="x_NIC" id="x_NIC" size="12" maxlength="12" placeholder="<?php echo ew_HtmlEncode($emp->NIC->getPlaceHolder()) ?>" value="<?php echo $emp->NIC->EditValue ?>"<?php echo $emp->NIC->EditAttributes() ?>>
 </span>
 <?php echo $emp->NIC->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php if ($emp->Password->Visible) { // Password ?>
+	<tr id="r_Password">
+		<td><span id="elh_emp_Password"><?php echo $emp->Password->FldCaption() ?></span></td>
+		<td<?php echo $emp->Password->CellAttributes() ?>>
+<span id="el_emp_Password">
+<div class="input-group" id="ig_x_Password">
+<input type="text" data-password-strength="pst_x_Password" data-password-generated="pgt_x_Password" data-table="emp" data-field="x_Password" name="x_Password" id="x_Password" value="<?php echo $emp->Password->EditValue ?>" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($emp->Password->getPlaceHolder()) ?>"<?php echo $emp->Password->EditAttributes() ?>>
+<span class="input-group-btn">
+	<button type="button" class="btn btn-default ewPasswordGenerator" title="<?php echo ew_HtmlTitle($Language->Phrase("GeneratePassword")) ?>" data-password-field="x_Password" data-password-confirm="c_Password" data-password-strength="pst_x_Password" data-password-generated="pgt_x_Password"><?php echo $Language->Phrase("GeneratePassword") ?></button>
+</span>
+</div>
+<span class="help-block" id="pgt_x_Password" style="display: none;"></span>
+<div class="progress ewPasswordStrengthBar" id="pst_x_Password" style="display: none;">
+	<div class="progress-bar" role="progressbar"></div>
+</div>
+</span>
+<?php echo $emp->Password->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php if ($emp->UserLevel->Visible) { // UserLevel ?>
+	<tr id="r_UserLevel">
+		<td><span id="elh_emp_UserLevel"><?php echo $emp->UserLevel->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $emp->UserLevel->CellAttributes() ?>>
+<?php if (!$Security->IsAdmin() && $Security->IsLoggedIn()) { // Non system admin ?>
+<span id="el_emp_UserLevel">
+<p class="form-control-static"><?php echo $emp->UserLevel->EditValue ?></p>
+</span>
+<?php } else { ?>
+<span id="el_emp_UserLevel">
+<select data-table="emp" data-field="x_UserLevel" data-value-separator="<?php echo ew_HtmlEncode(is_array($emp->UserLevel->DisplayValueSeparator) ? json_encode($emp->UserLevel->DisplayValueSeparator) : $emp->UserLevel->DisplayValueSeparator) ?>" id="x_UserLevel" name="x_UserLevel"<?php echo $emp->UserLevel->EditAttributes() ?>>
+<?php
+if (is_array($emp->UserLevel->EditValue)) {
+	$arwrk = $emp->UserLevel->EditValue;
+	$rowswrk = count($arwrk);
+	$emptywrk = TRUE;
+	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
+		$selwrk = ew_SameStr($emp->UserLevel->CurrentValue, $arwrk[$rowcntwrk][0]) ? " selected" : "";
+		if ($selwrk <> "") $emptywrk = FALSE;		
+?>
+<option value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?>>
+<?php echo $emp->UserLevel->DisplayValue($arwrk[$rowcntwrk]) ?>
+</option>
+<?php
+	}
+	if ($emptywrk && strval($emp->UserLevel->CurrentValue) <> "") {
+?>
+<option value="<?php echo ew_HtmlEncode($emp->UserLevel->CurrentValue) ?>" selected><?php echo $emp->UserLevel->CurrentValue ?></option>
+<?php
+    }
+}
+?>
+</select>
+<?php
+$sSqlWrk = "SELECT `userlevelid`, `userlevelname` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `userlevels`";
+$sWhereWrk = "";
+$emp->UserLevel->LookupFilters = array("s" => $sSqlWrk, "d" => "");
+$emp->UserLevel->LookupFilters += array("f0" => "`userlevelid` = {filter_value}", "t0" => "3", "fn0" => "");
+$sSqlWrk = "";
+$emp->Lookup_Selecting($emp->UserLevel, $sWhereWrk); // Call Lookup selecting
+if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+if ($sSqlWrk <> "") $emp->UserLevel->LookupFilters["s"] .= $sSqlWrk;
+?>
+<input type="hidden" name="s_x_UserLevel" id="s_x_UserLevel" value="<?php echo $emp->UserLevel->LookupFilterQuery() ?>">
+</span>
+<?php } ?>
+<?php echo $emp->UserLevel->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php if ($emp->Activated->Visible) { // Activated ?>
+	<tr id="r_Activated">
+		<td><span id="elh_emp_Activated"><?php echo $emp->Activated->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $emp->Activated->CellAttributes() ?>>
+<span id="el_emp_Activated">
+<div id="tp_x_Activated" class="ewTemplate"><input type="radio" data-table="emp" data-field="x_Activated" data-value-separator="<?php echo ew_HtmlEncode(is_array($emp->Activated->DisplayValueSeparator) ? json_encode($emp->Activated->DisplayValueSeparator) : $emp->Activated->DisplayValueSeparator) ?>" name="x_Activated" id="x_Activated" value="{value}"<?php echo $emp->Activated->EditAttributes() ?>></div>
+<div id="dsl_x_Activated" data-repeatcolumn="5" class="ewItemList"><div>
+<?php
+$arwrk = $emp->Activated->EditValue;
+if (is_array($arwrk)) {
+	$rowswrk = count($arwrk);
+	$emptywrk = TRUE;
+	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
+		$selwrk = (strval($emp->Activated->CurrentValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
+		if ($selwrk <> "")
+			$emptywrk = FALSE;
+?>
+<?php echo ew_RepeatColumnTable($rowswrk, $rowcntwrk, 5, 1) ?>
+<label class="radio-inline"><input type="radio" data-table="emp" data-field="x_Activated" name="x_Activated" id="x_Activated_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $emp->Activated->EditAttributes() ?>><?php echo $emp->Activated->DisplayValue($arwrk[$rowcntwrk]) ?></label>
+<?php echo ew_RepeatColumnTable($rowswrk, $rowcntwrk, 5, 2) ?>
+<?php
+	}
+	if ($emptywrk && strval($emp->Activated->CurrentValue) <> "") {
+?>
+<label class="radio-inline"><input type="radio" data-table="emp" data-field="x_Activated" name="x_Activated" id="x_Activated_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($emp->Activated->CurrentValue) ?>" checked<?php echo $emp->Activated->EditAttributes() ?>><?php echo $emp->Activated->CurrentValue ?></label>
+<?php
+    }
+}
+?>
+</div></div>
+</span>
+<?php echo $emp->Activated->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 </table>

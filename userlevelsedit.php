@@ -5,7 +5,7 @@ ob_start(); // Turn on output buffering
 <?php include_once "ewcfg12.php" ?>
 <?php include_once ((EW_USE_ADODB) ? "adodb5/adodb.inc.php" : "ewmysql12.php") ?>
 <?php include_once "phpfn12.php" ?>
-<?php include_once "banksinfo.php" ?>
+<?php include_once "userlevelsinfo.php" ?>
 <?php include_once "empinfo.php" ?>
 <?php include_once "userfn12.php" ?>
 <?php
@@ -14,9 +14,9 @@ ob_start(); // Turn on output buffering
 // Page class
 //
 
-$banks_edit = NULL; // Initialize page object first
+$userlevels_edit = NULL; // Initialize page object first
 
-class cbanks_edit extends cbanks {
+class cuserlevels_edit extends cuserlevels {
 
 	// Page ID
 	var $PageID = 'edit';
@@ -25,10 +25,10 @@ class cbanks_edit extends cbanks {
 	var $ProjectID = "{163802B9-268A-4AFB-8FD6-7A7D18262A99}";
 
 	// Table name
-	var $TableName = 'banks';
+	var $TableName = 'userlevels';
 
 	// Page object name
-	var $PageObjName = 'banks_edit';
+	var $PageObjName = 'userlevels_edit';
 
 	// Page name
 	function PageName() {
@@ -222,10 +222,10 @@ class cbanks_edit extends cbanks {
 		// Parent constuctor
 		parent::__construct();
 
-		// Table object (banks)
-		if (!isset($GLOBALS["banks"]) || get_class($GLOBALS["banks"]) == "cbanks") {
-			$GLOBALS["banks"] = &$this;
-			$GLOBALS["Table"] = &$GLOBALS["banks"];
+		// Table object (userlevels)
+		if (!isset($GLOBALS["userlevels"]) || get_class($GLOBALS["userlevels"]) == "cuserlevels") {
+			$GLOBALS["userlevels"] = &$this;
+			$GLOBALS["Table"] = &$GLOBALS["userlevels"];
 		}
 
 		// Table object (emp)
@@ -237,7 +237,7 @@ class cbanks_edit extends cbanks {
 
 		// Table name (for backward compatibility)
 		if (!defined("EW_TABLE_NAME"))
-			define("EW_TABLE_NAME", 'banks', TRUE);
+			define("EW_TABLE_NAME", 'userlevels', TRUE);
 
 		// Start timer
 		if (!isset($GLOBALS["gTimer"])) $GLOBALS["gTimer"] = new cTimer();
@@ -264,13 +264,9 @@ class cbanks_edit extends cbanks {
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
 		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
-		if (!$Security->CanEdit()) {
+		if (!$Security->CanAdmin()) {
 			$Security->SaveLastUrl();
-			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
-			if ($Security->CanList())
-				$this->Page_Terminate(ew_GetUrl("bankslist.php"));
-			else
-				$this->Page_Terminate(ew_GetUrl("login.php"));
+			$this->Page_Terminate(ew_GetUrl("login.php"));
 		}
 
 		// Create form object
@@ -321,13 +317,13 @@ class cbanks_edit extends cbanks {
 		Page_Unloaded();
 
 		// Export
-		global $EW_EXPORT, $banks;
+		global $EW_EXPORT, $userlevels;
 		if ($this->CustomExport <> "" && $this->CustomExport == $this->Export && array_key_exists($this->CustomExport, $EW_EXPORT)) {
 				$sContent = ob_get_contents();
 			if ($gsExportFile == "") $gsExportFile = $this->TableVar;
 			$class = $EW_EXPORT[$this->CustomExport];
 			if (class_exists($class)) {
-				$doc = new $class($banks);
+				$doc = new $class($userlevels);
 				$doc->Text = $sContent;
 				if ($this->Export == "email")
 					echo $this->ExportEmail($doc->Text);
@@ -364,8 +360,8 @@ class cbanks_edit extends cbanks {
 			$this->FormClassName = ew_Concat("form-horizontal", $this->FormClassName, " ");
 
 		// Load key from QueryString
-		if (@$_GET["Bank_ID"] <> "") {
-			$this->Bank_ID->setQueryStringValue($_GET["Bank_ID"]);
+		if (@$_GET["userlevelid"] <> "") {
+			$this->userlevelid->setQueryStringValue($_GET["userlevelid"]);
 		}
 
 		// Set up Breadcrumb
@@ -380,8 +376,8 @@ class cbanks_edit extends cbanks {
 		}
 
 		// Check if valid key
-		if ($this->Bank_ID->CurrentValue == "")
-			$this->Page_Terminate("bankslist.php"); // Invalid key, return to list
+		if ($this->userlevelid->CurrentValue == "")
+			$this->Page_Terminate("userlevelslist.php"); // Invalid key, return to list
 
 		// Validate form if post back
 		if (@$_POST["a_edit"] <> "") {
@@ -396,7 +392,7 @@ class cbanks_edit extends cbanks {
 			case "I": // Get a record to display
 				if (!$this->LoadRow()) { // Load record based on key
 					if ($this->getFailureMessage() == "") $this->setFailureMessage($Language->Phrase("NoRecord")); // No record found
-					$this->Page_Terminate("bankslist.php"); // No matching record, return to list
+					$this->Page_Terminate("userlevelslist.php"); // No matching record, return to list
 				}
 				break;
 			Case "U": // Update
@@ -468,31 +464,20 @@ class cbanks_edit extends cbanks {
 
 		// Load from form
 		global $objForm;
-		if (!$this->Bank_Code->FldIsDetailKey) {
-			$this->Bank_Code->setFormValue($objForm->GetValue("x_Bank_Code"));
+		if (!$this->userlevelid->FldIsDetailKey) {
+			$this->userlevelid->setFormValue($objForm->GetValue("x_userlevelid"));
 		}
-		if (!$this->Branch_Code->FldIsDetailKey) {
-			$this->Branch_Code->setFormValue($objForm->GetValue("x_Branch_Code"));
+		if (!$this->userlevelname->FldIsDetailKey) {
+			$this->userlevelname->setFormValue($objForm->GetValue("x_userlevelname"));
 		}
-		if (!$this->Name->FldIsDetailKey) {
-			$this->Name->setFormValue($objForm->GetValue("x_Name"));
-		}
-		if (!$this->City->FldIsDetailKey) {
-			$this->City->setFormValue($objForm->GetValue("x_City"));
-		}
-		if (!$this->Bank_ID->FldIsDetailKey)
-			$this->Bank_ID->setFormValue($objForm->GetValue("x_Bank_ID"));
 	}
 
 	// Restore form values
 	function RestoreFormValues() {
 		global $objForm;
 		$this->LoadRow();
-		$this->Bank_ID->CurrentValue = $this->Bank_ID->FormValue;
-		$this->Bank_Code->CurrentValue = $this->Bank_Code->FormValue;
-		$this->Branch_Code->CurrentValue = $this->Branch_Code->FormValue;
-		$this->Name->CurrentValue = $this->Name->FormValue;
-		$this->City->CurrentValue = $this->City->FormValue;
+		$this->userlevelid->CurrentValue = $this->userlevelid->FormValue;
+		$this->userlevelname->CurrentValue = $this->userlevelname->FormValue;
 	}
 
 	// Load row based on key values
@@ -524,32 +509,21 @@ class cbanks_edit extends cbanks {
 		// Call Row Selected event
 		$row = &$rs->fields;
 		$this->Row_Selected($row);
-		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
-		$this->Bank_Code->setDbValue($rs->fields('Bank_Code'));
-		if (array_key_exists('EV__Bank_Code', $rs->fields)) {
-			$this->Bank_Code->VirtualValue = $rs->fields('EV__Bank_Code'); // Set up virtual field value
+		$this->userlevelid->setDbValue($rs->fields('userlevelid'));
+		if (is_null($this->userlevelid->CurrentValue)) {
+			$this->userlevelid->CurrentValue = 0;
 		} else {
-			$this->Bank_Code->VirtualValue = ""; // Clear value
+			$this->userlevelid->CurrentValue = intval($this->userlevelid->CurrentValue);
 		}
-		$this->Branch_Code->setDbValue($rs->fields('Branch_Code'));
-		$this->Name->setDbValue($rs->fields('Name'));
-		if (array_key_exists('EV__Name', $rs->fields)) {
-			$this->Name->VirtualValue = $rs->fields('EV__Name'); // Set up virtual field value
-		} else {
-			$this->Name->VirtualValue = ""; // Clear value
-		}
-		$this->City->setDbValue($rs->fields('City'));
+		$this->userlevelname->setDbValue($rs->fields('userlevelname'));
 	}
 
 	// Load DbValue from recordset
 	function LoadDbValues(&$rs) {
 		if (!$rs || !is_array($rs) && $rs->EOF) return;
 		$row = is_array($rs) ? $rs : $rs->fields;
-		$this->Bank_ID->DbValue = $row['Bank_ID'];
-		$this->Bank_Code->DbValue = $row['Bank_Code'];
-		$this->Branch_Code->DbValue = $row['Branch_Code'];
-		$this->Name->DbValue = $row['Name'];
-		$this->City->DbValue = $row['City'];
+		$this->userlevelid->DbValue = $row['userlevelid'];
+		$this->userlevelname->DbValue = $row['userlevelname'];
 	}
 
 	// Render row values based on field settings
@@ -562,153 +536,51 @@ class cbanks_edit extends cbanks {
 		$this->Row_Rendering();
 
 		// Common render codes for all row types
-		// Bank_ID
-		// Bank_Code
-		// Branch_Code
-		// Name
-		// City
+		// userlevelid
+		// userlevelname
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
-		// Bank_Code
-		if ($this->Bank_Code->VirtualValue <> "") {
-			$this->Bank_Code->ViewValue = $this->Bank_Code->VirtualValue;
-		} else {
-			$this->Bank_Code->ViewValue = $this->Bank_Code->CurrentValue;
-		if (strval($this->Bank_Code->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Bank_Code->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Bank_Code` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Bank_Code, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-		$sSqlWrk .= " ORDER BY `Bank_Code` ASC";
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Bank_Code->ViewValue = $this->Bank_Code->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Bank_Code->ViewValue = $this->Bank_Code->CurrentValue;
-			}
-		} else {
-			$this->Bank_Code->ViewValue = NULL;
-		}
-		}
-		$this->Bank_Code->ViewCustomAttributes = "";
+		// userlevelid
+		$this->userlevelid->ViewValue = $this->userlevelid->CurrentValue;
+		$this->userlevelid->ViewCustomAttributes = "";
 
-		// Branch_Code
-		$this->Branch_Code->ViewValue = $this->Branch_Code->CurrentValue;
-		$this->Branch_Code->ViewCustomAttributes = "";
+		// userlevelname
+		$this->userlevelname->ViewValue = $this->userlevelname->CurrentValue;
+		if ($Security->GetUserLevelName($this->userlevelid->CurrentValue) <> "") $this->userlevelname->ViewValue = $Security->GetUserLevelName($this->userlevelid->CurrentValue);
+		$this->userlevelname->ViewCustomAttributes = "";
 
-		// Name
-		if ($this->Name->VirtualValue <> "") {
-			$this->Name->ViewValue = $this->Name->VirtualValue;
-		} else {
-		if (strval($this->Name->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Name->ViewValue = $this->Name->CurrentValue;
-			}
-		} else {
-			$this->Name->ViewValue = NULL;
-		}
-		}
-		$this->Name->ViewCustomAttributes = "";
+			// userlevelid
+			$this->userlevelid->LinkCustomAttributes = "";
+			$this->userlevelid->HrefValue = "";
+			$this->userlevelid->TooltipValue = "";
 
-		// City
-		$this->City->ViewValue = $this->City->CurrentValue;
-		$this->City->ViewCustomAttributes = "";
-
-			// Bank_Code
-			$this->Bank_Code->LinkCustomAttributes = "";
-			$this->Bank_Code->HrefValue = "";
-			$this->Bank_Code->TooltipValue = "";
-
-			// Branch_Code
-			$this->Branch_Code->LinkCustomAttributes = "";
-			$this->Branch_Code->HrefValue = "";
-			$this->Branch_Code->TooltipValue = "";
-
-			// Name
-			$this->Name->LinkCustomAttributes = "";
-			$this->Name->HrefValue = "";
-			$this->Name->TooltipValue = "";
-
-			// City
-			$this->City->LinkCustomAttributes = "";
-			$this->City->HrefValue = "";
-			$this->City->TooltipValue = "";
+			// userlevelname
+			$this->userlevelname->LinkCustomAttributes = "";
+			$this->userlevelname->HrefValue = "";
+			$this->userlevelname->TooltipValue = "";
 		} elseif ($this->RowType == EW_ROWTYPE_EDIT) { // Edit row
 
-			// Bank_Code
-			$this->Bank_Code->EditAttrs["class"] = "form-control";
-			$this->Bank_Code->EditCustomAttributes = "";
-			$this->Bank_Code->EditValue = ew_HtmlEncode($this->Bank_Code->CurrentValue);
-			$this->Bank_Code->PlaceHolder = ew_RemoveHtml($this->Bank_Code->FldCaption());
+			// userlevelid
+			$this->userlevelid->EditAttrs["class"] = "form-control";
+			$this->userlevelid->EditCustomAttributes = "";
+			$this->userlevelid->EditValue = $this->userlevelid->CurrentValue;
+			$this->userlevelid->ViewCustomAttributes = "";
 
-			// Branch_Code
-			$this->Branch_Code->EditAttrs["class"] = "form-control";
-			$this->Branch_Code->EditCustomAttributes = "";
-			$this->Branch_Code->EditValue = ew_HtmlEncode($this->Branch_Code->CurrentValue);
-			$this->Branch_Code->PlaceHolder = ew_RemoveHtml($this->Branch_Code->FldCaption());
-
-			// Name
-			$this->Name->EditCustomAttributes = "";
-			if (trim(strval($this->Name->CurrentValue)) == "") {
-				$sFilterWrk = "0=1";
-			} else {
-				$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-			}
-			$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `Bank_Code` AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `banks`";
-			$sWhereWrk = "";
-			ew_AddFilter($sWhereWrk, $sFilterWrk);
-			$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = ew_HtmlEncode($rswrk->fields('DispFld'));
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-			} else {
-				$this->Name->ViewValue = $Language->Phrase("PleaseSelect");
-			}
-			$arwrk = ($rswrk) ? $rswrk->GetRows() : array();
-			if ($rswrk) $rswrk->Close();
-			array_unshift($arwrk, array("", $Language->Phrase("PleaseSelect"), "", "", "", "", "", "", ""));
-			$this->Name->EditValue = $arwrk;
-
-			// City
-			$this->City->EditAttrs["class"] = "form-control";
-			$this->City->EditCustomAttributes = "";
-			$this->City->EditValue = ew_HtmlEncode($this->City->CurrentValue);
-			$this->City->PlaceHolder = ew_RemoveHtml($this->City->FldCaption());
+			// userlevelname
+			$this->userlevelname->EditAttrs["class"] = "form-control";
+			$this->userlevelname->EditCustomAttributes = "";
+			$this->userlevelname->EditValue = ew_HtmlEncode($this->userlevelname->CurrentValue);
+			if (in_array($this->userlevelid->CurrentValue, array(-2,-1,0))) $this->userlevelname->ReadOnly = TRUE;
+			$this->userlevelname->PlaceHolder = ew_RemoveHtml($this->userlevelname->FldCaption());
 
 			// Edit refer script
-			// Bank_Code
+			// userlevelid
 
-			$this->Bank_Code->HrefValue = "";
+			$this->userlevelid->HrefValue = "";
 
-			// Branch_Code
-			$this->Branch_Code->HrefValue = "";
-
-			// Name
-			$this->Name->HrefValue = "";
-
-			// City
-			$this->City->HrefValue = "";
+			// userlevelname
+			$this->userlevelname->HrefValue = "";
 		}
 		if ($this->RowType == EW_ROWTYPE_ADD ||
 			$this->RowType == EW_ROWTYPE_EDIT ||
@@ -731,20 +603,14 @@ class cbanks_edit extends cbanks {
 		// Check if validation required
 		if (!EW_SERVER_VALIDATE)
 			return ($gsFormError == "");
-		if (!$this->Bank_Code->FldIsDetailKey && !is_null($this->Bank_Code->FormValue) && $this->Bank_Code->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->Bank_Code->FldCaption(), $this->Bank_Code->ReqErrMsg));
+		if (!$this->userlevelid->FldIsDetailKey && !is_null($this->userlevelid->FormValue) && $this->userlevelid->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->userlevelid->FldCaption(), $this->userlevelid->ReqErrMsg));
 		}
-		if (!$this->Branch_Code->FldIsDetailKey && !is_null($this->Branch_Code->FormValue) && $this->Branch_Code->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->Branch_Code->FldCaption(), $this->Branch_Code->ReqErrMsg));
+		if (!ew_CheckInteger($this->userlevelid->FormValue)) {
+			ew_AddMessage($gsFormError, $this->userlevelid->FldErrMsg());
 		}
-		if (!ew_CheckInteger($this->Branch_Code->FormValue)) {
-			ew_AddMessage($gsFormError, $this->Branch_Code->FldErrMsg());
-		}
-		if (!$this->Name->FldIsDetailKey && !is_null($this->Name->FormValue) && $this->Name->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->Name->FldCaption(), $this->Name->ReqErrMsg));
-		}
-		if (!$this->City->FldIsDetailKey && !is_null($this->City->FormValue) && $this->City->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->City->FldCaption(), $this->City->ReqErrMsg));
+		if (!$this->userlevelname->FldIsDetailKey && !is_null($this->userlevelname->FormValue) && $this->userlevelname->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->userlevelname->FldCaption(), $this->userlevelname->ReqErrMsg));
 		}
 
 		// Return validate result
@@ -782,17 +648,10 @@ class cbanks_edit extends cbanks {
 			$this->LoadDbValues($rsold);
 			$rsnew = array();
 
-			// Bank_Code
-			$this->Bank_Code->SetDbValueDef($rsnew, $this->Bank_Code->CurrentValue, 0, $this->Bank_Code->ReadOnly);
+			// userlevelid
+			// userlevelname
 
-			// Branch_Code
-			$this->Branch_Code->SetDbValueDef($rsnew, $this->Branch_Code->CurrentValue, 0, $this->Branch_Code->ReadOnly);
-
-			// Name
-			$this->Name->SetDbValueDef($rsnew, $this->Name->CurrentValue, "", $this->Name->ReadOnly);
-
-			// City
-			$this->City->SetDbValueDef($rsnew, $this->City->CurrentValue, "", $this->City->ReadOnly);
+			$this->userlevelname->SetDbValueDef($rsnew, $this->userlevelname->CurrentValue, "", $this->userlevelname->ReadOnly);
 
 			// Call Row Updating event
 			$bUpdateRow = $this->Row_Updating($rsold, $rsnew);
@@ -831,7 +690,7 @@ class cbanks_edit extends cbanks {
 		global $Breadcrumb, $Language;
 		$Breadcrumb = new cBreadcrumb();
 		$url = substr(ew_CurrentUrl(), strrpos(ew_CurrentUrl(), "/")+1);
-		$Breadcrumb->Add("list", $this->TableVar, "bankslist.php", "", $this->TableVar, TRUE);
+		$Breadcrumb->Add("list", $this->TableVar, "userlevelslist.php", "", $this->TableVar, TRUE);
 		$PageId = "edit";
 		$Breadcrumb->Add("edit", $PageId, $url);
 	}
@@ -908,29 +767,29 @@ class cbanks_edit extends cbanks {
 <?php
 
 // Create page object
-if (!isset($banks_edit)) $banks_edit = new cbanks_edit();
+if (!isset($userlevels_edit)) $userlevels_edit = new cuserlevels_edit();
 
 // Page init
-$banks_edit->Page_Init();
+$userlevels_edit->Page_Init();
 
 // Page main
-$banks_edit->Page_Main();
+$userlevels_edit->Page_Main();
 
 // Global Page Rendering event (in userfn*.php)
 Page_Rendering();
 
 // Page Rendering event
-$banks_edit->Page_Render();
+$userlevels_edit->Page_Render();
 ?>
 <?php include_once "header.php" ?>
 <script type="text/javascript">
 
 // Form object
 var CurrentPageID = EW_PAGE_ID = "edit";
-var CurrentForm = fbanksedit = new ew_Form("fbanksedit", "edit");
+var CurrentForm = fuserlevelsedit = new ew_Form("fuserlevelsedit", "edit");
 
 // Validate form
-fbanksedit.Validate = function() {
+fuserlevelsedit.Validate = function() {
 	if (!this.ValidateRequired)
 		return true; // Ignore validation
 	var $ = jQuery, fobj = this.GetForm(), $fobj = $(fobj);
@@ -944,21 +803,35 @@ fbanksedit.Validate = function() {
 	for (var i = startcnt; i <= rowcnt; i++) {
 		var infix = ($k[0]) ? String(i) : "";
 		$fobj.data("rowindex", infix);
-			elm = this.GetElements("x" + infix + "_Bank_Code");
+			elm = this.GetElements("x" + infix + "_userlevelid");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $banks->Bank_Code->FldCaption(), $banks->Bank_Code->ReqErrMsg)) ?>");
-			elm = this.GetElements("x" + infix + "_Branch_Code");
-			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $banks->Branch_Code->FldCaption(), $banks->Branch_Code->ReqErrMsg)) ?>");
-			elm = this.GetElements("x" + infix + "_Branch_Code");
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $userlevels->userlevelid->FldCaption(), $userlevels->userlevelid->ReqErrMsg)) ?>");
+			elm = this.GetElements("x" + infix + "_userlevelid");
 			if (elm && !ew_CheckInteger(elm.value))
-				return this.OnError(elm, "<?php echo ew_JsEncode2($banks->Branch_Code->FldErrMsg()) ?>");
-			elm = this.GetElements("x" + infix + "_Name");
+				return this.OnError(elm, "<?php echo ew_JsEncode2($userlevels->userlevelid->FldErrMsg()) ?>");
+			elm = this.GetElements("x" + infix + "_userlevelname");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $banks->Name->FldCaption(), $banks->Name->ReqErrMsg)) ?>");
-			elm = this.GetElements("x" + infix + "_City");
-			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $banks->City->FldCaption(), $banks->City->ReqErrMsg)) ?>");
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $userlevels->userlevelname->FldCaption(), $userlevels->userlevelname->ReqErrMsg)) ?>");
+			var elId = fobj.elements["x" + infix + "_userlevelid"];
+			var elName = fobj.elements["x" + infix + "_userlevelname"];
+			if (elId && elName) {
+				elId.value = $.trim(elId.value);
+				elName.value = $.trim(elName.value);
+				if (elId && !ew_CheckInteger(elId.value))
+					return this.OnError(elId, ewLanguage.Phrase("UserLevelIDInteger"));
+				var level = parseInt(elId.value, 10);
+				if (level == 0 && !ew_SameText(elName.value, "Default")) {
+					return this.OnError(elName, ewLanguage.Phrase("UserLevelDefaultName"));
+				} else if (level == -1 && !ew_SameText(elName.value, "Administrator")) {
+					return this.OnError(elName, ewLanguage.Phrase("UserLevelAdministratorName"));
+				} else if (level == -2 && !ew_SameText(elName.value, "Anonymous")) {
+					return this.OnError(elName, ewLanguage.Phrase("UserLevelAnonymousName"));
+				} else if (level < -2) {
+					return this.OnError(elId, ewLanguage.Phrase("UserLevelIDIncorrect"));
+				} else if (level > 0 && ew_InArray(elName.value.toLowerCase(), ["anonymous", "administrator", "default"]) > -1) {
+					return this.OnError(elName, ewLanguage.Phrase("UserLevelNameIncorrect"));
+				}
+			}
 
 			// Fire Form_CustomValidate event
 			if (!this.Form_CustomValidate(fobj))
@@ -977,7 +850,7 @@ fbanksedit.Validate = function() {
 }
 
 // Form_CustomValidate event
-fbanksedit.Form_CustomValidate = 
+fuserlevelsedit.Form_CustomValidate = 
  function(fobj) { // DO NOT CHANGE THIS LINE!
 
  	// Your custom validation code here, return false if invalid. 
@@ -986,16 +859,14 @@ fbanksedit.Form_CustomValidate =
 
 // Use JavaScript validation or not
 <?php if (EW_CLIENT_VALIDATE) { ?>
-fbanksedit.ValidateRequired = true;
+fuserlevelsedit.ValidateRequired = true;
 <?php } else { ?>
-fbanksedit.ValidateRequired = false; 
+fuserlevelsedit.ValidateRequired = false; 
 <?php } ?>
 
 // Dynamic selection lists
-fbanksedit.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":["x_Name"],"FilterFields":[],"Options":[],"Template":""};
-fbanksedit.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":["x_Bank_Code"],"ChildFields":[],"FilterFields":["x_Bank_Code"],"Options":[],"Template":""};
-
 // Form object for search
+
 </script>
 <script type="text/javascript">
 
@@ -1006,137 +877,54 @@ fbanksedit.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":f
 <?php echo $Language->SelectionForm(); ?>
 <div class="clearfix"></div>
 </div>
-<?php $banks_edit->ShowPageHeader(); ?>
+<?php $userlevels_edit->ShowPageHeader(); ?>
 <?php
-$banks_edit->ShowMessage();
+$userlevels_edit->ShowMessage();
 ?>
-<form name="fbanksedit" id="fbanksedit" class="<?php echo $banks_edit->FormClassName ?>" action="<?php echo ew_CurrentPage() ?>" method="post">
-<?php if ($banks_edit->CheckToken) { ?>
-<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $banks_edit->Token ?>">
+<form name="fuserlevelsedit" id="fuserlevelsedit" class="<?php echo $userlevels_edit->FormClassName ?>" action="<?php echo ew_CurrentPage() ?>" method="post">
+<?php if ($userlevels_edit->CheckToken) { ?>
+<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $userlevels_edit->Token ?>">
 <?php } ?>
-<input type="hidden" name="t" value="banks">
+<input type="hidden" name="t" value="userlevels">
 <input type="hidden" name="a_edit" id="a_edit" value="U">
 <div class="ewDesktop">
 <div>
-<table id="tbl_banksedit" class="table table-bordered table-striped ewDesktopTable">
-<?php if ($banks->Bank_Code->Visible) { // Bank_Code ?>
-	<tr id="r_Bank_Code">
-		<td><span id="elh_banks_Bank_Code"><?php echo $banks->Bank_Code->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $banks->Bank_Code->CellAttributes() ?>>
-<span id="el_banks_Bank_Code">
-<?php
-$wrkonchange = trim("ew_UpdateOpt.call(this); " . @$banks->Bank_Code->EditAttrs["onchange"]);
-if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
-$banks->Bank_Code->EditAttrs["onchange"] = "";
-?>
-<span id="as_x_Bank_Code" style="white-space: nowrap; z-index: 8980">
-	<input type="text" name="sv_x_Bank_Code" id="sv_x_Bank_Code" value="<?php echo $banks->Bank_Code->EditValue ?>" size="30" placeholder="<?php echo ew_HtmlEncode($banks->Bank_Code->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($banks->Bank_Code->getPlaceHolder()) ?>"<?php echo $banks->Bank_Code->EditAttributes() ?>>
+<table id="tbl_userlevelsedit" class="table table-bordered table-striped ewDesktopTable">
+<?php if ($userlevels->userlevelid->Visible) { // userlevelid ?>
+	<tr id="r_userlevelid">
+		<td><span id="elh_userlevels_userlevelid"><?php echo $userlevels->userlevelid->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $userlevels->userlevelid->CellAttributes() ?>>
+<span id="el_userlevels_userlevelid">
+<span<?php echo $userlevels->userlevelid->ViewAttributes() ?>>
+<p class="form-control-static"><?php echo $userlevels->userlevelid->EditValue ?></p></span>
 </span>
-<input type="hidden" data-table="banks" data-field="x_Bank_Code" data-value-separator="<?php echo ew_HtmlEncode(is_array($banks->Bank_Code->DisplayValueSeparator) ? json_encode($banks->Bank_Code->DisplayValueSeparator) : $banks->Bank_Code->DisplayValueSeparator) ?>" name="x_Bank_Code" id="x_Bank_Code" value="<?php echo ew_HtmlEncode($banks->Bank_Code->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<?php
-$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Bank_Code` AS `DispFld` FROM `banks`";
-$sWhereWrk = "`Bank_Code` LIKE '{query_value}%'";
-$banks->Lookup_Selecting($banks->Bank_Code, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-$sSqlWrk .= " ORDER BY `Bank_Code` ASC";
-$sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
-?>
-<input type="hidden" name="q_x_Bank_Code" id="q_x_Bank_Code" value="s=<?php echo ew_Encrypt($sSqlWrk) ?>&d=">
-<script type="text/javascript">
-fbanksedit.CreateAutoSuggest({"id":"x_Bank_Code","forceSelect":false});
-</script>
-</span>
-<?php echo $banks->Bank_Code->CustomMsg ?></td>
+<input type="hidden" data-table="userlevels" data-field="x_userlevelid" name="x_userlevelid" id="x_userlevelid" value="<?php echo ew_HtmlEncode($userlevels->userlevelid->CurrentValue) ?>">
+<?php echo $userlevels->userlevelid->CustomMsg ?></td>
 	</tr>
 <?php } ?>
-<?php if ($banks->Branch_Code->Visible) { // Branch_Code ?>
-	<tr id="r_Branch_Code">
-		<td><span id="elh_banks_Branch_Code"><?php echo $banks->Branch_Code->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $banks->Branch_Code->CellAttributes() ?>>
-<span id="el_banks_Branch_Code">
-<input type="text" data-table="banks" data-field="x_Branch_Code" name="x_Branch_Code" id="x_Branch_Code" size="30" placeholder="<?php echo ew_HtmlEncode($banks->Branch_Code->getPlaceHolder()) ?>" value="<?php echo $banks->Branch_Code->EditValue ?>"<?php echo $banks->Branch_Code->EditAttributes() ?>>
+<?php if ($userlevels->userlevelname->Visible) { // userlevelname ?>
+	<tr id="r_userlevelname">
+		<td><span id="elh_userlevels_userlevelname"><?php echo $userlevels->userlevelname->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $userlevels->userlevelname->CellAttributes() ?>>
+<span id="el_userlevels_userlevelname">
+<input type="text" data-table="userlevels" data-field="x_userlevelname" name="x_userlevelname" id="x_userlevelname" size="30" maxlength="255" placeholder="<?php echo ew_HtmlEncode($userlevels->userlevelname->getPlaceHolder()) ?>" value="<?php echo $userlevels->userlevelname->EditValue ?>"<?php echo $userlevels->userlevelname->EditAttributes() ?>>
 </span>
-<?php echo $banks->Branch_Code->CustomMsg ?></td>
-	</tr>
-<?php } ?>
-<?php if ($banks->Name->Visible) { // Name ?>
-	<tr id="r_Name">
-		<td><span id="elh_banks_Name"><?php echo $banks->Name->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $banks->Name->CellAttributes() ?>>
-<span id="el_banks_Name">
-<div class="ewDropdownList has-feedback">
-	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-		<?php echo $banks->Name->ViewValue ?>
-	</span>
-	<span class="glyphicon glyphicon-remove form-control-feedback ewDropdownListClear"></span>
-	<span class="form-control-feedback"><span class="caret"></span></span>
-	<div id="dsl_x_Name" data-repeatcolumn="1" class="dropdown-menu">
-		<div class="ewItems" style="position: relative; overflow-x: hidden;">
-<?php
-$arwrk = $banks->Name->EditValue;
-if (is_array($arwrk)) {
-	$rowswrk = count($arwrk);
-	$emptywrk = TRUE;
-	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
-		$selwrk = (strval($banks->Name->CurrentValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
-		if ($selwrk <> "") {
-			$emptywrk = FALSE;
-?>
-<input type="radio" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $banks->Name->EditAttributes() ?>><?php echo $banks->Name->DisplayValue($arwrk[$rowcntwrk]) ?>
-<?php
-		}
-	}
-	if ($emptywrk && strval($banks->Name->CurrentValue) <> "") {
-?>
-<input type="radio" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($banks->Name->CurrentValue) ?>" checked<?php echo $banks->Name->EditAttributes() ?>><?php echo $banks->Name->CurrentValue ?>
-<?php
-    }
-}
-?>
-		</div>
-	</div>
-	<div id="tp_x_Name" class="ewTemplate"><input type="radio" data-table="banks" data-field="x_Name" data-value-separator="<?php echo ew_HtmlEncode(is_array($banks->Name->DisplayValueSeparator) ? json_encode($banks->Name->DisplayValueSeparator) : $banks->Name->DisplayValueSeparator) ?>" name="x_Name" id="x_Name" value="{value}"<?php echo $banks->Name->EditAttributes() ?>></div>
-</div>
-<?php
-$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-$sWhereWrk = "{filter}";
-$banks->Name->LookupFilters = array("s" => $sSqlWrk, "d" => "");
-$banks->Name->LookupFilters += array("f0" => "`Bank_Code` = {filter_value}", "t0" => "3", "fn0" => "");
-$banks->Name->LookupFilters += array("f1" => "`Bank_Code` IN ({filter_value})", "t1" => "3", "fn1" => "");
-$sSqlWrk = "";
-$banks->Lookup_Selecting($banks->Name, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-if ($sSqlWrk <> "") $banks->Name->LookupFilters["s"] .= $sSqlWrk;
-?>
-<input type="hidden" name="s_x_Name" id="s_x_Name" value="<?php echo $banks->Name->LookupFilterQuery() ?>">
-</span>
-<?php echo $banks->Name->CustomMsg ?></td>
-	</tr>
-<?php } ?>
-<?php if ($banks->City->Visible) { // City ?>
-	<tr id="r_City">
-		<td><span id="elh_banks_City"><?php echo $banks->City->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $banks->City->CellAttributes() ?>>
-<span id="el_banks_City">
-<input type="text" data-table="banks" data-field="x_City" name="x_City" id="x_City" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($banks->City->getPlaceHolder()) ?>" value="<?php echo $banks->City->EditValue ?>"<?php echo $banks->City->EditAttributes() ?>>
-</span>
-<?php echo $banks->City->CustomMsg ?></td>
+<?php echo $userlevels->userlevelname->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 </table>
 </div>
-<input type="hidden" data-table="banks" data-field="x_Bank_ID" name="x_Bank_ID" id="x_Bank_ID" value="<?php echo ew_HtmlEncode($banks->Bank_ID->CurrentValue) ?>">
 <div class="ewDesktopButton">
 <button class="btn btn-primary ewButton" name="btnAction" id="btnAction" type="submit"><?php echo $Language->Phrase("SaveBtn") ?></button>
-<button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="button" data-href="<?php echo $banks_edit->getReturnUrl() ?>"><?php echo $Language->Phrase("CancelBtn") ?></button>
+<button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="button" data-href="<?php echo $userlevels_edit->getReturnUrl() ?>"><?php echo $Language->Phrase("CancelBtn") ?></button>
 </div>
 </div>
 </form>
 <script type="text/javascript">
-fbanksedit.Init();
+fuserlevelsedit.Init();
 </script>
 <?php
-$banks_edit->ShowPageFooter();
+$userlevels_edit->ShowPageFooter();
 if (EW_DEBUG_ENABLED)
 	echo ew_DebugMsg();
 ?>
@@ -1148,5 +936,5 @@ if (EW_DEBUG_ENABLED)
 </script>
 <?php include_once "footer.php" ?>
 <?php
-$banks_edit->Page_Terminate();
+$userlevels_edit->Page_Terminate();
 ?>

@@ -211,6 +211,7 @@ class cemp_delete extends cemp {
 	//
 	function __construct() {
 		global $conn, $Language;
+		global $UserTable, $UserTableConn;
 		$GLOBALS["Page"] = &$this;
 		$this->TokenTimeout = ew_SessionTimeoutTime();
 
@@ -239,6 +240,12 @@ class cemp_delete extends cemp {
 
 		// Open connection
 		if (!isset($conn)) $conn = ew_Connect($this->DBID);
+
+		// User table object (emp)
+		if (!isset($UserTable)) {
+			$UserTable = new cemp();
+			$UserTableConn = Conn($UserTable->DBID);
+		}
 	}
 
 	// 
@@ -246,6 +253,21 @@ class cemp_delete extends cemp {
 	//
 	function Page_Init() {
 		global $gsExport, $gsCustomExport, $gsExportFile, $UserProfile, $Language, $Security, $objForm;
+
+		// Security
+		$Security = new cAdvancedSecurity();
+		if (!$Security->IsLoggedIn()) $Security->AutoLogin();
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
+		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
+		if (!$Security->CanDelete()) {
+			$Security->SaveLastUrl();
+			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
+			if ($Security->CanList())
+				$this->Page_Terminate(ew_GetUrl("emplist.php"));
+			else
+				$this->Page_Terminate(ew_GetUrl("login.php"));
+		}
 		$this->CurrentAction = (@$_GET["a"] <> "") ? $_GET["a"] : @$_POST["a_list"]; // Set up current action
 
 		// Global Page Loading event (in userfn*.php)
@@ -412,6 +434,9 @@ class cemp_delete extends cemp {
 		$this->PF->setDbValue($rs->fields('PF'));
 		$this->Name->setDbValue($rs->fields('Name'));
 		$this->NIC->setDbValue($rs->fields('NIC'));
+		$this->Password->setDbValue($rs->fields('Password'));
+		$this->UserLevel->setDbValue($rs->fields('UserLevel'));
+		$this->Activated->setDbValue($rs->fields('Activated'));
 	}
 
 	// Load DbValue from recordset
@@ -421,6 +446,9 @@ class cemp_delete extends cemp {
 		$this->PF->DbValue = $row['PF'];
 		$this->Name->DbValue = $row['Name'];
 		$this->NIC->DbValue = $row['NIC'];
+		$this->Password->DbValue = $row['Password'];
+		$this->UserLevel->DbValue = $row['UserLevel'];
+		$this->Activated->DbValue = $row['Activated'];
 	}
 
 	// Render row values based on field settings
@@ -436,6 +464,9 @@ class cemp_delete extends cemp {
 		// PF
 		// Name
 		// NIC
+		// Password
+		// UserLevel
+		// Activated
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
@@ -451,6 +482,44 @@ class cemp_delete extends cemp {
 		$this->NIC->ViewValue = $this->NIC->CurrentValue;
 		$this->NIC->ViewCustomAttributes = "";
 
+		// Password
+		$this->Password->ViewValue = $this->Password->CurrentValue;
+		$this->Password->ViewCustomAttributes = "";
+
+		// UserLevel
+		if ($Security->CanAdmin()) { // System admin
+		if (strval($this->UserLevel->CurrentValue) <> "") {
+			$sFilterWrk = "`userlevelid`" . ew_SearchString("=", $this->UserLevel->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `userlevelid`, `userlevelname` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `userlevels`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->UserLevel, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->UserLevel->ViewValue = $this->UserLevel->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->UserLevel->ViewValue = $this->UserLevel->CurrentValue;
+			}
+		} else {
+			$this->UserLevel->ViewValue = NULL;
+		}
+		} else {
+			$this->UserLevel->ViewValue = $Language->Phrase("PasswordMask");
+		}
+		$this->UserLevel->ViewCustomAttributes = "";
+
+		// Activated
+		if (strval($this->Activated->CurrentValue) <> "") {
+			$this->Activated->ViewValue = $this->Activated->OptionCaption($this->Activated->CurrentValue);
+		} else {
+			$this->Activated->ViewValue = NULL;
+		}
+		$this->Activated->ViewCustomAttributes = "";
+
 			// PF
 			$this->PF->LinkCustomAttributes = "";
 			$this->PF->HrefValue = "";
@@ -465,6 +534,21 @@ class cemp_delete extends cemp {
 			$this->NIC->LinkCustomAttributes = "";
 			$this->NIC->HrefValue = "";
 			$this->NIC->TooltipValue = "";
+
+			// Password
+			$this->Password->LinkCustomAttributes = "";
+			$this->Password->HrefValue = "";
+			$this->Password->TooltipValue = "";
+
+			// UserLevel
+			$this->UserLevel->LinkCustomAttributes = "";
+			$this->UserLevel->HrefValue = "";
+			$this->UserLevel->TooltipValue = "";
+
+			// Activated
+			$this->Activated->LinkCustomAttributes = "";
+			$this->Activated->HrefValue = "";
+			$this->Activated->TooltipValue = "";
 		}
 
 		// Call Row Rendered event
@@ -477,6 +561,10 @@ class cemp_delete extends cemp {
 	//
 	function DeleteRows() {
 		global $Language, $Security;
+		if (!$Security->CanDelete()) {
+			$this->setFailureMessage($Language->Phrase("NoDeletePermission")); // No delete permission
+			return FALSE;
+		}
 		$DeleteRows = TRUE;
 		$sSql = $this->SQL();
 		$conn = &$this->Connection();
@@ -663,8 +751,11 @@ fempdelete.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
-// Form object for search
+fempdelete.Lists["x_UserLevel"] = {"LinkField":"x_userlevelid","Ajax":true,"AutoFill":false,"DisplayFields":["x_userlevelname","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+fempdelete.Lists["x_Activated"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+fempdelete.Lists["x_Activated"].Options = <?php echo json_encode($emp->Activated->Options()) ?>;
 
+// Form object for search
 </script>
 <script type="text/javascript">
 
@@ -715,6 +806,15 @@ $emp_delete->ShowMessage();
 <?php if ($emp->NIC->Visible) { // NIC ?>
 		<th><span id="elh_emp_NIC" class="emp_NIC"><?php echo $emp->NIC->FldCaption() ?></span></th>
 <?php } ?>
+<?php if ($emp->Password->Visible) { // Password ?>
+		<th><span id="elh_emp_Password" class="emp_Password"><?php echo $emp->Password->FldCaption() ?></span></th>
+<?php } ?>
+<?php if ($emp->UserLevel->Visible) { // UserLevel ?>
+		<th><span id="elh_emp_UserLevel" class="emp_UserLevel"><?php echo $emp->UserLevel->FldCaption() ?></span></th>
+<?php } ?>
+<?php if ($emp->Activated->Visible) { // Activated ?>
+		<th><span id="elh_emp_Activated" class="emp_Activated"><?php echo $emp->Activated->FldCaption() ?></span></th>
+<?php } ?>
 	</tr>
 	</thead>
 	<tbody>
@@ -757,6 +857,30 @@ while (!$emp_delete->Recordset->EOF) {
 <span id="el<?php echo $emp_delete->RowCnt ?>_emp_NIC" class="emp_NIC">
 <span<?php echo $emp->NIC->ViewAttributes() ?>>
 <?php echo $emp->NIC->ListViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($emp->Password->Visible) { // Password ?>
+		<td<?php echo $emp->Password->CellAttributes() ?>>
+<span id="el<?php echo $emp_delete->RowCnt ?>_emp_Password" class="emp_Password">
+<span<?php echo $emp->Password->ViewAttributes() ?>>
+<?php echo $emp->Password->ListViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($emp->UserLevel->Visible) { // UserLevel ?>
+		<td<?php echo $emp->UserLevel->CellAttributes() ?>>
+<span id="el<?php echo $emp_delete->RowCnt ?>_emp_UserLevel" class="emp_UserLevel">
+<span<?php echo $emp->UserLevel->ViewAttributes() ?>>
+<?php echo $emp->UserLevel->ListViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($emp->Activated->Visible) { // Activated ?>
+		<td<?php echo $emp->Activated->CellAttributes() ?>>
+<span id="el<?php echo $emp_delete->RowCnt ?>_emp_Activated" class="emp_Activated">
+<span<?php echo $emp->Activated->ViewAttributes() ?>>
+<?php echo $emp->Activated->ListViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

@@ -251,6 +251,7 @@ class cemp_list extends cemp {
 	//
 	function __construct() {
 		global $conn, $Language;
+		global $UserTable, $UserTableConn;
 		$GLOBALS["Page"] = &$this;
 		$this->TokenTimeout = ew_SessionTimeoutTime();
 
@@ -295,6 +296,12 @@ class cemp_list extends cemp {
 		// Open connection
 		if (!isset($conn)) $conn = ew_Connect($this->DBID);
 
+		// User table object (emp)
+		if (!isset($UserTable)) {
+			$UserTable = new cemp();
+			$UserTableConn = Conn($UserTable->DBID);
+		}
+
 		// List options
 		$this->ListOptions = new cListOptions();
 		$this->ListOptions->TableVar = $this->TableVar;
@@ -329,6 +336,18 @@ class cemp_list extends cemp {
 	//
 	function Page_Init() {
 		global $gsExport, $gsCustomExport, $gsExportFile, $UserProfile, $Language, $Security, $objForm;
+
+		// Security
+		$Security = new cAdvancedSecurity();
+		if (!$Security->IsLoggedIn()) $Security->AutoLogin();
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
+		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
+		if (!$Security->CanList()) {
+			$Security->SaveLastUrl();
+			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
+			$this->Page_Terminate(ew_GetUrl("index.php"));
+		}
 
 		// Get export parameters
 		$custom = "";
@@ -562,12 +581,18 @@ class cemp_list extends cemp {
 
 			// Get default search criteria
 			ew_AddFilter($this->DefaultSearchWhere, $this->BasicSearchWhere(TRUE));
+			ew_AddFilter($this->DefaultSearchWhere, $this->AdvancedSearchWhere(TRUE));
 
 			// Get basic search values
 			$this->LoadBasicSearchValues();
 
+			// Get and validate search values for advanced search
+			$this->LoadSearchValues(); // Get search values
+
 			// Restore filter list
 			$this->RestoreFilterList();
+			if (!$this->ValidateSearch())
+				$this->setFailureMessage($gsSearchError);
 
 			// Restore search parms from Session if not searching / reset / export
 			if (($this->Export <> "" || $this->Command <> "search" && $this->Command <> "reset" && $this->Command <> "resetall") && $this->CheckSearchParms())
@@ -582,6 +607,10 @@ class cemp_list extends cemp {
 			// Get basic search criteria
 			if ($gsSearchError == "")
 				$sSrchBasic = $this->BasicSearchWhere();
+
+			// Get search criteria for advanced search
+			if ($gsSearchError == "")
+				$sSrchAdvanced = $this->AdvancedSearchWhere();
 		}
 
 		// Restore display records
@@ -601,6 +630,11 @@ class cemp_list extends cemp {
 			$this->BasicSearch->LoadDefault();
 			if ($this->BasicSearch->Keyword != "")
 				$sSrchBasic = $this->BasicSearchWhere();
+
+			// Load advanced search from default
+			if ($this->LoadAdvancedSearchDefault()) {
+				$sSrchAdvanced = $this->AdvancedSearchWhere();
+			}
 		}
 
 		// Build search criteria
@@ -621,6 +655,8 @@ class cemp_list extends cemp {
 
 		// Build filter
 		$sFilter = "";
+		if (!$Security->CanList())
+			$sFilter = "(0=1)"; // Filter all records
 		ew_AddFilter($sFilter, $this->DbDetailFilter);
 		ew_AddFilter($sFilter, $this->SearchWhere);
 
@@ -696,6 +732,9 @@ class cemp_list extends cemp {
 		$sFilterList = ew_Concat($sFilterList, $this->PF->AdvancedSearch->ToJSON(), ","); // Field PF
 		$sFilterList = ew_Concat($sFilterList, $this->Name->AdvancedSearch->ToJSON(), ","); // Field Name
 		$sFilterList = ew_Concat($sFilterList, $this->NIC->AdvancedSearch->ToJSON(), ","); // Field NIC
+		$sFilterList = ew_Concat($sFilterList, $this->Password->AdvancedSearch->ToJSON(), ","); // Field Password
+		$sFilterList = ew_Concat($sFilterList, $this->UserLevel->AdvancedSearch->ToJSON(), ","); // Field UserLevel
+		$sFilterList = ew_Concat($sFilterList, $this->Activated->AdvancedSearch->ToJSON(), ","); // Field Activated
 		if ($this->BasicSearch->Keyword <> "") {
 			$sWrk = "\"" . EW_TABLE_BASIC_SEARCH . "\":\"" . ew_JsEncode2($this->BasicSearch->Keyword) . "\",\"" . EW_TABLE_BASIC_SEARCH_TYPE . "\":\"" . ew_JsEncode2($this->BasicSearch->Type) . "\"";
 			$sFilterList = ew_Concat($sFilterList, $sWrk, ",");
@@ -737,13 +776,114 @@ class cemp_list extends cemp {
 		$this->NIC->AdvancedSearch->SearchValue2 = @$filter["y_NIC"];
 		$this->NIC->AdvancedSearch->SearchOperator2 = @$filter["w_NIC"];
 		$this->NIC->AdvancedSearch->Save();
+
+		// Field Password
+		$this->Password->AdvancedSearch->SearchValue = @$filter["x_Password"];
+		$this->Password->AdvancedSearch->SearchOperator = @$filter["z_Password"];
+		$this->Password->AdvancedSearch->SearchCondition = @$filter["v_Password"];
+		$this->Password->AdvancedSearch->SearchValue2 = @$filter["y_Password"];
+		$this->Password->AdvancedSearch->SearchOperator2 = @$filter["w_Password"];
+		$this->Password->AdvancedSearch->Save();
+
+		// Field UserLevel
+		$this->UserLevel->AdvancedSearch->SearchValue = @$filter["x_UserLevel"];
+		$this->UserLevel->AdvancedSearch->SearchOperator = @$filter["z_UserLevel"];
+		$this->UserLevel->AdvancedSearch->SearchCondition = @$filter["v_UserLevel"];
+		$this->UserLevel->AdvancedSearch->SearchValue2 = @$filter["y_UserLevel"];
+		$this->UserLevel->AdvancedSearch->SearchOperator2 = @$filter["w_UserLevel"];
+		$this->UserLevel->AdvancedSearch->Save();
+
+		// Field Activated
+		$this->Activated->AdvancedSearch->SearchValue = @$filter["x_Activated"];
+		$this->Activated->AdvancedSearch->SearchOperator = @$filter["z_Activated"];
+		$this->Activated->AdvancedSearch->SearchCondition = @$filter["v_Activated"];
+		$this->Activated->AdvancedSearch->SearchValue2 = @$filter["y_Activated"];
+		$this->Activated->AdvancedSearch->SearchOperator2 = @$filter["w_Activated"];
+		$this->Activated->AdvancedSearch->Save();
 		$this->BasicSearch->setKeyword(@$filter[EW_TABLE_BASIC_SEARCH]);
 		$this->BasicSearch->setType(@$filter[EW_TABLE_BASIC_SEARCH_TYPE]);
+	}
+
+	// Advanced search WHERE clause based on QueryString
+	function AdvancedSearchWhere($Default = FALSE) {
+		global $Security;
+		$sWhere = "";
+		if (!$Security->CanSearch()) return "";
+		$this->BuildSearchSql($sWhere, $this->PF, $Default, FALSE); // PF
+		$this->BuildSearchSql($sWhere, $this->Name, $Default, FALSE); // Name
+		$this->BuildSearchSql($sWhere, $this->NIC, $Default, FALSE); // NIC
+		$this->BuildSearchSql($sWhere, $this->Password, $Default, FALSE); // Password
+		$this->BuildSearchSql($sWhere, $this->UserLevel, $Default, FALSE); // UserLevel
+		$this->BuildSearchSql($sWhere, $this->Activated, $Default, FALSE); // Activated
+
+		// Set up search parm
+		if (!$Default && $sWhere <> "") {
+			$this->Command = "search";
+		}
+		if (!$Default && $this->Command == "search") {
+			$this->PF->AdvancedSearch->Save(); // PF
+			$this->Name->AdvancedSearch->Save(); // Name
+			$this->NIC->AdvancedSearch->Save(); // NIC
+			$this->Password->AdvancedSearch->Save(); // Password
+			$this->UserLevel->AdvancedSearch->Save(); // UserLevel
+			$this->Activated->AdvancedSearch->Save(); // Activated
+		}
+		return $sWhere;
+	}
+
+	// Build search SQL
+	function BuildSearchSql(&$Where, &$Fld, $Default, $MultiValue) {
+		$FldParm = substr($Fld->FldVar, 2);
+		$FldVal = ($Default) ? $Fld->AdvancedSearch->SearchValueDefault : $Fld->AdvancedSearch->SearchValue; // @$_GET["x_$FldParm"]
+		$FldOpr = ($Default) ? $Fld->AdvancedSearch->SearchOperatorDefault : $Fld->AdvancedSearch->SearchOperator; // @$_GET["z_$FldParm"]
+		$FldCond = ($Default) ? $Fld->AdvancedSearch->SearchConditionDefault : $Fld->AdvancedSearch->SearchCondition; // @$_GET["v_$FldParm"]
+		$FldVal2 = ($Default) ? $Fld->AdvancedSearch->SearchValue2Default : $Fld->AdvancedSearch->SearchValue2; // @$_GET["y_$FldParm"]
+		$FldOpr2 = ($Default) ? $Fld->AdvancedSearch->SearchOperator2Default : $Fld->AdvancedSearch->SearchOperator2; // @$_GET["w_$FldParm"]
+		$sWrk = "";
+
+		//$FldVal = ew_StripSlashes($FldVal);
+		if (is_array($FldVal)) $FldVal = implode(",", $FldVal);
+
+		//$FldVal2 = ew_StripSlashes($FldVal2);
+		if (is_array($FldVal2)) $FldVal2 = implode(",", $FldVal2);
+		$FldOpr = strtoupper(trim($FldOpr));
+		if ($FldOpr == "") $FldOpr = "=";
+		$FldOpr2 = strtoupper(trim($FldOpr2));
+		if ($FldOpr2 == "") $FldOpr2 = "=";
+		if (EW_SEARCH_MULTI_VALUE_OPTION == 1 || $FldOpr <> "LIKE" ||
+			($FldOpr2 <> "LIKE" && $FldVal2 <> ""))
+			$MultiValue = FALSE;
+		if ($MultiValue) {
+			$sWrk1 = ($FldVal <> "") ? ew_GetMultiSearchSql($Fld, $FldOpr, $FldVal, $this->DBID) : ""; // Field value 1
+			$sWrk2 = ($FldVal2 <> "") ? ew_GetMultiSearchSql($Fld, $FldOpr2, $FldVal2, $this->DBID) : ""; // Field value 2
+			$sWrk = $sWrk1; // Build final SQL
+			if ($sWrk2 <> "")
+				$sWrk = ($sWrk <> "") ? "($sWrk) $FldCond ($sWrk2)" : $sWrk2;
+		} else {
+			$FldVal = $this->ConvertSearchValue($Fld, $FldVal);
+			$FldVal2 = $this->ConvertSearchValue($Fld, $FldVal2);
+			$sWrk = ew_GetSearchSql($Fld, $FldVal, $FldOpr, $FldCond, $FldVal2, $FldOpr2, $this->DBID);
+		}
+		ew_AddFilter($Where, $sWrk);
+	}
+
+	// Convert search value
+	function ConvertSearchValue(&$Fld, $FldVal) {
+		if ($FldVal == EW_NULL_VALUE || $FldVal == EW_NOT_NULL_VALUE)
+			return $FldVal;
+		$Value = $FldVal;
+		if ($Fld->FldDataType == EW_DATATYPE_BOOLEAN) {
+			if ($FldVal <> "") $Value = ($FldVal == "1" || strtolower(strval($FldVal)) == "y" || strtolower(strval($FldVal)) == "t") ? $Fld->TrueValue : $Fld->FalseValue;
+		} elseif ($Fld->FldDataType == EW_DATATYPE_DATE) {
+			if ($FldVal <> "") $Value = ew_UnFormatDateTime($FldVal, $Fld->FldDateTimeFormat);
+		}
+		return $Value;
 	}
 
 	// Return basic search SQL
 	function BasicSearchSQL($arKeywords, $type) {
 		$sWhere = "";
+		$this->BuildBasicSearchSQL($sWhere, $this->PF, $arKeywords, $type);
 		$this->BuildBasicSearchSQL($sWhere, $this->Name, $arKeywords, $type);
 		$this->BuildBasicSearchSQL($sWhere, $this->NIC, $arKeywords, $type);
 		return $sWhere;
@@ -818,6 +958,7 @@ class cemp_list extends cemp {
 	function BasicSearchWhere($Default = FALSE) {
 		global $Security;
 		$sSearchStr = "";
+		if (!$Security->CanSearch()) return "";
 		$sSearchKeyword = ($Default) ? $this->BasicSearch->KeywordDefault : $this->BasicSearch->Keyword;
 		$sSearchType = ($Default) ? $this->BasicSearch->TypeDefault : $this->BasicSearch->Type;
 		if ($sSearchKeyword <> "") {
@@ -870,6 +1011,18 @@ class cemp_list extends cemp {
 		// Check basic search
 		if ($this->BasicSearch->IssetSession())
 			return TRUE;
+		if ($this->PF->AdvancedSearch->IssetSession())
+			return TRUE;
+		if ($this->Name->AdvancedSearch->IssetSession())
+			return TRUE;
+		if ($this->NIC->AdvancedSearch->IssetSession())
+			return TRUE;
+		if ($this->Password->AdvancedSearch->IssetSession())
+			return TRUE;
+		if ($this->UserLevel->AdvancedSearch->IssetSession())
+			return TRUE;
+		if ($this->Activated->AdvancedSearch->IssetSession())
+			return TRUE;
 		return FALSE;
 	}
 
@@ -882,6 +1035,9 @@ class cemp_list extends cemp {
 
 		// Clear basic search parameters
 		$this->ResetBasicSearchParms();
+
+		// Clear advanced search parameters
+		$this->ResetAdvancedSearchParms();
 	}
 
 	// Load advanced search default values
@@ -894,12 +1050,30 @@ class cemp_list extends cemp {
 		$this->BasicSearch->UnsetSession();
 	}
 
+	// Clear all advanced search parameters
+	function ResetAdvancedSearchParms() {
+		$this->PF->AdvancedSearch->UnsetSession();
+		$this->Name->AdvancedSearch->UnsetSession();
+		$this->NIC->AdvancedSearch->UnsetSession();
+		$this->Password->AdvancedSearch->UnsetSession();
+		$this->UserLevel->AdvancedSearch->UnsetSession();
+		$this->Activated->AdvancedSearch->UnsetSession();
+	}
+
 	// Restore all search parameters
 	function RestoreSearchParms() {
 		$this->RestoreSearch = TRUE;
 
 		// Restore basic search values
 		$this->BasicSearch->Load();
+
+		// Restore advanced search values
+		$this->PF->AdvancedSearch->Load();
+		$this->Name->AdvancedSearch->Load();
+		$this->NIC->AdvancedSearch->Load();
+		$this->Password->AdvancedSearch->Load();
+		$this->UserLevel->AdvancedSearch->Load();
+		$this->Activated->AdvancedSearch->Load();
 	}
 
 	// Set up sort parameters
@@ -912,6 +1086,9 @@ class cemp_list extends cemp {
 			$this->UpdateSort($this->PF); // PF
 			$this->UpdateSort($this->Name); // Name
 			$this->UpdateSort($this->NIC); // NIC
+			$this->UpdateSort($this->Password); // Password
+			$this->UpdateSort($this->UserLevel); // UserLevel
+			$this->UpdateSort($this->Activated); // Activated
 			$this->setStartRecordNumber(1); // Reset start position
 		}
 	}
@@ -948,6 +1125,9 @@ class cemp_list extends cemp {
 				$this->PF->setSort("");
 				$this->Name->setSort("");
 				$this->NIC->setSort("");
+				$this->Password->setSort("");
+				$this->UserLevel->setSort("");
+				$this->Activated->setSort("");
 			}
 
 			// Reset start position
@@ -969,19 +1149,13 @@ class cemp_list extends cemp {
 		// "edit"
 		$item = &$this->ListOptions->Add("edit");
 		$item->CssStyle = "white-space: nowrap;";
-		$item->Visible = TRUE;
-		$item->OnLeft = FALSE;
-
-		// "copy"
-		$item = &$this->ListOptions->Add("copy");
-		$item->CssStyle = "white-space: nowrap;";
-		$item->Visible = TRUE;
+		$item->Visible = $Security->CanEdit();
 		$item->OnLeft = FALSE;
 
 		// "delete"
 		$item = &$this->ListOptions->Add("delete");
 		$item->CssStyle = "white-space: nowrap;";
-		$item->Visible = TRUE;
+		$item->Visible = $Security->CanDelete();
 		$item->OnLeft = FALSE;
 
 		// List actions
@@ -1035,23 +1209,15 @@ class cemp_list extends cemp {
 
 		// "edit"
 		$oListOpt = &$this->ListOptions->Items["edit"];
-		if (TRUE) {
+		if ($Security->CanEdit()) {
 			$oListOpt->Body = "<a class=\"ewRowLink ewEdit\" title=\"" . ew_HtmlTitle($Language->Phrase("EditLink")) . "\" data-caption=\"" . ew_HtmlTitle($Language->Phrase("EditLink")) . "\" href=\"" . ew_HtmlEncode($this->EditUrl) . "\">" . $Language->Phrase("EditLink") . "</a>";
-		} else {
-			$oListOpt->Body = "";
-		}
-
-		// "copy"
-		$oListOpt = &$this->ListOptions->Items["copy"];
-		if (TRUE) {
-			$oListOpt->Body = "<a class=\"ewRowLink ewCopy\" title=\"" . ew_HtmlTitle($Language->Phrase("CopyLink")) . "\" data-caption=\"" . ew_HtmlTitle($Language->Phrase("CopyLink")) . "\" href=\"" . ew_HtmlEncode($this->CopyUrl) . "\">" . $Language->Phrase("CopyLink") . "</a>";
 		} else {
 			$oListOpt->Body = "";
 		}
 
 		// "delete"
 		$oListOpt = &$this->ListOptions->Items["delete"];
-		if (TRUE)
+		if ($Security->CanDelete())
 			$oListOpt->Body = "<a class=\"ewRowLink ewDelete\"" . "" . " title=\"" . ew_HtmlTitle($Language->Phrase("DeleteLink")) . "\" data-caption=\"" . ew_HtmlTitle($Language->Phrase("DeleteLink")) . "\" href=\"" . ew_HtmlEncode($this->DeleteUrl) . "\">" . $Language->Phrase("DeleteLink") . "</a>";
 		else
 			$oListOpt->Body = "";
@@ -1103,7 +1269,7 @@ class cemp_list extends cemp {
 		// Add
 		$item = &$option->Add("add");
 		$item->Body = "<a class=\"ewAddEdit ewAdd\" title=\"" . ew_HtmlTitle($Language->Phrase("AddLink")) . "\" data-caption=\"" . ew_HtmlTitle($Language->Phrase("AddLink")) . "\" href=\"" . ew_HtmlEncode($this->AddUrl) . "\">" . $Language->Phrase("AddLink") . "</a>";
-		$item->Visible = ($this->AddUrl <> "");
+		$item->Visible = ($this->AddUrl <> "" && $Security->CanAdd());
 		$option = $options["action"];
 
 		// Set up options default
@@ -1202,7 +1368,19 @@ class cemp_list extends cemp {
 				while (!$rs->EOF) {
 					$this->SelectedIndex++;
 					$row = $rs->fields;
-					$Processed = $this->Row_CustomAction($UserAction, $row);
+					$user = $row['PF'];
+					if ($userlist <> "") $userlist .= ",";
+					$userlist .= $user;
+					if ($UserAction == "resendregisteremail")
+						$Processed = FALSE;
+					elseif ($UserAction == "resetconcurrentuser")
+						$Processed = FALSE;
+					elseif ($UserAction == "resetloginretry")
+						$Processed = FALSE;
+					elseif ($UserAction == "setpasswordexpired")
+						$Processed = FALSE;
+					else
+						$Processed = $this->Row_CustomAction($UserAction, $row);
 					if (!$Processed) break;
 					$rs->MoveNext();
 				}
@@ -1274,6 +1452,11 @@ class cemp_list extends cemp {
 		// Hide search options
 		if ($this->Export <> "" || $this->CurrentAction <> "")
 			$this->SearchOptions->HideAllOptions();
+		global $Security;
+		if (!$Security->CanSearch()) {
+			$this->SearchOptions->HideAllOptions();
+			$this->FilterOptions->HideAllOptions();
+		}
 	}
 
 	function SetupListOptionsExt() {
@@ -1325,6 +1508,43 @@ class cemp_list extends cemp {
 		$this->BasicSearch->Keyword = @$_GET[EW_TABLE_BASIC_SEARCH];
 		if ($this->BasicSearch->Keyword <> "") $this->Command = "search";
 		$this->BasicSearch->Type = @$_GET[EW_TABLE_BASIC_SEARCH_TYPE];
+	}
+
+	// Load search values for validation
+	function LoadSearchValues() {
+		global $objForm;
+
+		// Load search values
+		// PF
+
+		$this->PF->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_PF"]);
+		if ($this->PF->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->PF->AdvancedSearch->SearchOperator = @$_GET["z_PF"];
+
+		// Name
+		$this->Name->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Name"]);
+		if ($this->Name->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->Name->AdvancedSearch->SearchOperator = @$_GET["z_Name"];
+
+		// NIC
+		$this->NIC->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_NIC"]);
+		if ($this->NIC->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->NIC->AdvancedSearch->SearchOperator = @$_GET["z_NIC"];
+
+		// Password
+		$this->Password->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Password"]);
+		if ($this->Password->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->Password->AdvancedSearch->SearchOperator = @$_GET["z_Password"];
+
+		// UserLevel
+		$this->UserLevel->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_UserLevel"]);
+		if ($this->UserLevel->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->UserLevel->AdvancedSearch->SearchOperator = @$_GET["z_UserLevel"];
+
+		// Activated
+		$this->Activated->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Activated"]);
+		if ($this->Activated->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->Activated->AdvancedSearch->SearchOperator = @$_GET["z_Activated"];
 	}
 
 	// Load recordset
@@ -1385,6 +1605,9 @@ class cemp_list extends cemp {
 		$this->PF->setDbValue($rs->fields('PF'));
 		$this->Name->setDbValue($rs->fields('Name'));
 		$this->NIC->setDbValue($rs->fields('NIC'));
+		$this->Password->setDbValue($rs->fields('Password'));
+		$this->UserLevel->setDbValue($rs->fields('UserLevel'));
+		$this->Activated->setDbValue($rs->fields('Activated'));
 	}
 
 	// Load DbValue from recordset
@@ -1394,6 +1617,9 @@ class cemp_list extends cemp {
 		$this->PF->DbValue = $row['PF'];
 		$this->Name->DbValue = $row['Name'];
 		$this->NIC->DbValue = $row['NIC'];
+		$this->Password->DbValue = $row['Password'];
+		$this->UserLevel->DbValue = $row['UserLevel'];
+		$this->Activated->DbValue = $row['Activated'];
 	}
 
 	// Load old record
@@ -1438,6 +1664,9 @@ class cemp_list extends cemp {
 		// PF
 		// Name
 		// NIC
+		// Password
+		// UserLevel
+		// Activated
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
@@ -1453,6 +1682,44 @@ class cemp_list extends cemp {
 		$this->NIC->ViewValue = $this->NIC->CurrentValue;
 		$this->NIC->ViewCustomAttributes = "";
 
+		// Password
+		$this->Password->ViewValue = $this->Password->CurrentValue;
+		$this->Password->ViewCustomAttributes = "";
+
+		// UserLevel
+		if ($Security->CanAdmin()) { // System admin
+		if (strval($this->UserLevel->CurrentValue) <> "") {
+			$sFilterWrk = "`userlevelid`" . ew_SearchString("=", $this->UserLevel->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `userlevelid`, `userlevelname` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `userlevels`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->UserLevel, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->UserLevel->ViewValue = $this->UserLevel->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->UserLevel->ViewValue = $this->UserLevel->CurrentValue;
+			}
+		} else {
+			$this->UserLevel->ViewValue = NULL;
+		}
+		} else {
+			$this->UserLevel->ViewValue = $Language->Phrase("PasswordMask");
+		}
+		$this->UserLevel->ViewCustomAttributes = "";
+
+		// Activated
+		if (strval($this->Activated->CurrentValue) <> "") {
+			$this->Activated->ViewValue = $this->Activated->OptionCaption($this->Activated->CurrentValue);
+		} else {
+			$this->Activated->ViewValue = NULL;
+		}
+		$this->Activated->ViewCustomAttributes = "";
+
 			// PF
 			$this->PF->LinkCustomAttributes = "";
 			$this->PF->HrefValue = "";
@@ -1467,11 +1734,104 @@ class cemp_list extends cemp {
 			$this->NIC->LinkCustomAttributes = "";
 			$this->NIC->HrefValue = "";
 			$this->NIC->TooltipValue = "";
+
+			// Password
+			$this->Password->LinkCustomAttributes = "";
+			$this->Password->HrefValue = "";
+			$this->Password->TooltipValue = "";
+
+			// UserLevel
+			$this->UserLevel->LinkCustomAttributes = "";
+			$this->UserLevel->HrefValue = "";
+			$this->UserLevel->TooltipValue = "";
+
+			// Activated
+			$this->Activated->LinkCustomAttributes = "";
+			$this->Activated->HrefValue = "";
+			$this->Activated->TooltipValue = "";
+		} elseif ($this->RowType == EW_ROWTYPE_SEARCH) { // Search row
+
+			// PF
+			$this->PF->EditAttrs["class"] = "form-control";
+			$this->PF->EditCustomAttributes = "";
+			$this->PF->EditValue = ew_HtmlEncode($this->PF->AdvancedSearch->SearchValue);
+			$this->PF->PlaceHolder = ew_RemoveHtml($this->PF->FldCaption());
+
+			// Name
+			$this->Name->EditAttrs["class"] = "form-control";
+			$this->Name->EditCustomAttributes = "";
+			$this->Name->EditValue = ew_HtmlEncode($this->Name->AdvancedSearch->SearchValue);
+			$this->Name->PlaceHolder = ew_RemoveHtml($this->Name->FldCaption());
+
+			// NIC
+			$this->NIC->EditAttrs["class"] = "form-control";
+			$this->NIC->EditCustomAttributes = "";
+			$this->NIC->EditValue = ew_HtmlEncode($this->NIC->AdvancedSearch->SearchValue);
+			$this->NIC->PlaceHolder = ew_RemoveHtml($this->NIC->FldCaption());
+
+			// Password
+			$this->Password->EditAttrs["class"] = "form-control ewPasswordStrength";
+			$this->Password->EditCustomAttributes = "";
+			$this->Password->EditValue = ew_HtmlEncode($this->Password->AdvancedSearch->SearchValue);
+			$this->Password->PlaceHolder = ew_RemoveHtml($this->Password->FldCaption());
+
+			// UserLevel
+			$this->UserLevel->EditAttrs["class"] = "form-control";
+			$this->UserLevel->EditCustomAttributes = "";
+			if (!$Security->CanAdmin()) { // System admin
+				$this->UserLevel->EditValue = $Language->Phrase("PasswordMask");
+			} else {
+			}
+
+			// Activated
+			$this->Activated->EditCustomAttributes = "";
+			$this->Activated->EditValue = $this->Activated->Options(FALSE);
+		}
+		if ($this->RowType == EW_ROWTYPE_ADD ||
+			$this->RowType == EW_ROWTYPE_EDIT ||
+			$this->RowType == EW_ROWTYPE_SEARCH) { // Add / Edit / Search row
+			$this->SetupFieldTitles();
 		}
 
 		// Call Row Rendered event
 		if ($this->RowType <> EW_ROWTYPE_AGGREGATEINIT)
 			$this->Row_Rendered();
+	}
+
+	// Validate search
+	function ValidateSearch() {
+		global $gsSearchError;
+
+		// Initialize
+		$gsSearchError = "";
+
+		// Check if validation required
+		if (!EW_SERVER_VALIDATE)
+			return TRUE;
+		if (!ew_CheckInteger($this->PF->AdvancedSearch->SearchValue)) {
+			ew_AddMessage($gsSearchError, $this->PF->FldErrMsg());
+		}
+
+		// Return validate result
+		$ValidateSearch = ($gsSearchError == "");
+
+		// Call Form_CustomValidate event
+		$sFormCustomError = "";
+		$ValidateSearch = $ValidateSearch && $this->Form_CustomValidate($sFormCustomError);
+		if ($sFormCustomError <> "") {
+			ew_AddMessage($gsSearchError, $sFormCustomError);
+		}
+		return $ValidateSearch;
+	}
+
+	// Load advanced search
+	function LoadAdvancedSearch() {
+		$this->PF->AdvancedSearch->Load();
+		$this->Name->AdvancedSearch->Load();
+		$this->NIC->AdvancedSearch->Load();
+		$this->Password->AdvancedSearch->Load();
+		$this->UserLevel->AdvancedSearch->Load();
+		$this->Activated->AdvancedSearch->Load();
 	}
 
 	// Set up export options
@@ -1726,6 +2086,12 @@ class cemp_list extends cemp {
 		if ($this->BasicSearch->getKeyword() <> "") {
 			$sQry .= "&" . EW_TABLE_BASIC_SEARCH . "=" . urlencode($this->BasicSearch->getKeyword()) . "&" . EW_TABLE_BASIC_SEARCH_TYPE . "=" . urlencode($this->BasicSearch->getType());
 		}
+		$this->AddSearchQueryString($sQry, $this->PF); // PF
+		$this->AddSearchQueryString($sQry, $this->Name); // Name
+		$this->AddSearchQueryString($sQry, $this->NIC); // NIC
+		$this->AddSearchQueryString($sQry, $this->Password); // Password
+		$this->AddSearchQueryString($sQry, $this->UserLevel); // UserLevel
+		$this->AddSearchQueryString($sQry, $this->Activated); // Activated
 
 		// Build QueryString for pager
 		$sQry .= "&" . EW_TABLE_REC_PER_PAGE . "=" . urlencode($this->getRecordsPerPage()) . "&" . EW_TABLE_START_REC . "=" . urlencode($this->getStartRecordNumber());
@@ -1920,11 +2286,47 @@ femplist.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
-// Form object for search
+femplist.Lists["x_UserLevel"] = {"LinkField":"x_userlevelid","Ajax":true,"AutoFill":false,"DisplayFields":["x_userlevelname","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+femplist.Lists["x_Activated"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+femplist.Lists["x_Activated"].Options = <?php echo json_encode($emp->Activated->Options()) ?>;
 
+// Form object for search
 var CurrentSearchForm = femplistsrch = new ew_Form("femplistsrch");
 
+// Validate function for search
+femplistsrch.Validate = function(fobj) {
+	if (!this.ValidateRequired)
+		return true; // Ignore validation
+	fobj = fobj || this.Form;
+	var infix = "";
+	elm = this.GetElements("x" + infix + "_PF");
+	if (elm && !ew_CheckInteger(elm.value))
+		return this.OnError(elm, "<?php echo ew_JsEncode2($emp->PF->FldErrMsg()) ?>");
+
+	// Fire Form_CustomValidate event
+	if (!this.Form_CustomValidate(fobj))
+		return false;
+	return true;
+}
+
+// Form_CustomValidate event
+femplistsrch.Form_CustomValidate = 
+ function(fobj) { // DO NOT CHANGE THIS LINE!
+
+ 	// Your custom validation code here, return false if invalid. 
+ 	return true;
+ }
+
+// Use JavaScript validation or not
+<?php if (EW_CLIENT_VALIDATE) { ?>
+femplistsrch.ValidateRequired = true; // Use JavaScript validation
+<?php } else { ?>
+femplistsrch.ValidateRequired = false; // No JavaScript validation
+<?php } ?>
+
+// Dynamic selection lists
 // Init search panel as collapsed
+
 if (femplistsrch) femplistsrch.InitSearchPanel = true;
 </script>
 <script type="text/javascript">
@@ -1971,6 +2373,8 @@ if (femplistsrch) femplistsrch.InitSearchPanel = true;
 
 	// Set no record found message
 	if ($emp->CurrentAction == "" && $emp_list->TotalRecs == 0) {
+		if (!$Security->CanList())
+			$emp_list->setWarningMessage($Language->Phrase("NoPermission"));
 		if ($emp_list->SearchWhere == "0=101")
 			$emp_list->setWarningMessage($Language->Phrase("EnterSearchCriteria"));
 		else
@@ -1978,6 +2382,7 @@ if (femplistsrch) femplistsrch.InitSearchPanel = true;
 	}
 $emp_list->RenderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if ($emp->Export == "" && $emp->CurrentAction == "") { ?>
 <form name="femplistsrch" id="femplistsrch" class="form-inline ewForm" action="<?php echo ew_CurrentPage() ?>">
 <?php $SearchPanelClass = ($emp_list->SearchWhere <> "") ? " in" : ""; ?>
@@ -1985,7 +2390,51 @@ $emp_list->RenderOtherOptions();
 <input type="hidden" name="cmd" value="search">
 <input type="hidden" name="t" value="emp">
 	<div class="ewBasicSearch">
+<?php
+if ($gsSearchError == "")
+	$emp_list->LoadAdvancedSearch(); // Load advanced search
+
+// Render for search
+$emp->RowType = EW_ROWTYPE_SEARCH;
+
+// Render row
+$emp->ResetAttrs();
+$emp_list->RenderRow();
+?>
 <div id="xsr_1" class="ewRow">
+<?php if ($emp->PF->Visible) { // PF ?>
+	<div id="xsc_PF" class="ewCell form-group">
+		<label for="x_PF" class="ewSearchCaption ewLabel"><?php echo $emp->PF->FldCaption() ?></label>
+		<span class="ewSearchOperator"><?php echo $Language->Phrase("=") ?><input type="hidden" name="z_PF" id="z_PF" value="="></span>
+		<span class="ewSearchField">
+<input type="text" data-table="emp" data-field="x_PF" name="x_PF" id="x_PF" size="30" placeholder="<?php echo ew_HtmlEncode($emp->PF->getPlaceHolder()) ?>" value="<?php echo $emp->PF->EditValue ?>"<?php echo $emp->PF->EditAttributes() ?>>
+</span>
+	</div>
+<?php } ?>
+</div>
+<div id="xsr_2" class="ewRow">
+<?php if ($emp->Name->Visible) { // Name ?>
+	<div id="xsc_Name" class="ewCell form-group">
+		<label for="x_Name" class="ewSearchCaption ewLabel"><?php echo $emp->Name->FldCaption() ?></label>
+		<span class="ewSearchOperator"><?php echo $Language->Phrase("LIKE") ?><input type="hidden" name="z_Name" id="z_Name" value="LIKE"></span>
+		<span class="ewSearchField">
+<input type="text" data-table="emp" data-field="x_Name" name="x_Name" id="x_Name" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($emp->Name->getPlaceHolder()) ?>" value="<?php echo $emp->Name->EditValue ?>"<?php echo $emp->Name->EditAttributes() ?>>
+</span>
+	</div>
+<?php } ?>
+</div>
+<div id="xsr_3" class="ewRow">
+<?php if ($emp->NIC->Visible) { // NIC ?>
+	<div id="xsc_NIC" class="ewCell form-group">
+		<label for="x_NIC" class="ewSearchCaption ewLabel"><?php echo $emp->NIC->FldCaption() ?></label>
+		<span class="ewSearchOperator"><?php echo $Language->Phrase("LIKE") ?><input type="hidden" name="z_NIC" id="z_NIC" value="LIKE"></span>
+		<span class="ewSearchField">
+<input type="text" data-table="emp" data-field="x_NIC" name="x_NIC" id="x_NIC" size="12" maxlength="12" placeholder="<?php echo ew_HtmlEncode($emp->NIC->getPlaceHolder()) ?>" value="<?php echo $emp->NIC->EditValue ?>"<?php echo $emp->NIC->EditAttributes() ?>>
+</span>
+	</div>
+<?php } ?>
+</div>
+<div id="xsr_4" class="ewRow">
 	<div class="ewQuickSearch input-group">
 	<input type="text" name="<?php echo EW_TABLE_BASIC_SEARCH ?>" id="<?php echo EW_TABLE_BASIC_SEARCH ?>" class="form-control" value="<?php echo ew_HtmlEncode($emp_list->BasicSearch->getKeyword()) ?>" placeholder="<?php echo ew_HtmlEncode($Language->Phrase("Search")) ?>">
 	<input type="hidden" name="<?php echo EW_TABLE_BASIC_SEARCH_TYPE ?>" id="<?php echo EW_TABLE_BASIC_SEARCH_TYPE ?>" value="<?php echo ew_HtmlEncode($emp_list->BasicSearch->getType()) ?>">
@@ -2004,6 +2453,7 @@ $emp_list->RenderOtherOptions();
 	</div>
 </div>
 </form>
+<?php } ?>
 <?php } ?>
 <?php $emp_list->ShowPageHeader(); ?>
 <?php
@@ -2038,7 +2488,7 @@ $emp_list->ListOptions->Render("header", "left");
 		<th data-name="PF"><div id="elh_emp_PF" class="emp_PF"><div class="ewTableHeaderCaption"><?php echo $emp->PF->FldCaption() ?></div></div></th>
 	<?php } else { ?>
 		<th data-name="PF"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $emp->SortUrl($emp->PF) ?>',1);"><div id="elh_emp_PF" class="emp_PF">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $emp->PF->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($emp->PF->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($emp->PF->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $emp->PF->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($emp->PF->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($emp->PF->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
@@ -2057,6 +2507,33 @@ $emp_list->ListOptions->Render("header", "left");
 	<?php } else { ?>
 		<th data-name="NIC"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $emp->SortUrl($emp->NIC) ?>',1);"><div id="elh_emp_NIC" class="emp_NIC">
 			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $emp->NIC->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($emp->NIC->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($emp->NIC->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+        </div></div></th>
+	<?php } ?>
+<?php } ?>		
+<?php if ($emp->Password->Visible) { // Password ?>
+	<?php if ($emp->SortUrl($emp->Password) == "") { ?>
+		<th data-name="Password"><div id="elh_emp_Password" class="emp_Password"><div class="ewTableHeaderCaption"><?php echo $emp->Password->FldCaption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="Password"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $emp->SortUrl($emp->Password) ?>',1);"><div id="elh_emp_Password" class="emp_Password">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $emp->Password->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($emp->Password->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($emp->Password->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+        </div></div></th>
+	<?php } ?>
+<?php } ?>		
+<?php if ($emp->UserLevel->Visible) { // UserLevel ?>
+	<?php if ($emp->SortUrl($emp->UserLevel) == "") { ?>
+		<th data-name="UserLevel"><div id="elh_emp_UserLevel" class="emp_UserLevel"><div class="ewTableHeaderCaption"><?php echo $emp->UserLevel->FldCaption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="UserLevel"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $emp->SortUrl($emp->UserLevel) ?>',1);"><div id="elh_emp_UserLevel" class="emp_UserLevel">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $emp->UserLevel->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($emp->UserLevel->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($emp->UserLevel->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+        </div></div></th>
+	<?php } ?>
+<?php } ?>		
+<?php if ($emp->Activated->Visible) { // Activated ?>
+	<?php if ($emp->SortUrl($emp->Activated) == "") { ?>
+		<th data-name="Activated"><div id="elh_emp_Activated" class="emp_Activated"><div class="ewTableHeaderCaption"><?php echo $emp->Activated->FldCaption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="Activated"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $emp->SortUrl($emp->Activated) ?>',1);"><div id="elh_emp_Activated" class="emp_Activated">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $emp->Activated->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($emp->Activated->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($emp->Activated->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
@@ -2146,6 +2623,30 @@ $emp_list->ListOptions->Render("body", "left", $emp_list->RowCnt);
 <span id="el<?php echo $emp_list->RowCnt ?>_emp_NIC" class="emp_NIC">
 <span<?php echo $emp->NIC->ViewAttributes() ?>>
 <?php echo $emp->NIC->ListViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($emp->Password->Visible) { // Password ?>
+		<td data-name="Password"<?php echo $emp->Password->CellAttributes() ?>>
+<span id="el<?php echo $emp_list->RowCnt ?>_emp_Password" class="emp_Password">
+<span<?php echo $emp->Password->ViewAttributes() ?>>
+<?php echo $emp->Password->ListViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($emp->UserLevel->Visible) { // UserLevel ?>
+		<td data-name="UserLevel"<?php echo $emp->UserLevel->CellAttributes() ?>>
+<span id="el<?php echo $emp_list->RowCnt ?>_emp_UserLevel" class="emp_UserLevel">
+<span<?php echo $emp->UserLevel->ViewAttributes() ?>>
+<?php echo $emp->UserLevel->ListViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($emp->Activated->Visible) { // Activated ?>
+		<td data-name="Activated"<?php echo $emp->Activated->CellAttributes() ?>>
+<span id="el<?php echo $emp_list->RowCnt ?>_emp_Activated" class="emp_Activated">
+<span<?php echo $emp->Activated->ViewAttributes() ?>>
+<?php echo $emp->Activated->ListViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>

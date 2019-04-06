@@ -5,7 +5,7 @@ ob_start(); // Turn on output buffering
 <?php include_once "ewcfg12.php" ?>
 <?php include_once ((EW_USE_ADODB) ? "adodb5/adodb.inc.php" : "ewmysql12.php") ?>
 <?php include_once "phpfn12.php" ?>
-<?php include_once "banksinfo.php" ?>
+<?php include_once "userlevelsinfo.php" ?>
 <?php include_once "empinfo.php" ?>
 <?php include_once "userfn12.php" ?>
 <?php
@@ -14,9 +14,9 @@ ob_start(); // Turn on output buffering
 // Page class
 //
 
-$banks_delete = NULL; // Initialize page object first
+$userlevels_delete = NULL; // Initialize page object first
 
-class cbanks_delete extends cbanks {
+class cuserlevels_delete extends cuserlevels {
 
 	// Page ID
 	var $PageID = 'delete';
@@ -25,10 +25,10 @@ class cbanks_delete extends cbanks {
 	var $ProjectID = "{163802B9-268A-4AFB-8FD6-7A7D18262A99}";
 
 	// Table name
-	var $TableName = 'banks';
+	var $TableName = 'userlevels';
 
 	// Page object name
-	var $PageObjName = 'banks_delete';
+	var $PageObjName = 'userlevels_delete';
 
 	// Page name
 	function PageName() {
@@ -222,10 +222,10 @@ class cbanks_delete extends cbanks {
 		// Parent constuctor
 		parent::__construct();
 
-		// Table object (banks)
-		if (!isset($GLOBALS["banks"]) || get_class($GLOBALS["banks"]) == "cbanks") {
-			$GLOBALS["banks"] = &$this;
-			$GLOBALS["Table"] = &$GLOBALS["banks"];
+		// Table object (userlevels)
+		if (!isset($GLOBALS["userlevels"]) || get_class($GLOBALS["userlevels"]) == "cuserlevels") {
+			$GLOBALS["userlevels"] = &$this;
+			$GLOBALS["Table"] = &$GLOBALS["userlevels"];
 		}
 
 		// Table object (emp)
@@ -237,7 +237,7 @@ class cbanks_delete extends cbanks {
 
 		// Table name (for backward compatibility)
 		if (!defined("EW_TABLE_NAME"))
-			define("EW_TABLE_NAME", 'banks', TRUE);
+			define("EW_TABLE_NAME", 'userlevels', TRUE);
 
 		// Start timer
 		if (!isset($GLOBALS["gTimer"])) $GLOBALS["gTimer"] = new cTimer();
@@ -264,13 +264,9 @@ class cbanks_delete extends cbanks {
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
 		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
-		if (!$Security->CanDelete()) {
+		if (!$Security->CanAdmin()) {
 			$Security->SaveLastUrl();
-			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
-			if ($Security->CanList())
-				$this->Page_Terminate(ew_GetUrl("bankslist.php"));
-			else
-				$this->Page_Terminate(ew_GetUrl("login.php"));
+			$this->Page_Terminate(ew_GetUrl("login.php"));
 		}
 		$this->CurrentAction = (@$_GET["a"] <> "") ? $_GET["a"] : @$_POST["a_list"]; // Set up current action
 
@@ -304,13 +300,13 @@ class cbanks_delete extends cbanks {
 		Page_Unloaded();
 
 		// Export
-		global $EW_EXPORT, $banks;
+		global $EW_EXPORT, $userlevels;
 		if ($this->CustomExport <> "" && $this->CustomExport == $this->Export && array_key_exists($this->CustomExport, $EW_EXPORT)) {
 				$sContent = ob_get_contents();
 			if ($gsExportFile == "") $gsExportFile = $this->TableVar;
 			$class = $EW_EXPORT[$this->CustomExport];
 			if (class_exists($class)) {
-				$doc = new $class($banks);
+				$doc = new $class($userlevels);
 				$doc->Text = $sContent;
 				if ($this->Export == "email")
 					echo $this->ExportEmail($doc->Text);
@@ -356,10 +352,10 @@ class cbanks_delete extends cbanks {
 		$this->RecKeys = $this->GetRecordKeys(); // Load record keys
 		$sFilter = $this->GetKeyFilter();
 		if ($sFilter == "")
-			$this->Page_Terminate("bankslist.php"); // Prevent SQL injection, return to list
+			$this->Page_Terminate("userlevelslist.php"); // Prevent SQL injection, return to list
 
 		// Set up filter (SQL WHHERE clause) and get return SQL
-		// SQL constructor in banks class, banksinfo.php
+		// SQL constructor in userlevels class, userlevelsinfo.php
 
 		$this->CurrentFilter = $sFilter;
 
@@ -392,7 +388,7 @@ class cbanks_delete extends cbanks {
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = $GLOBALS["EW_ERROR_FN"];
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset, array("_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())));
+				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset, array("_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())));
 			} else {
 				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset);
 			}
@@ -435,32 +431,21 @@ class cbanks_delete extends cbanks {
 		// Call Row Selected event
 		$row = &$rs->fields;
 		$this->Row_Selected($row);
-		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
-		$this->Bank_Code->setDbValue($rs->fields('Bank_Code'));
-		if (array_key_exists('EV__Bank_Code', $rs->fields)) {
-			$this->Bank_Code->VirtualValue = $rs->fields('EV__Bank_Code'); // Set up virtual field value
+		$this->userlevelid->setDbValue($rs->fields('userlevelid'));
+		if (is_null($this->userlevelid->CurrentValue)) {
+			$this->userlevelid->CurrentValue = 0;
 		} else {
-			$this->Bank_Code->VirtualValue = ""; // Clear value
+			$this->userlevelid->CurrentValue = intval($this->userlevelid->CurrentValue);
 		}
-		$this->Branch_Code->setDbValue($rs->fields('Branch_Code'));
-		$this->Name->setDbValue($rs->fields('Name'));
-		if (array_key_exists('EV__Name', $rs->fields)) {
-			$this->Name->VirtualValue = $rs->fields('EV__Name'); // Set up virtual field value
-		} else {
-			$this->Name->VirtualValue = ""; // Clear value
-		}
-		$this->City->setDbValue($rs->fields('City'));
+		$this->userlevelname->setDbValue($rs->fields('userlevelname'));
 	}
 
 	// Load DbValue from recordset
 	function LoadDbValues(&$rs) {
 		if (!$rs || !is_array($rs) && $rs->EOF) return;
 		$row = is_array($rs) ? $rs : $rs->fields;
-		$this->Bank_ID->DbValue = $row['Bank_ID'];
-		$this->Bank_Code->DbValue = $row['Bank_Code'];
-		$this->Branch_Code->DbValue = $row['Branch_Code'];
-		$this->Name->DbValue = $row['Name'];
-		$this->City->DbValue = $row['City'];
+		$this->userlevelid->DbValue = $row['userlevelid'];
+		$this->userlevelname->DbValue = $row['userlevelname'];
 	}
 
 	// Render row values based on field settings
@@ -473,98 +458,29 @@ class cbanks_delete extends cbanks {
 		$this->Row_Rendering();
 
 		// Common render codes for all row types
-		// Bank_ID
-
-		$this->Bank_ID->CellCssStyle = "white-space: nowrap;";
-
-		// Bank_Code
-		// Branch_Code
-		// Name
-		// City
+		// userlevelid
+		// userlevelname
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
-		// Bank_Code
-		if ($this->Bank_Code->VirtualValue <> "") {
-			$this->Bank_Code->ViewValue = $this->Bank_Code->VirtualValue;
-		} else {
-			$this->Bank_Code->ViewValue = $this->Bank_Code->CurrentValue;
-		if (strval($this->Bank_Code->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Bank_Code->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Bank_Code` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Bank_Code, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-		$sSqlWrk .= " ORDER BY `Bank_Code` ASC";
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Bank_Code->ViewValue = $this->Bank_Code->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Bank_Code->ViewValue = $this->Bank_Code->CurrentValue;
-			}
-		} else {
-			$this->Bank_Code->ViewValue = NULL;
-		}
-		}
-		$this->Bank_Code->ViewCustomAttributes = "";
+		// userlevelid
+		$this->userlevelid->ViewValue = $this->userlevelid->CurrentValue;
+		$this->userlevelid->ViewCustomAttributes = "";
 
-		// Branch_Code
-		$this->Branch_Code->ViewValue = $this->Branch_Code->CurrentValue;
-		$this->Branch_Code->ViewCustomAttributes = "";
+		// userlevelname
+		$this->userlevelname->ViewValue = $this->userlevelname->CurrentValue;
+		if ($Security->GetUserLevelName($this->userlevelid->CurrentValue) <> "") $this->userlevelname->ViewValue = $Security->GetUserLevelName($this->userlevelid->CurrentValue);
+		$this->userlevelname->ViewCustomAttributes = "";
 
-		// Name
-		if ($this->Name->VirtualValue <> "") {
-			$this->Name->ViewValue = $this->Name->VirtualValue;
-		} else {
-		if (strval($this->Name->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Name->ViewValue = $this->Name->CurrentValue;
-			}
-		} else {
-			$this->Name->ViewValue = NULL;
-		}
-		}
-		$this->Name->ViewCustomAttributes = "";
+			// userlevelid
+			$this->userlevelid->LinkCustomAttributes = "";
+			$this->userlevelid->HrefValue = "";
+			$this->userlevelid->TooltipValue = "";
 
-		// City
-		$this->City->ViewValue = $this->City->CurrentValue;
-		$this->City->ViewCustomAttributes = "";
-
-			// Bank_Code
-			$this->Bank_Code->LinkCustomAttributes = "";
-			$this->Bank_Code->HrefValue = "";
-			$this->Bank_Code->TooltipValue = "";
-
-			// Branch_Code
-			$this->Branch_Code->LinkCustomAttributes = "";
-			$this->Branch_Code->HrefValue = "";
-			$this->Branch_Code->TooltipValue = "";
-
-			// Name
-			$this->Name->LinkCustomAttributes = "";
-			$this->Name->HrefValue = "";
-			$this->Name->TooltipValue = "";
-
-			// City
-			$this->City->LinkCustomAttributes = "";
-			$this->City->HrefValue = "";
-			$this->City->TooltipValue = "";
+			// userlevelname
+			$this->userlevelname->LinkCustomAttributes = "";
+			$this->userlevelname->HrefValue = "";
+			$this->userlevelname->TooltipValue = "";
 		}
 
 		// Call Row Rendered event
@@ -618,7 +534,8 @@ class cbanks_delete extends cbanks {
 			foreach ($rsold as $row) {
 				$sThisKey = "";
 				if ($sThisKey <> "") $sThisKey .= $GLOBALS["EW_COMPOSITE_KEY_SEPARATOR"];
-				$sThisKey .= $row['Bank_ID'];
+				$sThisKey .= $row['userlevelid'];
+				$x_userlevelid = $row['userlevelid']; // Get User Level id
 				$conn->raiseErrorFn = $GLOBALS["EW_ERROR_FN"];
 				$DeleteRows = $this->Delete($row); // Delete
 				$conn->raiseErrorFn = '';
@@ -626,6 +543,9 @@ class cbanks_delete extends cbanks {
 					break;
 				if ($sKey <> "") $sKey .= ", ";
 				$sKey .= $sThisKey;
+				if (!is_null($x_userlevelid)) {
+					$conn->Execute("DELETE FROM " . EW_USER_LEVEL_PRIV_TABLE . " WHERE " . EW_USER_LEVEL_PRIV_USER_LEVEL_ID_FIELD . " = " . $x_userlevelid); // Delete user rights as well
+				}
 			}
 		} else {
 
@@ -660,7 +580,7 @@ class cbanks_delete extends cbanks {
 		global $Breadcrumb, $Language;
 		$Breadcrumb = new cBreadcrumb();
 		$url = substr(ew_CurrentUrl(), strrpos(ew_CurrentUrl(), "/")+1);
-		$Breadcrumb->Add("list", $this->TableVar, "bankslist.php", "", $this->TableVar, TRUE);
+		$Breadcrumb->Add("list", $this->TableVar, "userlevelslist.php", "", $this->TableVar, TRUE);
 		$PageId = "delete";
 		$Breadcrumb->Add("delete", $PageId, $url);
 	}
@@ -730,29 +650,29 @@ class cbanks_delete extends cbanks {
 <?php
 
 // Create page object
-if (!isset($banks_delete)) $banks_delete = new cbanks_delete();
+if (!isset($userlevels_delete)) $userlevels_delete = new cuserlevels_delete();
 
 // Page init
-$banks_delete->Page_Init();
+$userlevels_delete->Page_Init();
 
 // Page main
-$banks_delete->Page_Main();
+$userlevels_delete->Page_Main();
 
 // Global Page Rendering event (in userfn*.php)
 Page_Rendering();
 
 // Page Rendering event
-$banks_delete->Page_Render();
+$userlevels_delete->Page_Render();
 ?>
 <?php include_once "header.php" ?>
 <script type="text/javascript">
 
 // Form object
 var CurrentPageID = EW_PAGE_ID = "delete";
-var CurrentForm = fbanksdelete = new ew_Form("fbanksdelete", "delete");
+var CurrentForm = fuserlevelsdelete = new ew_Form("fuserlevelsdelete", "delete");
 
 // Form_CustomValidate event
-fbanksdelete.Form_CustomValidate = 
+fuserlevelsdelete.Form_CustomValidate = 
  function(fobj) { // DO NOT CHANGE THIS LINE!
 
  	// Your custom validation code here, return false if invalid. 
@@ -761,16 +681,14 @@ fbanksdelete.Form_CustomValidate =
 
 // Use JavaScript validation or not
 <?php if (EW_CLIENT_VALIDATE) { ?>
-fbanksdelete.ValidateRequired = true;
+fuserlevelsdelete.ValidateRequired = true;
 <?php } else { ?>
-fbanksdelete.ValidateRequired = false; 
+fuserlevelsdelete.ValidateRequired = false; 
 <?php } ?>
 
 // Dynamic selection lists
-fbanksdelete.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":["x_Name"],"FilterFields":[],"Options":[],"Template":""};
-fbanksdelete.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-
 // Form object for search
+
 </script>
 <script type="text/javascript">
 
@@ -779,12 +697,12 @@ fbanksdelete.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill"
 <?php
 
 // Load records for display
-if ($banks_delete->Recordset = $banks_delete->LoadRecordset())
-	$banks_deleteTotalRecs = $banks_delete->Recordset->RecordCount(); // Get record count
-if ($banks_deleteTotalRecs <= 0) { // No record found, exit
-	if ($banks_delete->Recordset)
-		$banks_delete->Recordset->Close();
-	$banks_delete->Page_Terminate("bankslist.php"); // Return to list
+if ($userlevels_delete->Recordset = $userlevels_delete->LoadRecordset())
+	$userlevels_deleteTotalRecs = $userlevels_delete->Recordset->RecordCount(); // Get record count
+if ($userlevels_deleteTotalRecs <= 0) { // No record found, exit
+	if ($userlevels_delete->Recordset)
+		$userlevels_delete->Recordset->Close();
+	$userlevels_delete->Page_Terminate("userlevelslist.php"); // Return to list
 }
 ?>
 <div class="ewToolbar">
@@ -792,96 +710,74 @@ if ($banks_deleteTotalRecs <= 0) { // No record found, exit
 <?php echo $Language->SelectionForm(); ?>
 <div class="clearfix"></div>
 </div>
-<?php $banks_delete->ShowPageHeader(); ?>
+<?php $userlevels_delete->ShowPageHeader(); ?>
 <?php
-$banks_delete->ShowMessage();
+$userlevels_delete->ShowMessage();
 ?>
-<form name="fbanksdelete" id="fbanksdelete" class="form-inline ewForm ewDeleteForm" action="<?php echo ew_CurrentPage() ?>" method="post">
-<?php if ($banks_delete->CheckToken) { ?>
-<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $banks_delete->Token ?>">
+<form name="fuserlevelsdelete" id="fuserlevelsdelete" class="form-inline ewForm ewDeleteForm" action="<?php echo ew_CurrentPage() ?>" method="post">
+<?php if ($userlevels_delete->CheckToken) { ?>
+<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $userlevels_delete->Token ?>">
 <?php } ?>
-<input type="hidden" name="t" value="banks">
+<input type="hidden" name="t" value="userlevels">
 <input type="hidden" name="a_delete" id="a_delete" value="D">
-<?php foreach ($banks_delete->RecKeys as $key) { ?>
+<?php foreach ($userlevels_delete->RecKeys as $key) { ?>
 <?php $keyvalue = is_array($key) ? implode($EW_COMPOSITE_KEY_SEPARATOR, $key) : $key; ?>
 <input type="hidden" name="key_m[]" value="<?php echo ew_HtmlEncode($keyvalue) ?>">
 <?php } ?>
 <div class="ewGrid">
 <div class="<?php if (ew_IsResponsiveLayout()) { echo "table-responsive "; } ?>ewGridMiddlePanel">
 <table class="table ewTable">
-<?php echo $banks->TableCustomInnerHtml ?>
+<?php echo $userlevels->TableCustomInnerHtml ?>
 	<thead>
 	<tr class="ewTableHeader">
-<?php if ($banks->Bank_Code->Visible) { // Bank_Code ?>
-		<th><span id="elh_banks_Bank_Code" class="banks_Bank_Code"><?php echo $banks->Bank_Code->FldCaption() ?></span></th>
+<?php if ($userlevels->userlevelid->Visible) { // userlevelid ?>
+		<th><span id="elh_userlevels_userlevelid" class="userlevels_userlevelid"><?php echo $userlevels->userlevelid->FldCaption() ?></span></th>
 <?php } ?>
-<?php if ($banks->Branch_Code->Visible) { // Branch_Code ?>
-		<th><span id="elh_banks_Branch_Code" class="banks_Branch_Code"><?php echo $banks->Branch_Code->FldCaption() ?></span></th>
-<?php } ?>
-<?php if ($banks->Name->Visible) { // Name ?>
-		<th><span id="elh_banks_Name" class="banks_Name"><?php echo $banks->Name->FldCaption() ?></span></th>
-<?php } ?>
-<?php if ($banks->City->Visible) { // City ?>
-		<th><span id="elh_banks_City" class="banks_City"><?php echo $banks->City->FldCaption() ?></span></th>
+<?php if ($userlevels->userlevelname->Visible) { // userlevelname ?>
+		<th><span id="elh_userlevels_userlevelname" class="userlevels_userlevelname"><?php echo $userlevels->userlevelname->FldCaption() ?></span></th>
 <?php } ?>
 	</tr>
 	</thead>
 	<tbody>
 <?php
-$banks_delete->RecCnt = 0;
+$userlevels_delete->RecCnt = 0;
 $i = 0;
-while (!$banks_delete->Recordset->EOF) {
-	$banks_delete->RecCnt++;
-	$banks_delete->RowCnt++;
+while (!$userlevels_delete->Recordset->EOF) {
+	$userlevels_delete->RecCnt++;
+	$userlevels_delete->RowCnt++;
 
 	// Set row properties
-	$banks->ResetAttrs();
-	$banks->RowType = EW_ROWTYPE_VIEW; // View
+	$userlevels->ResetAttrs();
+	$userlevels->RowType = EW_ROWTYPE_VIEW; // View
 
 	// Get the field contents
-	$banks_delete->LoadRowValues($banks_delete->Recordset);
+	$userlevels_delete->LoadRowValues($userlevels_delete->Recordset);
 
 	// Render row
-	$banks_delete->RenderRow();
+	$userlevels_delete->RenderRow();
 ?>
-	<tr<?php echo $banks->RowAttributes() ?>>
-<?php if ($banks->Bank_Code->Visible) { // Bank_Code ?>
-		<td<?php echo $banks->Bank_Code->CellAttributes() ?>>
-<span id="el<?php echo $banks_delete->RowCnt ?>_banks_Bank_Code" class="banks_Bank_Code">
-<span<?php echo $banks->Bank_Code->ViewAttributes() ?>>
-<?php echo $banks->Bank_Code->ListViewValue() ?></span>
+	<tr<?php echo $userlevels->RowAttributes() ?>>
+<?php if ($userlevels->userlevelid->Visible) { // userlevelid ?>
+		<td<?php echo $userlevels->userlevelid->CellAttributes() ?>>
+<span id="el<?php echo $userlevels_delete->RowCnt ?>_userlevels_userlevelid" class="userlevels_userlevelid">
+<span<?php echo $userlevels->userlevelid->ViewAttributes() ?>>
+<?php echo $userlevels->userlevelid->ListViewValue() ?></span>
 </span>
 </td>
 <?php } ?>
-<?php if ($banks->Branch_Code->Visible) { // Branch_Code ?>
-		<td<?php echo $banks->Branch_Code->CellAttributes() ?>>
-<span id="el<?php echo $banks_delete->RowCnt ?>_banks_Branch_Code" class="banks_Branch_Code">
-<span<?php echo $banks->Branch_Code->ViewAttributes() ?>>
-<?php echo $banks->Branch_Code->ListViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($banks->Name->Visible) { // Name ?>
-		<td<?php echo $banks->Name->CellAttributes() ?>>
-<span id="el<?php echo $banks_delete->RowCnt ?>_banks_Name" class="banks_Name">
-<span<?php echo $banks->Name->ViewAttributes() ?>>
-<?php echo $banks->Name->ListViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($banks->City->Visible) { // City ?>
-		<td<?php echo $banks->City->CellAttributes() ?>>
-<span id="el<?php echo $banks_delete->RowCnt ?>_banks_City" class="banks_City">
-<span<?php echo $banks->City->ViewAttributes() ?>>
-<?php echo $banks->City->ListViewValue() ?></span>
+<?php if ($userlevels->userlevelname->Visible) { // userlevelname ?>
+		<td<?php echo $userlevels->userlevelname->CellAttributes() ?>>
+<span id="el<?php echo $userlevels_delete->RowCnt ?>_userlevels_userlevelname" class="userlevels_userlevelname">
+<span<?php echo $userlevels->userlevelname->ViewAttributes() ?>>
+<?php echo $userlevels->userlevelname->ListViewValue() ?></span>
 </span>
 </td>
 <?php } ?>
 	</tr>
 <?php
-	$banks_delete->Recordset->MoveNext();
+	$userlevels_delete->Recordset->MoveNext();
 }
-$banks_delete->Recordset->Close();
+$userlevels_delete->Recordset->Close();
 ?>
 </tbody>
 </table>
@@ -889,14 +785,14 @@ $banks_delete->Recordset->Close();
 </div>
 <div>
 <button class="btn btn-primary ewButton" name="btnAction" id="btnAction" type="submit"><?php echo $Language->Phrase("DeleteBtn") ?></button>
-<button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="button" data-href="<?php echo $banks_delete->getReturnUrl() ?>"><?php echo $Language->Phrase("CancelBtn") ?></button>
+<button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="button" data-href="<?php echo $userlevels_delete->getReturnUrl() ?>"><?php echo $Language->Phrase("CancelBtn") ?></button>
 </div>
 </form>
 <script type="text/javascript">
-fbanksdelete.Init();
+fuserlevelsdelete.Init();
 </script>
 <?php
-$banks_delete->ShowPageFooter();
+$userlevels_delete->ShowPageFooter();
 if (EW_DEBUG_ENABLED)
 	echo ew_DebugMsg();
 ?>
@@ -908,5 +804,5 @@ if (EW_DEBUG_ENABLED)
 </script>
 <?php include_once "footer.php" ?>
 <?php
-$banks_delete->Page_Terminate();
+$userlevels_delete->Page_Terminate();
 ?>

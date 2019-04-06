@@ -5,7 +5,7 @@ ob_start(); // Turn on output buffering
 <?php include_once "ewcfg12.php" ?>
 <?php include_once ((EW_USE_ADODB) ? "adodb5/adodb.inc.php" : "ewmysql12.php") ?>
 <?php include_once "phpfn12.php" ?>
-<?php include_once "accountsinfo.php" ?>
+<?php include_once "userlevelpermissionsinfo.php" ?>
 <?php include_once "empinfo.php" ?>
 <?php include_once "userfn12.php" ?>
 <?php
@@ -14,9 +14,9 @@ ob_start(); // Turn on output buffering
 // Page class
 //
 
-$accounts_add = NULL; // Initialize page object first
+$userlevelpermissions_add = NULL; // Initialize page object first
 
-class caccounts_add extends caccounts {
+class cuserlevelpermissions_add extends cuserlevelpermissions {
 
 	// Page ID
 	var $PageID = 'add';
@@ -25,10 +25,10 @@ class caccounts_add extends caccounts {
 	var $ProjectID = "{163802B9-268A-4AFB-8FD6-7A7D18262A99}";
 
 	// Table name
-	var $TableName = 'accounts';
+	var $TableName = 'userlevelpermissions';
 
 	// Page object name
-	var $PageObjName = 'accounts_add';
+	var $PageObjName = 'userlevelpermissions_add';
 
 	// Page name
 	function PageName() {
@@ -222,10 +222,10 @@ class caccounts_add extends caccounts {
 		// Parent constuctor
 		parent::__construct();
 
-		// Table object (accounts)
-		if (!isset($GLOBALS["accounts"]) || get_class($GLOBALS["accounts"]) == "caccounts") {
-			$GLOBALS["accounts"] = &$this;
-			$GLOBALS["Table"] = &$GLOBALS["accounts"];
+		// Table object (userlevelpermissions)
+		if (!isset($GLOBALS["userlevelpermissions"]) || get_class($GLOBALS["userlevelpermissions"]) == "cuserlevelpermissions") {
+			$GLOBALS["userlevelpermissions"] = &$this;
+			$GLOBALS["Table"] = &$GLOBALS["userlevelpermissions"];
 		}
 
 		// Table object (emp)
@@ -237,7 +237,7 @@ class caccounts_add extends caccounts {
 
 		// Table name (for backward compatibility)
 		if (!defined("EW_TABLE_NAME"))
-			define("EW_TABLE_NAME", 'accounts', TRUE);
+			define("EW_TABLE_NAME", 'userlevelpermissions', TRUE);
 
 		// Start timer
 		if (!isset($GLOBALS["gTimer"])) $GLOBALS["gTimer"] = new cTimer();
@@ -264,13 +264,9 @@ class caccounts_add extends caccounts {
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
 		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
-		if (!$Security->CanAdd()) {
+		if (!$Security->CanAdmin()) {
 			$Security->SaveLastUrl();
-			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
-			if ($Security->CanList())
-				$this->Page_Terminate(ew_GetUrl("accountslist.php"));
-			else
-				$this->Page_Terminate(ew_GetUrl("login.php"));
+			$this->Page_Terminate(ew_GetUrl("login.php"));
 		}
 
 		// Create form object
@@ -321,13 +317,13 @@ class caccounts_add extends caccounts {
 		Page_Unloaded();
 
 		// Export
-		global $EW_EXPORT, $accounts;
+		global $EW_EXPORT, $userlevelpermissions;
 		if ($this->CustomExport <> "" && $this->CustomExport == $this->Export && array_key_exists($this->CustomExport, $EW_EXPORT)) {
 				$sContent = ob_get_contents();
 			if ($gsExportFile == "") $gsExportFile = $this->TableVar;
 			$class = $EW_EXPORT[$this->CustomExport];
 			if (class_exists($class)) {
-				$doc = new $class($accounts);
+				$doc = new $class($userlevelpermissions);
 				$doc->Text = $sContent;
 				if ($this->Export == "email")
 					echo $this->ExportEmail($doc->Text);
@@ -376,11 +372,18 @@ class caccounts_add extends caccounts {
 
 			// Load key values from QueryString
 			$this->CopyRecord = TRUE;
-			if (@$_GET["Acc_ID"] != "") {
-				$this->Acc_ID->setQueryStringValue($_GET["Acc_ID"]);
-				$this->setKey("Acc_ID", $this->Acc_ID->CurrentValue); // Set up key
+			if (@$_GET["userlevelid"] != "") {
+				$this->userlevelid->setQueryStringValue($_GET["userlevelid"]);
+				$this->setKey("userlevelid", $this->userlevelid->CurrentValue); // Set up key
 			} else {
-				$this->setKey("Acc_ID", ""); // Clear key
+				$this->setKey("userlevelid", ""); // Clear key
+				$this->CopyRecord = FALSE;
+			}
+			if (@$_GET["_tablename"] != "") {
+				$this->_tablename->setQueryStringValue($_GET["_tablename"]);
+				$this->setKey("_tablename", $this->_tablename->CurrentValue); // Set up key
+			} else {
+				$this->setKey("_tablename", ""); // Clear key
 				$this->CopyRecord = FALSE;
 			}
 			if ($this->CopyRecord) {
@@ -411,7 +414,7 @@ class caccounts_add extends caccounts {
 			case "C": // Copy an existing record
 				if (!$this->LoadRow()) { // Load record based on key
 					if ($this->getFailureMessage() == "") $this->setFailureMessage($Language->Phrase("NoRecord")); // No record found
-					$this->Page_Terminate("accountslist.php"); // No matching record, return to list
+					$this->Page_Terminate("userlevelpermissionslist.php"); // No matching record, return to list
 				}
 				break;
 			case "A": // Add new record
@@ -420,7 +423,7 @@ class caccounts_add extends caccounts {
 					if ($this->getSuccessMessage() == "")
 						$this->setSuccessMessage($Language->Phrase("AddSuccess")); // Set up success message
 					$sReturnUrl = $this->getReturnUrl();
-					if (ew_GetPageName($sReturnUrl) == "accountsview.php")
+					if (ew_GetPageName($sReturnUrl) == "userlevelpermissionsview.php")
 						$sReturnUrl = $this->GetViewUrl(); // View paging, return to view page with keyurl directly
 					$this->Page_Terminate($sReturnUrl); // Clean up and return
 				} else {
@@ -446,12 +449,12 @@ class caccounts_add extends caccounts {
 
 	// Load default values
 	function LoadDefaultValues() {
-		$this->PF->CurrentValue = NULL;
-		$this->PF->OldValue = $this->PF->CurrentValue;
-		$this->Bank_ID->CurrentValue = NULL;
-		$this->Bank_ID->OldValue = $this->Bank_ID->CurrentValue;
-		$this->Acc_NO->CurrentValue = NULL;
-		$this->Acc_NO->OldValue = $this->Acc_NO->CurrentValue;
+		$this->userlevelid->CurrentValue = NULL;
+		$this->userlevelid->OldValue = $this->userlevelid->CurrentValue;
+		$this->_tablename->CurrentValue = NULL;
+		$this->_tablename->OldValue = $this->_tablename->CurrentValue;
+		$this->permission->CurrentValue = NULL;
+		$this->permission->OldValue = $this->permission->CurrentValue;
 	}
 
 	// Load form values
@@ -459,14 +462,14 @@ class caccounts_add extends caccounts {
 
 		// Load from form
 		global $objForm;
-		if (!$this->PF->FldIsDetailKey) {
-			$this->PF->setFormValue($objForm->GetValue("x_PF"));
+		if (!$this->userlevelid->FldIsDetailKey) {
+			$this->userlevelid->setFormValue($objForm->GetValue("x_userlevelid"));
 		}
-		if (!$this->Bank_ID->FldIsDetailKey) {
-			$this->Bank_ID->setFormValue($objForm->GetValue("x_Bank_ID"));
+		if (!$this->_tablename->FldIsDetailKey) {
+			$this->_tablename->setFormValue($objForm->GetValue("x__tablename"));
 		}
-		if (!$this->Acc_NO->FldIsDetailKey) {
-			$this->Acc_NO->setFormValue($objForm->GetValue("x_Acc_NO"));
+		if (!$this->permission->FldIsDetailKey) {
+			$this->permission->setFormValue($objForm->GetValue("x_permission"));
 		}
 	}
 
@@ -474,9 +477,9 @@ class caccounts_add extends caccounts {
 	function RestoreFormValues() {
 		global $objForm;
 		$this->LoadOldRecord();
-		$this->PF->CurrentValue = $this->PF->FormValue;
-		$this->Bank_ID->CurrentValue = $this->Bank_ID->FormValue;
-		$this->Acc_NO->CurrentValue = $this->Acc_NO->FormValue;
+		$this->userlevelid->CurrentValue = $this->userlevelid->FormValue;
+		$this->_tablename->CurrentValue = $this->_tablename->FormValue;
+		$this->permission->CurrentValue = $this->permission->FormValue;
 	}
 
 	// Load row based on key values
@@ -508,30 +511,18 @@ class caccounts_add extends caccounts {
 		// Call Row Selected event
 		$row = &$rs->fields;
 		$this->Row_Selected($row);
-		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
-		$this->PF->setDbValue($rs->fields('PF'));
-		if (array_key_exists('EV__PF', $rs->fields)) {
-			$this->PF->VirtualValue = $rs->fields('EV__PF'); // Set up virtual field value
-		} else {
-			$this->PF->VirtualValue = ""; // Clear value
-		}
-		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
-		if (array_key_exists('EV__Bank_ID', $rs->fields)) {
-			$this->Bank_ID->VirtualValue = $rs->fields('EV__Bank_ID'); // Set up virtual field value
-		} else {
-			$this->Bank_ID->VirtualValue = ""; // Clear value
-		}
-		$this->Acc_NO->setDbValue($rs->fields('Acc_NO'));
+		$this->userlevelid->setDbValue($rs->fields('userlevelid'));
+		$this->_tablename->setDbValue($rs->fields('tablename'));
+		$this->permission->setDbValue($rs->fields('permission'));
 	}
 
 	// Load DbValue from recordset
 	function LoadDbValues(&$rs) {
 		if (!$rs || !is_array($rs) && $rs->EOF) return;
 		$row = is_array($rs) ? $rs : $rs->fields;
-		$this->Acc_ID->DbValue = $row['Acc_ID'];
-		$this->PF->DbValue = $row['PF'];
-		$this->Bank_ID->DbValue = $row['Bank_ID'];
-		$this->Acc_NO->DbValue = $row['Acc_NO'];
+		$this->userlevelid->DbValue = $row['userlevelid'];
+		$this->_tablename->DbValue = $row['tablename'];
+		$this->permission->DbValue = $row['permission'];
 	}
 
 	// Load old record
@@ -539,8 +530,12 @@ class caccounts_add extends caccounts {
 
 		// Load key values from Session
 		$bValidKey = TRUE;
-		if (strval($this->getKey("Acc_ID")) <> "")
-			$this->Acc_ID->CurrentValue = $this->getKey("Acc_ID"); // Acc_ID
+		if (strval($this->getKey("userlevelid")) <> "")
+			$this->userlevelid->CurrentValue = $this->getKey("userlevelid"); // userlevelid
+		else
+			$bValidKey = FALSE;
+		if (strval($this->getKey("_tablename")) <> "")
+			$this->_tablename->CurrentValue = $this->getKey("_tablename"); // tablename
 		else
 			$bValidKey = FALSE;
 
@@ -567,118 +562,68 @@ class caccounts_add extends caccounts {
 		$this->Row_Rendering();
 
 		// Common render codes for all row types
-		// Acc_ID
-		// PF
-		// Bank_ID
-		// Acc_NO
+		// userlevelid
+		// tablename
+		// permission
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
-		// PF
-		if ($this->PF->VirtualValue <> "") {
-			$this->PF->ViewValue = $this->PF->VirtualValue;
-		} else {
-			$this->PF->ViewValue = $this->PF->CurrentValue;
-		if (strval($this->PF->CurrentValue) <> "") {
-			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->PF->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld`, `NIC` AS `Disp3Fld`, '' AS `Disp4Fld` FROM `emp`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->PF, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$arwrk[2] = $rswrk->fields('Disp2Fld');
-				$arwrk[3] = $rswrk->fields('Disp3Fld');
-				$this->PF->ViewValue = $this->PF->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->PF->ViewValue = $this->PF->CurrentValue;
-			}
-		} else {
-			$this->PF->ViewValue = NULL;
-		}
-		}
-		$this->PF->ViewCustomAttributes = "";
+		// userlevelid
+		$this->userlevelid->ViewValue = $this->userlevelid->CurrentValue;
+		$this->userlevelid->ViewCustomAttributes = "";
 
-		// Bank_ID
-		if ($this->Bank_ID->VirtualValue <> "") {
-			$this->Bank_ID->ViewValue = $this->Bank_ID->VirtualValue;
-		} else {
-			$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
-		if (strval($this->Bank_ID->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$arwrk[2] = $rswrk->fields('Disp2Fld');
-				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
-			}
-		} else {
-			$this->Bank_ID->ViewValue = NULL;
-		}
-		}
-		$this->Bank_ID->ViewCustomAttributes = "";
+		// tablename
+		$this->_tablename->ViewValue = $this->_tablename->CurrentValue;
+		$this->_tablename->ViewCustomAttributes = "";
 
-		// Acc_NO
-		$this->Acc_NO->ViewValue = $this->Acc_NO->CurrentValue;
-		$this->Acc_NO->ViewCustomAttributes = "";
+		// permission
+		$this->permission->ViewValue = $this->permission->CurrentValue;
+		$this->permission->ViewCustomAttributes = "";
 
-			// PF
-			$this->PF->LinkCustomAttributes = "";
-			$this->PF->HrefValue = "";
-			$this->PF->TooltipValue = "";
+			// userlevelid
+			$this->userlevelid->LinkCustomAttributes = "";
+			$this->userlevelid->HrefValue = "";
+			$this->userlevelid->TooltipValue = "";
 
-			// Bank_ID
-			$this->Bank_ID->LinkCustomAttributes = "";
-			$this->Bank_ID->HrefValue = "";
-			$this->Bank_ID->TooltipValue = "";
+			// tablename
+			$this->_tablename->LinkCustomAttributes = "";
+			$this->_tablename->HrefValue = "";
+			$this->_tablename->TooltipValue = "";
 
-			// Acc_NO
-			$this->Acc_NO->LinkCustomAttributes = "";
-			$this->Acc_NO->HrefValue = "";
-			$this->Acc_NO->TooltipValue = "";
+			// permission
+			$this->permission->LinkCustomAttributes = "";
+			$this->permission->HrefValue = "";
+			$this->permission->TooltipValue = "";
 		} elseif ($this->RowType == EW_ROWTYPE_ADD) { // Add row
 
-			// PF
-			$this->PF->EditAttrs["class"] = "form-control";
-			$this->PF->EditCustomAttributes = "";
-			$this->PF->EditValue = ew_HtmlEncode($this->PF->CurrentValue);
-			$this->PF->PlaceHolder = ew_RemoveHtml($this->PF->FldCaption());
+			// userlevelid
+			$this->userlevelid->EditAttrs["class"] = "form-control";
+			$this->userlevelid->EditCustomAttributes = "";
+			$this->userlevelid->EditValue = ew_HtmlEncode($this->userlevelid->CurrentValue);
+			$this->userlevelid->PlaceHolder = ew_RemoveHtml($this->userlevelid->FldCaption());
 
-			// Bank_ID
-			$this->Bank_ID->EditAttrs["class"] = "form-control";
-			$this->Bank_ID->EditCustomAttributes = "";
-			$this->Bank_ID->EditValue = ew_HtmlEncode($this->Bank_ID->CurrentValue);
-			$this->Bank_ID->PlaceHolder = ew_RemoveHtml($this->Bank_ID->FldCaption());
+			// tablename
+			$this->_tablename->EditAttrs["class"] = "form-control";
+			$this->_tablename->EditCustomAttributes = "";
+			$this->_tablename->EditValue = ew_HtmlEncode($this->_tablename->CurrentValue);
+			$this->_tablename->PlaceHolder = ew_RemoveHtml($this->_tablename->FldCaption());
 
-			// Acc_NO
-			$this->Acc_NO->EditAttrs["class"] = "form-control";
-			$this->Acc_NO->EditCustomAttributes = "";
-			$this->Acc_NO->EditValue = ew_HtmlEncode($this->Acc_NO->CurrentValue);
-			$this->Acc_NO->PlaceHolder = ew_RemoveHtml($this->Acc_NO->FldCaption());
+			// permission
+			$this->permission->EditAttrs["class"] = "form-control";
+			$this->permission->EditCustomAttributes = "";
+			$this->permission->EditValue = ew_HtmlEncode($this->permission->CurrentValue);
+			$this->permission->PlaceHolder = ew_RemoveHtml($this->permission->FldCaption());
 
 			// Edit refer script
-			// PF
+			// userlevelid
 
-			$this->PF->HrefValue = "";
+			$this->userlevelid->HrefValue = "";
 
-			// Bank_ID
-			$this->Bank_ID->HrefValue = "";
+			// tablename
+			$this->_tablename->HrefValue = "";
 
-			// Acc_NO
-			$this->Acc_NO->HrefValue = "";
+			// permission
+			$this->permission->HrefValue = "";
 		}
 		if ($this->RowType == EW_ROWTYPE_ADD ||
 			$this->RowType == EW_ROWTYPE_EDIT ||
@@ -701,14 +646,20 @@ class caccounts_add extends caccounts {
 		// Check if validation required
 		if (!EW_SERVER_VALIDATE)
 			return ($gsFormError == "");
-		if (!$this->PF->FldIsDetailKey && !is_null($this->PF->FormValue) && $this->PF->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->PF->FldCaption(), $this->PF->ReqErrMsg));
+		if (!$this->userlevelid->FldIsDetailKey && !is_null($this->userlevelid->FormValue) && $this->userlevelid->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->userlevelid->FldCaption(), $this->userlevelid->ReqErrMsg));
 		}
-		if (!$this->Bank_ID->FldIsDetailKey && !is_null($this->Bank_ID->FormValue) && $this->Bank_ID->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->Bank_ID->FldCaption(), $this->Bank_ID->ReqErrMsg));
+		if (!ew_CheckInteger($this->userlevelid->FormValue)) {
+			ew_AddMessage($gsFormError, $this->userlevelid->FldErrMsg());
 		}
-		if (!$this->Acc_NO->FldIsDetailKey && !is_null($this->Acc_NO->FormValue) && $this->Acc_NO->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->Acc_NO->FldCaption(), $this->Acc_NO->ReqErrMsg));
+		if (!$this->_tablename->FldIsDetailKey && !is_null($this->_tablename->FormValue) && $this->_tablename->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->_tablename->FldCaption(), $this->_tablename->ReqErrMsg));
+		}
+		if (!$this->permission->FldIsDetailKey && !is_null($this->permission->FormValue) && $this->permission->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->permission->FldCaption(), $this->permission->ReqErrMsg));
+		}
+		if (!ew_CheckInteger($this->permission->FormValue)) {
+			ew_AddMessage($gsFormError, $this->permission->FldErrMsg());
 		}
 
 		// Return validate result
@@ -734,27 +685,47 @@ class caccounts_add extends caccounts {
 		}
 		$rsnew = array();
 
-		// PF
-		$this->PF->SetDbValueDef($rsnew, $this->PF->CurrentValue, 0, FALSE);
+		// userlevelid
+		$this->userlevelid->SetDbValueDef($rsnew, $this->userlevelid->CurrentValue, 0, FALSE);
 
-		// Bank_ID
-		$this->Bank_ID->SetDbValueDef($rsnew, $this->Bank_ID->CurrentValue, 0, FALSE);
+		// tablename
+		$this->_tablename->SetDbValueDef($rsnew, $this->_tablename->CurrentValue, "", FALSE);
 
-		// Acc_NO
-		$this->Acc_NO->SetDbValueDef($rsnew, $this->Acc_NO->CurrentValue, "", FALSE);
+		// permission
+		$this->permission->SetDbValueDef($rsnew, $this->permission->CurrentValue, 0, FALSE);
 
 		// Call Row Inserting event
 		$rs = ($rsold == NULL) ? NULL : $rsold->fields;
 		$bInsertRow = $this->Row_Inserting($rs, $rsnew);
+
+		// Check if key value entered
+		if ($bInsertRow && $this->ValidateKey && strval($rsnew['userlevelid']) == "") {
+			$this->setFailureMessage($Language->Phrase("InvalidKeyValue"));
+			$bInsertRow = FALSE;
+		}
+
+		// Check if key value entered
+		if ($bInsertRow && $this->ValidateKey && strval($rsnew['tablename']) == "") {
+			$this->setFailureMessage($Language->Phrase("InvalidKeyValue"));
+			$bInsertRow = FALSE;
+		}
+
+		// Check for duplicate key
+		if ($bInsertRow && $this->ValidateKey) {
+			$sFilter = $this->KeyFilter();
+			$rsChk = $this->LoadRs($sFilter);
+			if ($rsChk && !$rsChk->EOF) {
+				$sKeyErrMsg = str_replace("%f", $sFilter, $Language->Phrase("DupKey"));
+				$this->setFailureMessage($sKeyErrMsg);
+				$rsChk->Close();
+				$bInsertRow = FALSE;
+			}
+		}
 		if ($bInsertRow) {
 			$conn->raiseErrorFn = $GLOBALS["EW_ERROR_FN"];
 			$AddRow = $this->Insert($rsnew);
 			$conn->raiseErrorFn = '';
 			if ($AddRow) {
-
-				// Get insert id if necessary
-				$this->Acc_ID->setDbValue($conn->Insert_ID());
-				$rsnew['Acc_ID'] = $this->Acc_ID->DbValue;
 			}
 		} else {
 			if ($this->getSuccessMessage() <> "" || $this->getFailureMessage() <> "") {
@@ -782,7 +753,7 @@ class caccounts_add extends caccounts {
 		global $Breadcrumb, $Language;
 		$Breadcrumb = new cBreadcrumb();
 		$url = substr(ew_CurrentUrl(), strrpos(ew_CurrentUrl(), "/")+1);
-		$Breadcrumb->Add("list", $this->TableVar, "accountslist.php", "", $this->TableVar, TRUE);
+		$Breadcrumb->Add("list", $this->TableVar, "userlevelpermissionslist.php", "", $this->TableVar, TRUE);
 		$PageId = ($this->CurrentAction == "C") ? "Copy" : "Add";
 		$Breadcrumb->Add("add", $PageId, $url);
 	}
@@ -859,29 +830,29 @@ class caccounts_add extends caccounts {
 <?php
 
 // Create page object
-if (!isset($accounts_add)) $accounts_add = new caccounts_add();
+if (!isset($userlevelpermissions_add)) $userlevelpermissions_add = new cuserlevelpermissions_add();
 
 // Page init
-$accounts_add->Page_Init();
+$userlevelpermissions_add->Page_Init();
 
 // Page main
-$accounts_add->Page_Main();
+$userlevelpermissions_add->Page_Main();
 
 // Global Page Rendering event (in userfn*.php)
 Page_Rendering();
 
 // Page Rendering event
-$accounts_add->Page_Render();
+$userlevelpermissions_add->Page_Render();
 ?>
 <?php include_once "header.php" ?>
 <script type="text/javascript">
 
 // Form object
 var CurrentPageID = EW_PAGE_ID = "add";
-var CurrentForm = faccountsadd = new ew_Form("faccountsadd", "add");
+var CurrentForm = fuserlevelpermissionsadd = new ew_Form("fuserlevelpermissionsadd", "add");
 
 // Validate form
-faccountsadd.Validate = function() {
+fuserlevelpermissionsadd.Validate = function() {
 	if (!this.ValidateRequired)
 		return true; // Ignore validation
 	var $ = jQuery, fobj = this.GetForm(), $fobj = $(fobj);
@@ -895,15 +866,21 @@ faccountsadd.Validate = function() {
 	for (var i = startcnt; i <= rowcnt; i++) {
 		var infix = ($k[0]) ? String(i) : "";
 		$fobj.data("rowindex", infix);
-			elm = this.GetElements("x" + infix + "_PF");
+			elm = this.GetElements("x" + infix + "_userlevelid");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $accounts->PF->FldCaption(), $accounts->PF->ReqErrMsg)) ?>");
-			elm = this.GetElements("x" + infix + "_Bank_ID");
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $userlevelpermissions->userlevelid->FldCaption(), $userlevelpermissions->userlevelid->ReqErrMsg)) ?>");
+			elm = this.GetElements("x" + infix + "_userlevelid");
+			if (elm && !ew_CheckInteger(elm.value))
+				return this.OnError(elm, "<?php echo ew_JsEncode2($userlevelpermissions->userlevelid->FldErrMsg()) ?>");
+			elm = this.GetElements("x" + infix + "__tablename");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $accounts->Bank_ID->FldCaption(), $accounts->Bank_ID->ReqErrMsg)) ?>");
-			elm = this.GetElements("x" + infix + "_Acc_NO");
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $userlevelpermissions->_tablename->FldCaption(), $userlevelpermissions->_tablename->ReqErrMsg)) ?>");
+			elm = this.GetElements("x" + infix + "_permission");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $accounts->Acc_NO->FldCaption(), $accounts->Acc_NO->ReqErrMsg)) ?>");
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $userlevelpermissions->permission->FldCaption(), $userlevelpermissions->permission->ReqErrMsg)) ?>");
+			elm = this.GetElements("x" + infix + "_permission");
+			if (elm && !ew_CheckInteger(elm.value))
+				return this.OnError(elm, "<?php echo ew_JsEncode2($userlevelpermissions->permission->FldErrMsg()) ?>");
 
 			// Fire Form_CustomValidate event
 			if (!this.Form_CustomValidate(fobj))
@@ -922,7 +899,7 @@ faccountsadd.Validate = function() {
 }
 
 // Form_CustomValidate event
-faccountsadd.Form_CustomValidate = 
+fuserlevelpermissionsadd.Form_CustomValidate = 
  function(fobj) { // DO NOT CHANGE THIS LINE!
 
  	// Your custom validation code here, return false if invalid. 
@@ -931,16 +908,14 @@ faccountsadd.Form_CustomValidate =
 
 // Use JavaScript validation or not
 <?php if (EW_CLIENT_VALIDATE) { ?>
-faccountsadd.ValidateRequired = true;
+fuserlevelpermissionsadd.ValidateRequired = true;
 <?php } else { ?>
-faccountsadd.ValidateRequired = false; 
+fuserlevelpermissionsadd.ValidateRequired = false; 
 <?php } ?>
 
 // Dynamic selection lists
-faccountsadd.Lists["x_PF"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_PF","x_Name","x_NIC",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-faccountsadd.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","x_City","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-
 // Form object for search
+
 </script>
 <script type="text/javascript">
 
@@ -951,114 +926,62 @@ faccountsadd.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill
 <?php echo $Language->SelectionForm(); ?>
 <div class="clearfix"></div>
 </div>
-<?php $accounts_add->ShowPageHeader(); ?>
+<?php $userlevelpermissions_add->ShowPageHeader(); ?>
 <?php
-$accounts_add->ShowMessage();
+$userlevelpermissions_add->ShowMessage();
 ?>
-<form name="faccountsadd" id="faccountsadd" class="<?php echo $accounts_add->FormClassName ?>" action="<?php echo ew_CurrentPage() ?>" method="post">
-<?php if ($accounts_add->CheckToken) { ?>
-<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $accounts_add->Token ?>">
+<form name="fuserlevelpermissionsadd" id="fuserlevelpermissionsadd" class="<?php echo $userlevelpermissions_add->FormClassName ?>" action="<?php echo ew_CurrentPage() ?>" method="post">
+<?php if ($userlevelpermissions_add->CheckToken) { ?>
+<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $userlevelpermissions_add->Token ?>">
 <?php } ?>
-<input type="hidden" name="t" value="accounts">
+<input type="hidden" name="t" value="userlevelpermissions">
 <input type="hidden" name="a_add" id="a_add" value="A">
 <div class="ewDesktop">
 <div>
-<table id="tbl_accountsadd" class="table table-bordered table-striped ewDesktopTable">
-<?php if ($accounts->PF->Visible) { // PF ?>
-	<tr id="r_PF">
-		<td><span id="elh_accounts_PF"><?php echo $accounts->PF->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $accounts->PF->CellAttributes() ?>>
-<span id="el_accounts_PF">
-<?php
-$wrkonchange = trim(" " . @$accounts->PF->EditAttrs["onchange"]);
-if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
-$accounts->PF->EditAttrs["onchange"] = "";
-?>
-<span id="as_x_PF" style="white-space: nowrap; z-index: 8980">
-	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $accounts->PF->EditValue ?>" size="30" placeholder="<?php echo ew_HtmlEncode($accounts->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($accounts->PF->getPlaceHolder()) ?>"<?php echo $accounts->PF->EditAttributes() ?>>
+<table id="tbl_userlevelpermissionsadd" class="table table-bordered table-striped ewDesktopTable">
+<?php if ($userlevelpermissions->userlevelid->Visible) { // userlevelid ?>
+	<tr id="r_userlevelid">
+		<td><span id="elh_userlevelpermissions_userlevelid"><?php echo $userlevelpermissions->userlevelid->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $userlevelpermissions->userlevelid->CellAttributes() ?>>
+<span id="el_userlevelpermissions_userlevelid">
+<input type="text" data-table="userlevelpermissions" data-field="x_userlevelid" name="x_userlevelid" id="x_userlevelid" size="30" placeholder="<?php echo ew_HtmlEncode($userlevelpermissions->userlevelid->getPlaceHolder()) ?>" value="<?php echo $userlevelpermissions->userlevelid->EditValue ?>"<?php echo $userlevelpermissions->userlevelid->EditAttributes() ?>>
 </span>
-<input type="hidden" data-table="accounts" data-field="x_PF" data-value-separator="<?php echo ew_HtmlEncode(is_array($accounts->PF->DisplayValueSeparator) ? json_encode($accounts->PF->DisplayValueSeparator) : $accounts->PF->DisplayValueSeparator) ?>" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($accounts->PF->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<?php
-$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld`, `NIC` AS `Disp3Fld` FROM `emp`";
-$sWhereWrk = "`PF` LIKE '{query_value}%' OR CONCAT(`PF`,'" . ew_ValueSeparator(1, $Page->PF) . "',`Name`,'" . ew_ValueSeparator(2, $Page->PF) . "',`NIC`) LIKE '{query_value}%'";
-$accounts->Lookup_Selecting($accounts->PF, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-$sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
-?>
-<input type="hidden" name="q_x_PF" id="q_x_PF" value="s=<?php echo ew_Encrypt($sSqlWrk) ?>&d=">
-<script type="text/javascript">
-faccountsadd.CreateAutoSuggest({"id":"x_PF","forceSelect":false});
-</script>
-</span>
-<?php echo $accounts->PF->CustomMsg ?></td>
+<?php echo $userlevelpermissions->userlevelid->CustomMsg ?></td>
 	</tr>
 <?php } ?>
-<?php if ($accounts->Bank_ID->Visible) { // Bank_ID ?>
-	<tr id="r_Bank_ID">
-		<td><span id="elh_accounts_Bank_ID"><?php echo $accounts->Bank_ID->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $accounts->Bank_ID->CellAttributes() ?>>
-<span id="el_accounts_Bank_ID">
-<?php
-$wrkonchange = trim(" " . @$accounts->Bank_ID->EditAttrs["onchange"]);
-if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
-$accounts->Bank_ID->EditAttrs["onchange"] = "";
-?>
-<span id="as_x_Bank_ID" style="white-space: nowrap; z-index: 8970">
-	<input type="text" name="sv_x_Bank_ID" id="sv_x_Bank_ID" value="<?php echo $accounts->Bank_ID->EditValue ?>" size="30" placeholder="<?php echo ew_HtmlEncode($accounts->Bank_ID->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($accounts->Bank_ID->getPlaceHolder()) ?>"<?php echo $accounts->Bank_ID->EditAttributes() ?>>
+<?php if ($userlevelpermissions->_tablename->Visible) { // tablename ?>
+	<tr id="r__tablename">
+		<td><span id="elh_userlevelpermissions__tablename"><?php echo $userlevelpermissions->_tablename->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $userlevelpermissions->_tablename->CellAttributes() ?>>
+<span id="el_userlevelpermissions__tablename">
+<input type="text" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" size="30" maxlength="255" placeholder="<?php echo ew_HtmlEncode($userlevelpermissions->_tablename->getPlaceHolder()) ?>" value="<?php echo $userlevelpermissions->_tablename->EditValue ?>"<?php echo $userlevelpermissions->_tablename->EditAttributes() ?>>
 </span>
-<input type="hidden" data-table="accounts" data-field="x_Bank_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($accounts->Bank_ID->DisplayValueSeparator) ? json_encode($accounts->Bank_ID->DisplayValueSeparator) : $accounts->Bank_ID->DisplayValueSeparator) ?>" name="x_Bank_ID" id="x_Bank_ID" value="<?php echo ew_HtmlEncode($accounts->Bank_ID->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<?php
-$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld` FROM `banks`";
-$sWhereWrk = "`Name` LIKE '{query_value}%' OR CONCAT(`Name`,'" . ew_ValueSeparator(1, $Page->Bank_ID) . "',`City`) LIKE '{query_value}%'";
-$accounts->Lookup_Selecting($accounts->Bank_ID, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-$sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
-?>
-<input type="hidden" name="q_x_Bank_ID" id="q_x_Bank_ID" value="s=<?php echo ew_Encrypt($sSqlWrk) ?>&d=">
-<script type="text/javascript">
-faccountsadd.CreateAutoSuggest({"id":"x_Bank_ID","forceSelect":false});
-</script>
-<?php if (AllowAdd(CurrentProjectID() . "banks")) { ?>
-<button type="button" title="<?php echo ew_HtmlTitle($Language->Phrase("AddLink")) . "&nbsp;" . $accounts->Bank_ID->FldCaption() ?>" onclick="ew_AddOptDialogShow({lnk:this,el:'x_Bank_ID',url:'banksaddopt.php'});" class="ewAddOptBtn btn btn-default btn-sm" id="aol_x_Bank_ID"><span class="glyphicon glyphicon-plus ewIcon"></span><span class="hide"><?php echo $Language->Phrase("AddLink") ?>&nbsp;<?php echo $accounts->Bank_ID->FldCaption() ?></span></button>
-<?php } ?>
-<?php
-$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-$sWhereWrk = "{filter}";
-$accounts->Bank_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
-$accounts->Bank_ID->LookupFilters += array("f0" => "`Bank_ID` = {filter_value}", "t0" => "3", "fn0" => "");
-$sSqlWrk = "";
-$accounts->Lookup_Selecting($accounts->Bank_ID, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-if ($sSqlWrk <> "") $accounts->Bank_ID->LookupFilters["s"] .= $sSqlWrk;
-?>
-<input type="hidden" name="s_x_Bank_ID" id="s_x_Bank_ID" value="<?php echo $accounts->Bank_ID->LookupFilterQuery() ?>">
-</span>
-<?php echo $accounts->Bank_ID->CustomMsg ?></td>
+<?php echo $userlevelpermissions->_tablename->CustomMsg ?></td>
 	</tr>
 <?php } ?>
-<?php if ($accounts->Acc_NO->Visible) { // Acc_NO ?>
-	<tr id="r_Acc_NO">
-		<td><span id="elh_accounts_Acc_NO"><?php echo $accounts->Acc_NO->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $accounts->Acc_NO->CellAttributes() ?>>
-<span id="el_accounts_Acc_NO">
-<input type="text" data-table="accounts" data-field="x_Acc_NO" name="x_Acc_NO" id="x_Acc_NO" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($accounts->Acc_NO->getPlaceHolder()) ?>" value="<?php echo $accounts->Acc_NO->EditValue ?>"<?php echo $accounts->Acc_NO->EditAttributes() ?>>
+<?php if ($userlevelpermissions->permission->Visible) { // permission ?>
+	<tr id="r_permission">
+		<td><span id="elh_userlevelpermissions_permission"><?php echo $userlevelpermissions->permission->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $userlevelpermissions->permission->CellAttributes() ?>>
+<span id="el_userlevelpermissions_permission">
+<input type="text" data-table="userlevelpermissions" data-field="x_permission" name="x_permission" id="x_permission" size="30" placeholder="<?php echo ew_HtmlEncode($userlevelpermissions->permission->getPlaceHolder()) ?>" value="<?php echo $userlevelpermissions->permission->EditValue ?>"<?php echo $userlevelpermissions->permission->EditAttributes() ?>>
 </span>
-<?php echo $accounts->Acc_NO->CustomMsg ?></td>
+<?php echo $userlevelpermissions->permission->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 </table>
 </div>
 <div class="ewDesktopButton">
 <button class="btn btn-primary ewButton" name="btnAction" id="btnAction" type="submit"><?php echo $Language->Phrase("AddBtn") ?></button>
-<button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="button" data-href="<?php echo $accounts_add->getReturnUrl() ?>"><?php echo $Language->Phrase("CancelBtn") ?></button>
+<button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="button" data-href="<?php echo $userlevelpermissions_add->getReturnUrl() ?>"><?php echo $Language->Phrase("CancelBtn") ?></button>
 </div>
 </div>
 </form>
 <script type="text/javascript">
-faccountsadd.Init();
+fuserlevelpermissionsadd.Init();
 </script>
 <?php
-$accounts_add->ShowPageFooter();
+$userlevelpermissions_add->ShowPageFooter();
 if (EW_DEBUG_ENABLED)
 	echo ew_DebugMsg();
 ?>
@@ -1070,5 +993,5 @@ if (EW_DEBUG_ENABLED)
 </script>
 <?php include_once "footer.php" ?>
 <?php
-$accounts_add->Page_Terminate();
+$userlevelpermissions_add->Page_Terminate();
 ?>

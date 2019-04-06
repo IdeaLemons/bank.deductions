@@ -13,18 +13,18 @@ ob_start(); // Turn on output buffering
 // Page class
 //
 
-$default = NULL; // Initialize page object first
+$logout = NULL; // Initialize page object first
 
-class cdefault {
+class clogout {
 
 	// Page ID
-	var $PageID = 'default';
+	var $PageID = 'logout';
 
 	// Project ID
 	var $ProjectID = "{163802B9-268A-4AFB-8FD6-7A7D18262A99}";
 
 	// Page object name
-	var $PageObjName = 'default';
+	var $PageObjName = 'logout';
 
 	// Page name
 	function PageName() {
@@ -180,10 +180,11 @@ class cdefault {
 
 		// Language object
 		if (!isset($Language)) $Language = new cLanguage();
+		if (!isset($GLOBALS["emp"])) $GLOBALS["emp"] = new cemp();
 
 		// Page ID
 		if (!defined("EW_PAGE_ID"))
-			define("EW_PAGE_ID", 'default', TRUE);
+			define("EW_PAGE_ID", 'logout', TRUE);
 
 		// Start timer
 		if (!isset($GLOBALS["gTimer"])) $GLOBALS["gTimer"] = new cTimer();
@@ -255,25 +256,44 @@ class cdefault {
 	// Page main
 	//
 	function Page_Main() {
-		global $Security, $Language;
-		if (!$Security->IsLoggedIn()) $Security->AutoLogin();
-		$Security->LoadUserLevel(); // Load User Level
-		if ($Security->AllowList(CurrentProjectID() . 'deductions'))
-		$this->Page_Terminate("deductionslist.php"); // Exit and go to default page
-		if ($Security->AllowList(CurrentProjectID() . 'accounts'))
-			$this->Page_Terminate("accountslist.php");
-		if ($Security->AllowList(CurrentProjectID() . 'banks'))
-			$this->Page_Terminate("bankslist.php");
-		if ($Security->AllowList(CurrentProjectID() . 'emp'))
-			$this->Page_Terminate("emplist.php");
-		if ($Security->AllowList(CurrentProjectID() . 'userlevelpermissions'))
-			$this->Page_Terminate("userlevelpermissionslist.php");
-		if ($Security->AllowList(CurrentProjectID() . 'userlevels'))
-			$this->Page_Terminate("userlevelslist.php");
-		if ($Security->IsLoggedIn()) {
-			$this->setFailureMessage($Language->Phrase("NoPermission") . "<br><br><a href=\"logout.php\">" . $Language->Phrase("BackToLogin") . "</a>");
+		global $Security, $Language, $UserProfile;
+		$bValidate = TRUE;
+		$sUsername = $Security->CurrentUserName();
+
+		// Call User LoggingOut event
+		$bValidate = $this->User_LoggingOut($sUsername);
+		if (!$bValidate) {
+			$sLastUrl = $Security->LastUrl();
+			if ($sLastUrl == "")
+				$sLastUrl = "index.php";
+			$this->Page_Terminate($sLastUrl); // Go to last accessed URL
 		} else {
-			$this->Page_Terminate("login.php"); // Exit and go to login page
+			if (@$_COOKIE[EW_PROJECT_NAME]['AutoLogin'] == "") // Not autologin
+				setcookie(EW_PROJECT_NAME . '[Username]', ""); // Clear user name cookie
+			setcookie(EW_PROJECT_NAME . '[Password]', ""); // Clear password cookie
+			setcookie(EW_PROJECT_NAME . '[LastUrl]', ""); // Clear last URL
+
+			// Call User LoggedOut event
+			$this->User_LoggedOut($sUsername);
+
+			// Clean upload temp folder
+			ew_CleanUploadTempPaths(session_id());
+
+			// Unset all of the Session variables
+			$_SESSION = array();
+
+			// Delete the Session cookie and kill the Session
+			if (isset($_COOKIE[session_name()]))
+				setcookie(session_name(), '', time()-42000, '/');
+
+			// Finally, destroy the Session
+			@session_destroy();
+
+			// If session expired, show expired message
+			if (@$_GET["expired"] == "1")
+				$this->Page_Terminate("login.php?expired=1"); // Go to login page
+			else
+				$this->Page_Terminate("login.php"); // Go to login page
 		}
 	}
 
@@ -305,25 +325,35 @@ class cdefault {
 		//if ($type == 'success') $msg = "your success message";
 
 	}
+
+	// User Logging Out event
+	function User_LoggingOut($usr) {
+
+		// Enter your code here
+		// To cancel, set return value to FALSE;
+
+		return TRUE;
+	}
+
+	// User Logged Out event
+	function User_LoggedOut($usr) {
+
+		//echo "User Logged Out";
+	}
 }
 ?>
 <?php ew_Header(FALSE) ?>
 <?php
 
 // Create page object
-if (!isset($default)) $default = new cdefault();
+if (!isset($logout)) $logout = new clogout();
 
 // Page init
-$default->Page_Init();
+$logout->Page_Init();
 
 // Page main
-$default->Page_Main();
+$logout->Page_Main();
 ?>
-<?php include_once "header.php" ?>
 <?php
-$default->ShowMessage();
-?>
-<?php include_once "footer.php" ?>
-<?php
-$default->Page_Terminate();
+$logout->Page_Terminate();
 ?>

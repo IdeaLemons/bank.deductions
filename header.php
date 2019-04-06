@@ -64,8 +64,8 @@ var EW_DATE_SEPARATOR = "/"; // Default date separator
 var EW_DEFAULT_DATE_FORMAT = "<?php echo EW_DEFAULT_DATE_FORMAT ?>"; // Default date format
 var EW_DECIMAL_POINT = "<?php echo $DEFAULT_DECIMAL_POINT ?>";
 var EW_THOUSANDS_SEP = "<?php echo $DEFAULT_THOUSANDS_SEP ?>";
-var EW_MIN_PASSWORD_STRENGTH = 60;
-var EW_GENERATE_PASSWORD_LENGTH = 16;
+var EW_MIN_PASSWORD_STRENGTH = 30;
+var EW_GENERATE_PASSWORD_LENGTH = 3;
 var EW_GENERATE_PASSWORD_UPPERCASE = true;
 var EW_GENERATE_PASSWORD_LOWERCASE = true;
 var EW_GENERATE_PASSWORD_NUMBER = true;
@@ -110,6 +110,13 @@ var ewVar = <?php echo json_encode($EW_CLIENT_VAR); ?>;
 <script type="text/javascript">
 
 // Write your client script here, no need to add script tags.
+currentUsername='<?php echo CurrentUserInfo("Name"); ?>';
+currentDate='<?php echo ew_CurrentDate(); ?>';
+<?php if (IsLoggedIn()){?>
+	jQuery(document).ready(function() {
+		$('<div id="loggedinUser" style="line-height:40px;float:right;color:#fff;font-size:14px;padding-right:20px;"><strong>'+currentDate+'<span> | <strong>'+currentUsername+'<span></strong></div>').insertBefore(".ewHeaderRow");
+	});
+<?php } ?>
 </script>
 <?php } ?>
 <meta name="generator" content="PHPMaker v12.0.2">

@@ -29,7 +29,7 @@ define("EW_CONFIG_FILE_FOLDER", EW_PROJECT_NAME . "", TRUE); // Config file name
 define("EW_PROJECT_ID", "{163802B9-268A-4AFB-8FD6-7A7D18262A99}", TRUE); // Project ID (GUID)
 $EW_RELATED_PROJECT_ID = "";
 $EW_RELATED_LANGUAGE_FOLDER = "";
-define("EW_RANDOM_KEY", 'vprlyJzpd6lNcfm6', TRUE); // Random key for encryption
+define("EW_RANDOM_KEY", 'Hgih767b2hKFc0BJ', TRUE); // Random key for encryption
 define("EW_PROJECT_STYLESHEET_FILENAME", "phpcss/Bank_deductions.css", TRUE); // Project stylesheet file name
 define("EW_CHARSET", "", TRUE); // Project charset
 define("EW_EMAIL_CHARSET", EW_CHARSET, TRUE); // Email charset
@@ -220,12 +220,29 @@ define("EW_AUDIT_TRAIL_FIELD_NAME_OLDVALUE", "", TRUE); // Audit trail Old Value
 define("EW_AUDIT_TRAIL_FIELD_NAME_NEWVALUE", "", TRUE); // Audit trail New Value field name
 
 // Security
-define("EW_ADMIN_USER_NAME", "", TRUE); // Administrator user name
-define("EW_ADMIN_PASSWORD", "", TRUE); // Administrator password
+define("EW_ADMIN_USER_NAME", "warnapura", TRUE); // Administrator user name
+define("EW_ADMIN_PASSWORD", "123", TRUE); // Administrator password
 define("EW_USE_CUSTOM_LOGIN", TRUE, TRUE); // Use custom login
 define("EW_ALLOW_LOGIN_BY_URL", FALSE, TRUE); // Allow login by URL
 define("EW_ALLOW_LOGIN_BY_SESSION", FALSE, TRUE); // Allow login by session variables
 define("EW_PHPASS_ITERATION_COUNT_LOG2", "[10,8]", TRUE); // Note: Use JSON array syntax
+
+// Dynamic User Level settings
+// User level definition table/field names
+
+@define("EW_USER_LEVEL_DBID", "DB", TRUE);
+@define("EW_USER_LEVEL_TABLE", "`userlevels`", TRUE);
+@define("EW_USER_LEVEL_ID_FIELD", "`userlevelid`", TRUE);
+@define("EW_USER_LEVEL_NAME_FIELD", "`userlevelname`", TRUE);
+
+// User Level privileges table/field names
+@define("EW_USER_LEVEL_PRIV_DBID", "DB", TRUE);
+@define("EW_USER_LEVEL_PRIV_TABLE", "`userlevelpermissions`", TRUE);
+@define("EW_USER_LEVEL_PRIV_TABLE_NAME_FIELD", "`tablename`", TRUE);
+@define("EW_USER_LEVEL_PRIV_TABLE_NAME_FIELD_2", "tablename", TRUE);
+@define("EW_USER_LEVEL_PRIV_TABLE_NAME_FIELD_SIZE", 255, TRUE);
+@define("EW_USER_LEVEL_PRIV_USER_LEVEL_ID_FIELD", "`userlevelid`", TRUE);
+@define("EW_USER_LEVEL_PRIV_PRIV_FIELD", "`permission`", TRUE);
 
 // User level constants
 define("EW_ALLOW_ADD", 1, TRUE); // Add
@@ -250,8 +267,14 @@ define("EW_USE_SUBQUERY_FOR_MASTER_USER_ID", FALSE, TRUE);
 define("EW_USER_ID_ALLOW", 104, TRUE);
 
 // User table filters
-// User Profile Constants
+define("EW_USER_TABLE_DBID", "DB", TRUE);
+define("EW_USER_TABLE", "`emp`", TRUE);
+define("EW_USER_NAME_FILTER", "(`PF` = %u)", TRUE);
+define("EW_USER_ID_FILTER", "", TRUE);
+define("EW_USER_EMAIL_FILTER", "", TRUE);
+define("EW_USER_ACTIVATE_FILTER", "", TRUE);
 
+// User Profile Constants
 define("EW_USER_PROFILE_KEY_SEPARATOR", "", TRUE);
 define("EW_USER_PROFILE_FIELD_SEPARATOR", "", TRUE);
 define("EW_USER_PROFILE_SESSION_ID", "SessionID", TRUE);

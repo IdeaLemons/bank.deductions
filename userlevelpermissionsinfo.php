@@ -1,18 +1,15 @@
 <?php
 
 // Global variable for table object
-$emp = NULL;
+$userlevelpermissions = NULL;
 
 //
-// Table class for emp
+// Table class for userlevelpermissions
 //
-class cemp extends cTable {
-	var $PF;
-	var $Name;
-	var $NIC;
-	var $Password;
-	var $UserLevel;
-	var $Activated;
+class cuserlevelpermissions extends cTable {
+	var $userlevelid;
+	var $_tablename;
+	var $permission;
 
 	//
 	// Table class constructor
@@ -22,12 +19,12 @@ class cemp extends cTable {
 
 		// Language object
 		if (!isset($Language)) $Language = new cLanguage();
-		$this->TableVar = 'emp';
-		$this->TableName = 'emp';
+		$this->TableVar = 'userlevelpermissions';
+		$this->TableName = 'userlevelpermissions';
 		$this->TableType = 'TABLE';
 
 		// Update Table
-		$this->UpdateTable = "`emp`";
+		$this->UpdateTable = "`userlevelpermissions`";
 		$this->DBID = 'DB';
 		$this->ExportAll = TRUE;
 		$this->ExportPageBreakCount = 0; // Page break per every n record (PDF only)
@@ -44,33 +41,19 @@ class cemp extends cTable {
 		$this->UserIDAllowSecurity = 0; // User ID Allow
 		$this->BasicSearch = new cBasicSearch($this->TableVar);
 
-		// PF
-		$this->PF = new cField('emp', 'emp', 'x_PF', 'PF', '`PF`', '`PF`', 3, -1, FALSE, '`PF`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
-		$this->PF->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
-		$this->fields['PF'] = &$this->PF;
+		// userlevelid
+		$this->userlevelid = new cField('userlevelpermissions', 'userlevelpermissions', 'x_userlevelid', 'userlevelid', '`userlevelid`', '`userlevelid`', 3, -1, FALSE, '`userlevelid`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->userlevelid->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
+		$this->fields['userlevelid'] = &$this->userlevelid;
 
-		// Name
-		$this->Name = new cField('emp', 'emp', 'x_Name', 'Name', '`Name`', '`Name`', 200, -1, FALSE, '`Name`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
-		$this->fields['Name'] = &$this->Name;
+		// tablename
+		$this->_tablename = new cField('userlevelpermissions', 'userlevelpermissions', 'x__tablename', 'tablename', '`tablename`', '`tablename`', 200, -1, FALSE, '`tablename`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->fields['tablename'] = &$this->_tablename;
 
-		// NIC
-		$this->NIC = new cField('emp', 'emp', 'x_NIC', 'NIC', '`NIC`', '`NIC`', 201, -1, FALSE, '`NIC`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
-		$this->fields['NIC'] = &$this->NIC;
-
-		// Password
-		$this->Password = new cField('emp', 'emp', 'x_Password', 'Password', '`Password`', '`Password`', 200, -1, FALSE, '`Password`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
-		$this->fields['Password'] = &$this->Password;
-
-		// UserLevel
-		$this->UserLevel = new cField('emp', 'emp', 'x_UserLevel', 'UserLevel', '`UserLevel`', '`UserLevel`', 3, -1, FALSE, '`UserLevel`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
-		$this->UserLevel->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
-		$this->fields['UserLevel'] = &$this->UserLevel;
-
-		// Activated
-		$this->Activated = new cField('emp', 'emp', 'x_Activated', 'Activated', '`Activated`', '`Activated`', 16, -1, FALSE, '`Activated`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'RADIO');
-		$this->Activated->OptionCount = 2;
-		$this->Activated->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
-		$this->fields['Activated'] = &$this->Activated;
+		// permission
+		$this->permission = new cField('userlevelpermissions', 'userlevelpermissions', 'x_permission', 'permission', '`permission`', '`permission`', 3, -1, FALSE, '`permission`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->permission->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
+		$this->fields['permission'] = &$this->permission;
 	}
 
 	// Single column sort
@@ -94,7 +77,7 @@ class cemp extends cTable {
 	var $_SqlFrom = "";
 
 	function getSqlFrom() { // From
-		return ($this->_SqlFrom <> "") ? $this->_SqlFrom : "`emp`";
+		return ($this->_SqlFrom <> "") ? $this->_SqlFrom : "`userlevelpermissions`";
 	}
 
 	function SqlFrom() { // For backward compatibility
@@ -162,7 +145,7 @@ class cemp extends cTable {
 	var $_SqlOrderBy = "";
 
 	function getSqlOrderBy() { // Order By
-		return ($this->_SqlOrderBy <> "") ? $this->_SqlOrderBy : "`PF` ASC";
+		return ($this->_SqlOrderBy <> "") ? $this->_SqlOrderBy : "";
 	}
 
 	function SqlOrderBy() { // For backward compatibility
@@ -300,8 +283,6 @@ class cemp extends cTable {
 		foreach ($rs as $name => $value) {
 			if (!isset($this->fields[$name]) || $this->fields[$name]->FldIsCustom)
 				continue;
-			if (EW_ENCRYPTED_PASSWORD && $name == 'Password')
-				$value = (EW_CASE_SENSITIVE_PASSWORD) ? ew_EncryptPassword($value) : ew_EncryptPassword(strtolower($value));
 			$names .= $this->fields[$name]->FldExpression . ",";
 			$values .= ew_QuotedValue($value, $this->fields[$name]->FldDataType, $this->DBID) . ",";
 		}
@@ -324,9 +305,6 @@ class cemp extends cTable {
 		foreach ($rs as $name => $value) {
 			if (!isset($this->fields[$name]) || $this->fields[$name]->FldIsCustom)
 				continue;
-			if (EW_ENCRYPTED_PASSWORD && $name == 'Password') {
-				$value = (EW_CASE_SENSITIVE_PASSWORD) ? ew_EncryptPassword($value) : ew_EncryptPassword(strtolower($value));
-			}
 			$sql .= $this->fields[$name]->FldExpression . "=";
 			$sql .= ew_QuotedValue($value, $this->fields[$name]->FldDataType, $this->DBID) . ",";
 		}
@@ -352,8 +330,10 @@ class cemp extends cTable {
 		if (is_array($where))
 			$where = $this->ArrayToFilter($where);
 		if ($rs) {
-			if (array_key_exists('PF', $rs))
-				ew_AddFilter($where, ew_QuotedName('PF', $this->DBID) . '=' . ew_QuotedValue($rs['PF'], $this->PF->FldDataType, $this->DBID));
+			if (array_key_exists('userlevelid', $rs))
+				ew_AddFilter($where, ew_QuotedName('userlevelid', $this->DBID) . '=' . ew_QuotedValue($rs['userlevelid'], $this->userlevelid->FldDataType, $this->DBID));
+			if (array_key_exists('tablename', $rs))
+				ew_AddFilter($where, ew_QuotedName('tablename', $this->DBID) . '=' . ew_QuotedValue($rs['tablename'], $this->_tablename->FldDataType, $this->DBID));
 		}
 		$filter = ($curfilter) ? $this->CurrentFilter : "";
 		ew_AddFilter($filter, $where);
@@ -372,15 +352,16 @@ class cemp extends cTable {
 
 	// Key filter WHERE clause
 	function SqlKeyFilter() {
-		return "`PF` = @PF@";
+		return "`userlevelid` = @userlevelid@ AND `tablename` = '@_tablename@'";
 	}
 
 	// Key filter
 	function KeyFilter() {
 		$sKeyFilter = $this->SqlKeyFilter();
-		if (!is_numeric($this->PF->CurrentValue))
+		if (!is_numeric($this->userlevelid->CurrentValue))
 			$sKeyFilter = "0=1"; // Invalid key
-		$sKeyFilter = str_replace("@PF@", ew_AdjustSql($this->PF->CurrentValue, $this->DBID), $sKeyFilter); // Replace key value
+		$sKeyFilter = str_replace("@userlevelid@", ew_AdjustSql($this->userlevelid->CurrentValue, $this->DBID), $sKeyFilter); // Replace key value
+		$sKeyFilter = str_replace("@_tablename@", ew_AdjustSql($this->_tablename->CurrentValue, $this->DBID), $sKeyFilter); // Replace key value
 		return $sKeyFilter;
 	}
 
@@ -394,7 +375,7 @@ class cemp extends cTable {
 		if (@$_SESSION[$name] <> "") {
 			return $_SESSION[$name];
 		} else {
-			return "emplist.php";
+			return "userlevelpermissionslist.php";
 		}
 	}
 
@@ -404,30 +385,30 @@ class cemp extends cTable {
 
 	// List URL
 	function GetListUrl() {
-		return "emplist.php";
+		return "userlevelpermissionslist.php";
 	}
 
 	// View URL
 	function GetViewUrl($parm = "") {
 		if ($parm <> "")
-			$url = $this->KeyUrl("empview.php", $this->UrlParm($parm));
+			$url = $this->KeyUrl("userlevelpermissionsview.php", $this->UrlParm($parm));
 		else
-			$url = $this->KeyUrl("empview.php", $this->UrlParm(EW_TABLE_SHOW_DETAIL . "="));
+			$url = $this->KeyUrl("userlevelpermissionsview.php", $this->UrlParm(EW_TABLE_SHOW_DETAIL . "="));
 		return $this->AddMasterUrl($url);
 	}
 
 	// Add URL
 	function GetAddUrl($parm = "") {
 		if ($parm <> "")
-			$url = "empadd.php?" . $this->UrlParm($parm);
+			$url = "userlevelpermissionsadd.php?" . $this->UrlParm($parm);
 		else
-			$url = "empadd.php";
+			$url = "userlevelpermissionsadd.php";
 		return $this->AddMasterUrl($url);
 	}
 
 	// Edit URL
 	function GetEditUrl($parm = "") {
-		$url = $this->KeyUrl("empedit.php", $this->UrlParm($parm));
+		$url = $this->KeyUrl("userlevelpermissionsedit.php", $this->UrlParm($parm));
 		return $this->AddMasterUrl($url);
 	}
 
@@ -439,7 +420,7 @@ class cemp extends cTable {
 
 	// Copy URL
 	function GetCopyUrl($parm = "") {
-		$url = $this->KeyUrl("empadd.php", $this->UrlParm($parm));
+		$url = $this->KeyUrl("userlevelpermissionsadd.php", $this->UrlParm($parm));
 		return $this->AddMasterUrl($url);
 	}
 
@@ -451,7 +432,7 @@ class cemp extends cTable {
 
 	// Delete URL
 	function GetDeleteUrl() {
-		return $this->KeyUrl("empdelete.php", $this->UrlParm());
+		return $this->KeyUrl("userlevelpermissionsdelete.php", $this->UrlParm());
 	}
 
 	// Add master url
@@ -461,7 +442,8 @@ class cemp extends cTable {
 
 	function KeyToJson() {
 		$json = "";
-		$json .= "PF:" . ew_VarToJson($this->PF->CurrentValue, "number", "'");
+		$json .= "userlevelid:" . ew_VarToJson($this->userlevelid->CurrentValue, "number", "'");
+		$json .= ",_tablename:" . ew_VarToJson($this->_tablename->CurrentValue, "string", "'");
 		return "{" . $json . "}";
 	}
 
@@ -469,8 +451,13 @@ class cemp extends cTable {
 	function KeyUrl($url, $parm = "") {
 		$sUrl = $url . "?";
 		if ($parm <> "") $sUrl .= $parm . "&";
-		if (!is_null($this->PF->CurrentValue)) {
-			$sUrl .= "PF=" . urlencode($this->PF->CurrentValue);
+		if (!is_null($this->userlevelid->CurrentValue)) {
+			$sUrl .= "userlevelid=" . urlencode($this->userlevelid->CurrentValue);
+		} else {
+			return "javascript:ew_Alert(ewLanguage.Phrase('InvalidRecord'));";
+		}
+		if (!is_null($this->_tablename->CurrentValue)) {
+			$sUrl .= "&_tablename=" . urlencode($this->_tablename->CurrentValue);
 		} else {
 			return "javascript:ew_Alert(ewLanguage.Phrase('InvalidRecord'));";
 		}
@@ -498,12 +485,18 @@ class cemp extends cTable {
 		if (isset($_POST["key_m"])) {
 			$arKeys = ew_StripSlashes($_POST["key_m"]);
 			$cnt = count($arKeys);
+			for ($i = 0; $i < $cnt; $i++)
+				$arKeys[$i] = explode($EW_COMPOSITE_KEY_SEPARATOR, $arKeys[$i]);
 		} elseif (isset($_GET["key_m"])) {
 			$arKeys = ew_StripSlashes($_GET["key_m"]);
 			$cnt = count($arKeys);
+			for ($i = 0; $i < $cnt; $i++)
+				$arKeys[$i] = explode($EW_COMPOSITE_KEY_SEPARATOR, $arKeys[$i]);
 		} elseif (!empty($_GET) || !empty($_POST)) {
 			$isPost = ew_IsHttpPost();
-			$arKeys[] = $isPost ? ew_StripSlashes(@$_POST["PF"]) : ew_StripSlashes(@$_GET["PF"]); // PF
+			$arKey[] = $isPost ? ew_StripSlashes(@$_POST["userlevelid"]) : ew_StripSlashes(@$_GET["userlevelid"]); // userlevelid
+			$arKey[] = $isPost ? ew_StripSlashes(@$_POST["_tablename"]) : ew_StripSlashes(@$_GET["_tablename"]); // tablename
+			$arKeys[] = $arKey;
 
 			//return $arKeys; // Do not return yet, so the values will also be checked by the following code
 		}
@@ -511,7 +504,9 @@ class cemp extends cTable {
 		// Check keys
 		$ar = array();
 		foreach ($arKeys as $key) {
-			if (!is_numeric($key))
+			if (!is_array($key) || count($key) <> 2)
+				continue; // Just skip so other keys will still work
+			if (!is_numeric($key[0])) // userlevelid
 				continue;
 			$ar[] = $key;
 		}
@@ -524,7 +519,8 @@ class cemp extends cTable {
 		$sKeyFilter = "";
 		foreach ($arKeys as $key) {
 			if ($sKeyFilter <> "") $sKeyFilter .= " OR ";
-			$this->PF->CurrentValue = $key;
+			$this->userlevelid->CurrentValue = $key[0];
+			$this->_tablename->CurrentValue = $key[1];
 			$sKeyFilter .= "(" . $this->KeyFilter() . ")";
 		}
 		return $sKeyFilter;
@@ -545,12 +541,9 @@ class cemp extends cTable {
 
 	// Load row values from recordset
 	function LoadListRowValues(&$rs) {
-		$this->PF->setDbValue($rs->fields('PF'));
-		$this->Name->setDbValue($rs->fields('Name'));
-		$this->NIC->setDbValue($rs->fields('NIC'));
-		$this->Password->setDbValue($rs->fields('Password'));
-		$this->UserLevel->setDbValue($rs->fields('UserLevel'));
-		$this->Activated->setDbValue($rs->fields('Activated'));
+		$this->userlevelid->setDbValue($rs->fields('userlevelid'));
+		$this->_tablename->setDbValue($rs->fields('tablename'));
+		$this->permission->setDbValue($rs->fields('permission'));
 	}
 
 	// Render list row values
@@ -561,92 +554,36 @@ class cemp extends cTable {
 		$this->Row_Rendering();
 
    // Common render codes
-		// PF
-		// Name
-		// NIC
-		// Password
-		// UserLevel
-		// Activated
-		// PF
+		// userlevelid
+		// tablename
+		// permission
+		// userlevelid
 
-		$this->PF->ViewValue = $this->PF->CurrentValue;
-		$this->PF->ViewCustomAttributes = "";
+		$this->userlevelid->ViewValue = $this->userlevelid->CurrentValue;
+		$this->userlevelid->ViewCustomAttributes = "";
 
-		// Name
-		$this->Name->ViewValue = $this->Name->CurrentValue;
-		$this->Name->ViewCustomAttributes = "";
+		// tablename
+		$this->_tablename->ViewValue = $this->_tablename->CurrentValue;
+		$this->_tablename->ViewCustomAttributes = "";
 
-		// NIC
-		$this->NIC->ViewValue = $this->NIC->CurrentValue;
-		$this->NIC->ViewCustomAttributes = "";
+		// permission
+		$this->permission->ViewValue = $this->permission->CurrentValue;
+		$this->permission->ViewCustomAttributes = "";
 
-		// Password
-		$this->Password->ViewValue = $this->Password->CurrentValue;
-		$this->Password->ViewCustomAttributes = "";
+		// userlevelid
+		$this->userlevelid->LinkCustomAttributes = "";
+		$this->userlevelid->HrefValue = "";
+		$this->userlevelid->TooltipValue = "";
 
-		// UserLevel
-		if ($Security->CanAdmin()) { // System admin
-		if (strval($this->UserLevel->CurrentValue) <> "") {
-			$sFilterWrk = "`userlevelid`" . ew_SearchString("=", $this->UserLevel->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `userlevelid`, `userlevelname` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `userlevels`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->UserLevel, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->UserLevel->ViewValue = $this->UserLevel->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->UserLevel->ViewValue = $this->UserLevel->CurrentValue;
-			}
-		} else {
-			$this->UserLevel->ViewValue = NULL;
-		}
-		} else {
-			$this->UserLevel->ViewValue = $Language->Phrase("PasswordMask");
-		}
-		$this->UserLevel->ViewCustomAttributes = "";
+		// tablename
+		$this->_tablename->LinkCustomAttributes = "";
+		$this->_tablename->HrefValue = "";
+		$this->_tablename->TooltipValue = "";
 
-		// Activated
-		if (strval($this->Activated->CurrentValue) <> "") {
-			$this->Activated->ViewValue = $this->Activated->OptionCaption($this->Activated->CurrentValue);
-		} else {
-			$this->Activated->ViewValue = NULL;
-		}
-		$this->Activated->ViewCustomAttributes = "";
-
-		// PF
-		$this->PF->LinkCustomAttributes = "";
-		$this->PF->HrefValue = "";
-		$this->PF->TooltipValue = "";
-
-		// Name
-		$this->Name->LinkCustomAttributes = "";
-		$this->Name->HrefValue = "";
-		$this->Name->TooltipValue = "";
-
-		// NIC
-		$this->NIC->LinkCustomAttributes = "";
-		$this->NIC->HrefValue = "";
-		$this->NIC->TooltipValue = "";
-
-		// Password
-		$this->Password->LinkCustomAttributes = "";
-		$this->Password->HrefValue = "";
-		$this->Password->TooltipValue = "";
-
-		// UserLevel
-		$this->UserLevel->LinkCustomAttributes = "";
-		$this->UserLevel->HrefValue = "";
-		$this->UserLevel->TooltipValue = "";
-
-		// Activated
-		$this->Activated->LinkCustomAttributes = "";
-		$this->Activated->HrefValue = "";
-		$this->Activated->TooltipValue = "";
+		// permission
+		$this->permission->LinkCustomAttributes = "";
+		$this->permission->HrefValue = "";
+		$this->permission->TooltipValue = "";
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -659,41 +596,23 @@ class cemp extends cTable {
 		// Call Row Rendering event
 		$this->Row_Rendering();
 
-		// PF
-		$this->PF->EditAttrs["class"] = "form-control";
-		$this->PF->EditCustomAttributes = "";
-		$this->PF->EditValue = $this->PF->CurrentValue;
-		$this->PF->ViewCustomAttributes = "";
+		// userlevelid
+		$this->userlevelid->EditAttrs["class"] = "form-control";
+		$this->userlevelid->EditCustomAttributes = "";
+		$this->userlevelid->EditValue = $this->userlevelid->CurrentValue;
+		$this->userlevelid->ViewCustomAttributes = "";
 
-		// Name
-		$this->Name->EditAttrs["class"] = "form-control";
-		$this->Name->EditCustomAttributes = "";
-		$this->Name->EditValue = $this->Name->CurrentValue;
-		$this->Name->PlaceHolder = ew_RemoveHtml($this->Name->FldCaption());
+		// tablename
+		$this->_tablename->EditAttrs["class"] = "form-control";
+		$this->_tablename->EditCustomAttributes = "";
+		$this->_tablename->EditValue = $this->_tablename->CurrentValue;
+		$this->_tablename->ViewCustomAttributes = "";
 
-		// NIC
-		$this->NIC->EditAttrs["class"] = "form-control";
-		$this->NIC->EditCustomAttributes = "";
-		$this->NIC->EditValue = $this->NIC->CurrentValue;
-		$this->NIC->PlaceHolder = ew_RemoveHtml($this->NIC->FldCaption());
-
-		// Password
-		$this->Password->EditAttrs["class"] = "form-control ewPasswordStrength";
-		$this->Password->EditCustomAttributes = "";
-		$this->Password->EditValue = $this->Password->CurrentValue;
-		$this->Password->PlaceHolder = ew_RemoveHtml($this->Password->FldCaption());
-
-		// UserLevel
-		$this->UserLevel->EditAttrs["class"] = "form-control";
-		$this->UserLevel->EditCustomAttributes = "";
-		if (!$Security->CanAdmin()) { // System admin
-			$this->UserLevel->EditValue = $Language->Phrase("PasswordMask");
-		} else {
-		}
-
-		// Activated
-		$this->Activated->EditCustomAttributes = "";
-		$this->Activated->EditValue = $this->Activated->Options(FALSE);
+		// permission
+		$this->permission->EditAttrs["class"] = "form-control";
+		$this->permission->EditCustomAttributes = "";
+		$this->permission->EditValue = $this->permission->CurrentValue;
+		$this->permission->PlaceHolder = ew_RemoveHtml($this->permission->FldCaption());
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -722,19 +641,13 @@ class cemp extends cTable {
 			if ($Doc->Horizontal) { // Horizontal format, write header
 				$Doc->BeginExportRow();
 				if ($ExportPageType == "view") {
-					if ($this->PF->Exportable) $Doc->ExportCaption($this->PF);
-					if ($this->Name->Exportable) $Doc->ExportCaption($this->Name);
-					if ($this->NIC->Exportable) $Doc->ExportCaption($this->NIC);
-					if ($this->Password->Exportable) $Doc->ExportCaption($this->Password);
-					if ($this->UserLevel->Exportable) $Doc->ExportCaption($this->UserLevel);
-					if ($this->Activated->Exportable) $Doc->ExportCaption($this->Activated);
+					if ($this->userlevelid->Exportable) $Doc->ExportCaption($this->userlevelid);
+					if ($this->_tablename->Exportable) $Doc->ExportCaption($this->_tablename);
+					if ($this->permission->Exportable) $Doc->ExportCaption($this->permission);
 				} else {
-					if ($this->PF->Exportable) $Doc->ExportCaption($this->PF);
-					if ($this->Name->Exportable) $Doc->ExportCaption($this->Name);
-					if ($this->NIC->Exportable) $Doc->ExportCaption($this->NIC);
-					if ($this->Password->Exportable) $Doc->ExportCaption($this->Password);
-					if ($this->UserLevel->Exportable) $Doc->ExportCaption($this->UserLevel);
-					if ($this->Activated->Exportable) $Doc->ExportCaption($this->Activated);
+					if ($this->userlevelid->Exportable) $Doc->ExportCaption($this->userlevelid);
+					if ($this->_tablename->Exportable) $Doc->ExportCaption($this->_tablename);
+					if ($this->permission->Exportable) $Doc->ExportCaption($this->permission);
 				}
 				$Doc->EndExportRow();
 			}
@@ -766,19 +679,13 @@ class cemp extends cTable {
 				if (!$Doc->ExportCustom) {
 					$Doc->BeginExportRow($RowCnt); // Allow CSS styles if enabled
 					if ($ExportPageType == "view") {
-						if ($this->PF->Exportable) $Doc->ExportField($this->PF);
-						if ($this->Name->Exportable) $Doc->ExportField($this->Name);
-						if ($this->NIC->Exportable) $Doc->ExportField($this->NIC);
-						if ($this->Password->Exportable) $Doc->ExportField($this->Password);
-						if ($this->UserLevel->Exportable) $Doc->ExportField($this->UserLevel);
-						if ($this->Activated->Exportable) $Doc->ExportField($this->Activated);
+						if ($this->userlevelid->Exportable) $Doc->ExportField($this->userlevelid);
+						if ($this->_tablename->Exportable) $Doc->ExportField($this->_tablename);
+						if ($this->permission->Exportable) $Doc->ExportField($this->permission);
 					} else {
-						if ($this->PF->Exportable) $Doc->ExportField($this->PF);
-						if ($this->Name->Exportable) $Doc->ExportField($this->Name);
-						if ($this->NIC->Exportable) $Doc->ExportField($this->NIC);
-						if ($this->Password->Exportable) $Doc->ExportField($this->Password);
-						if ($this->UserLevel->Exportable) $Doc->ExportField($this->UserLevel);
-						if ($this->Activated->Exportable) $Doc->ExportField($this->Activated);
+						if ($this->userlevelid->Exportable) $Doc->ExportField($this->userlevelid);
+						if ($this->_tablename->Exportable) $Doc->ExportField($this->_tablename);
+						if ($this->permission->Exportable) $Doc->ExportField($this->permission);
 					}
 					$Doc->EndExportRow();
 				}

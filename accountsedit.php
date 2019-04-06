@@ -6,6 +6,7 @@ ob_start(); // Turn on output buffering
 <?php include_once ((EW_USE_ADODB) ? "adodb5/adodb.inc.php" : "ewmysql12.php") ?>
 <?php include_once "phpfn12.php" ?>
 <?php include_once "accountsinfo.php" ?>
+<?php include_once "empinfo.php" ?>
 <?php include_once "userfn12.php" ?>
 <?php
 
@@ -211,6 +212,7 @@ class caccounts_edit extends caccounts {
 	//
 	function __construct() {
 		global $conn, $Language;
+		global $UserTable, $UserTableConn;
 		$GLOBALS["Page"] = &$this;
 		$this->TokenTimeout = ew_SessionTimeoutTime();
 
@@ -226,6 +228,9 @@ class caccounts_edit extends caccounts {
 			$GLOBALS["Table"] = &$GLOBALS["accounts"];
 		}
 
+		// Table object (emp)
+		if (!isset($GLOBALS['emp'])) $GLOBALS['emp'] = new cemp();
+
 		// Page ID
 		if (!defined("EW_PAGE_ID"))
 			define("EW_PAGE_ID", 'edit', TRUE);
@@ -239,6 +244,12 @@ class caccounts_edit extends caccounts {
 
 		// Open connection
 		if (!isset($conn)) $conn = ew_Connect($this->DBID);
+
+		// User table object (emp)
+		if (!isset($UserTable)) {
+			$UserTable = new cemp();
+			$UserTableConn = Conn($UserTable->DBID);
+		}
 	}
 
 	// 
@@ -246,6 +257,21 @@ class caccounts_edit extends caccounts {
 	//
 	function Page_Init() {
 		global $gsExport, $gsCustomExport, $gsExportFile, $UserProfile, $Language, $Security, $objForm;
+
+		// Security
+		$Security = new cAdvancedSecurity();
+		if (!$Security->IsLoggedIn()) $Security->AutoLogin();
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
+		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
+		if (!$Security->CanEdit()) {
+			$Security->SaveLastUrl();
+			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
+			if ($Security->CanList())
+				$this->Page_Terminate(ew_GetUrl("accountslist.php"));
+			else
+				$this->Page_Terminate(ew_GetUrl("login.php"));
+		}
 
 		// Create form object
 		$objForm = new cFormObj();
@@ -991,7 +1017,9 @@ $sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
 <script type="text/javascript">
 faccountsedit.CreateAutoSuggest({"id":"x_Bank_ID","forceSelect":false});
 </script>
+<?php if (AllowAdd(CurrentProjectID() . "banks")) { ?>
 <button type="button" title="<?php echo ew_HtmlTitle($Language->Phrase("AddLink")) . "&nbsp;" . $accounts->Bank_ID->FldCaption() ?>" onclick="ew_AddOptDialogShow({lnk:this,el:'x_Bank_ID',url:'banksaddopt.php'});" class="ewAddOptBtn btn btn-default btn-sm" id="aol_x_Bank_ID"><span class="glyphicon glyphicon-plus ewIcon"></span><span class="hide"><?php echo $Language->Phrase("AddLink") ?>&nbsp;<?php echo $accounts->Bank_ID->FldCaption() ?></span></button>
+<?php } ?>
 <?php
 $sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
 $sWhereWrk = "{filter}";

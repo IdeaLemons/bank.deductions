@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ew-language date="2019/3/31" version="12.0.0" id="en" name="English" desc="English" author="e.World Technology Ltd.">
+<ew-language date="2019/4/5" version="12.0.0" id="en" name="English" desc="English" author="e.World Technology Ltd.">
   <locale>
     <phrase id="locale" value=""/>
     <!-- *** system locale for this language -->
@@ -569,6 +569,12 @@
   <project>
     <phrase id="bodytitle" value="Monthly Bank Deductions"/>
     <phrase id="footertext" value="&amp;copy;2019 e.World Technology Ltd. All rights reserved."/>
+    <menu id="5">
+      <phrase id="menutext" value="Permissions"/>
+    </menu>
+    <menu id="6">
+      <phrase id="menutext" value="User Levels"/>
+    </menu>
     <menu id="1">
       <phrase id="menutext" value="Deductions"/>
     </menu>
@@ -731,6 +737,40 @@
       </field>
       <field id="nic">
         <phrase id="fldcaption" value="NIC"/>
+      </field>
+      <field id="password">
+        <phrase id="fldcaption" value="Password"/>
+      </field>
+      <field id="userlevel">
+        <phrase id="fldcaption" value="User Level"/>
+      </field>
+      <field id="activated">
+        <phrase id="fldcaption" value="Activated"/>
+        <phrase id="fldtagvalue1" value="1"/>
+        <phrase id="fldtagcaption1" value="Activated"/>
+        <phrase id="fldtagvalue2" value="0"/>
+        <phrase id="fldtagcaption2" value="Diactivated"/>
+      </field>
+    </table>
+    <table id="userlevelpermissions">
+      <phrase id="tblcaption" value="Permissions"/>
+      <field id="userlevelid">
+        <phrase id="fldcaption" value="userlevelid"/>
+      </field>
+      <field id="_tablename">
+        <phrase id="fldcaption" value="tablename"/>
+      </field>
+      <field id="permission">
+        <phrase id="fldcaption" value="permission"/>
+      </field>
+    </table>
+    <table id="userlevels">
+      <phrase id="tblcaption" value="User Levels"/>
+      <field id="userlevelid">
+        <phrase id="fldcaption" value="userlevelid"/>
+      </field>
+      <field id="userlevelname">
+        <phrase id="fldcaption" value="userlevelname"/>
       </field>
     </table>
   </project>

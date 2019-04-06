@@ -6,6 +6,7 @@ ob_start(); // Turn on output buffering
 <?php include_once ((EW_USE_ADODB) ? "adodb5/adodb.inc.php" : "ewmysql12.php") ?>
 <?php include_once "phpfn12.php" ?>
 <?php include_once "deductionsinfo.php" ?>
+<?php include_once "empinfo.php" ?>
 <?php include_once "userfn12.php" ?>
 <?php
 
@@ -217,6 +218,7 @@ class cdeductions_edit extends cdeductions {
 	//
 	function __construct() {
 		global $conn, $Language;
+		global $UserTable, $UserTableConn;
 		$GLOBALS["Page"] = &$this;
 		$this->TokenTimeout = ew_SessionTimeoutTime();
 
@@ -232,6 +234,9 @@ class cdeductions_edit extends cdeductions {
 			$GLOBALS["Table"] = &$GLOBALS["deductions"];
 		}
 
+		// Table object (emp)
+		if (!isset($GLOBALS['emp'])) $GLOBALS['emp'] = new cemp();
+
 		// Page ID
 		if (!defined("EW_PAGE_ID"))
 			define("EW_PAGE_ID", 'edit', TRUE);
@@ -245,6 +250,12 @@ class cdeductions_edit extends cdeductions {
 
 		// Open connection
 		if (!isset($conn)) $conn = ew_Connect($this->DBID);
+
+		// User table object (emp)
+		if (!isset($UserTable)) {
+			$UserTable = new cemp();
+			$UserTableConn = Conn($UserTable->DBID);
+		}
 	}
 
 	// 
@@ -252,6 +263,21 @@ class cdeductions_edit extends cdeductions {
 	//
 	function Page_Init() {
 		global $gsExport, $gsCustomExport, $gsExportFile, $UserProfile, $Language, $Security, $objForm;
+
+		// Security
+		$Security = new cAdvancedSecurity();
+		if (!$Security->IsLoggedIn()) $Security->AutoLogin();
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
+		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
+		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
+		if (!$Security->CanEdit()) {
+			$Security->SaveLastUrl();
+			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
+			if ($Security->CanList())
+				$this->Page_Terminate(ew_GetUrl("deductionslist.php"));
+			else
+				$this->Page_Terminate(ew_GetUrl("login.php"));
+		}
 
 		// Create form object
 		$objForm = new cFormObj();
@@ -1477,7 +1503,9 @@ if (is_array($arwrk)) {
 	</div>
 	<div id="tp_x_Acc_ID" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Acc_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Acc_ID->DisplayValueSeparator) ? json_encode($deductions->Acc_ID->DisplayValueSeparator) : $deductions->Acc_ID->DisplayValueSeparator) ?>" name="x_Acc_ID" id="x_Acc_ID" value="{value}"<?php echo $deductions->Acc_ID->EditAttributes() ?>></div>
 </div>
+<?php if (AllowAdd(CurrentProjectID() . "accounts")) { ?>
 <button type="button" title="<?php echo ew_HtmlTitle($Language->Phrase("AddLink")) . "&nbsp;" . $deductions->Acc_ID->FldCaption() ?>" onclick="ew_AddOptDialogShow({lnk:this,el:'x_Acc_ID',url:'accountsaddopt.php'});" class="ewAddOptBtn btn btn-default btn-sm" id="aol_x_Acc_ID"><span class="glyphicon glyphicon-plus ewIcon"></span><span class="hide"><?php echo $Language->Phrase("AddLink") ?>&nbsp;<?php echo $deductions->Acc_ID->FldCaption() ?></span></button>
+<?php } ?>
 <?php
 $sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 $sWhereWrk = "";

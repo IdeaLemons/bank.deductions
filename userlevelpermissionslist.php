@@ -5,7 +5,7 @@ ob_start(); // Turn on output buffering
 <?php include_once "ewcfg12.php" ?>
 <?php include_once ((EW_USE_ADODB) ? "adodb5/adodb.inc.php" : "ewmysql12.php") ?>
 <?php include_once "phpfn12.php" ?>
-<?php include_once "deductionsinfo.php" ?>
+<?php include_once "userlevelpermissionsinfo.php" ?>
 <?php include_once "empinfo.php" ?>
 <?php include_once "userfn12.php" ?>
 <?php
@@ -14,9 +14,9 @@ ob_start(); // Turn on output buffering
 // Page class
 //
 
-$deductions_list = NULL; // Initialize page object first
+$userlevelpermissions_list = NULL; // Initialize page object first
 
-class cdeductions_list extends cdeductions {
+class cuserlevelpermissions_list extends cuserlevelpermissions {
 
 	// Page ID
 	var $PageID = 'list';
@@ -25,13 +25,13 @@ class cdeductions_list extends cdeductions {
 	var $ProjectID = "{163802B9-268A-4AFB-8FD6-7A7D18262A99}";
 
 	// Table name
-	var $TableName = 'deductions';
+	var $TableName = 'userlevelpermissions';
 
 	// Page object name
-	var $PageObjName = 'deductions_list';
+	var $PageObjName = 'userlevelpermissions_list';
 
 	// Grid form hidden field names
-	var $FormName = 'fdeductionslist';
+	var $FormName = 'fuserlevelpermissionslist';
 	var $FormActionName = 'k_action';
 	var $FormKeyName = 'k_key';
 	var $FormOldKeyName = 'k_oldkey';
@@ -81,12 +81,6 @@ class cdeductions_list extends cdeductions {
 	var $GridEditUrl;
 	var $MultiDeleteUrl;
 	var $MultiUpdateUrl;
-    var $AuditTrailOnAdd = FALSE;
-    var $AuditTrailOnEdit = FALSE;
-    var $AuditTrailOnDelete = FALSE;
-    var $AuditTrailOnView = FALSE;
-    var $AuditTrailOnViewData = FALSE;
-    var $AuditTrailOnSearch = FALSE;
 
 	// Message
 	function getMessage() {
@@ -268,10 +262,10 @@ class cdeductions_list extends cdeductions {
 		// Parent constuctor
 		parent::__construct();
 
-		// Table object (deductions)
-		if (!isset($GLOBALS["deductions"]) || get_class($GLOBALS["deductions"]) == "cdeductions") {
-			$GLOBALS["deductions"] = &$this;
-			$GLOBALS["Table"] = &$GLOBALS["deductions"];
+		// Table object (userlevelpermissions)
+		if (!isset($GLOBALS["userlevelpermissions"]) || get_class($GLOBALS["userlevelpermissions"]) == "cuserlevelpermissions") {
+			$GLOBALS["userlevelpermissions"] = &$this;
+			$GLOBALS["Table"] = &$GLOBALS["userlevelpermissions"];
 		}
 
 		// Initialize URLs
@@ -282,12 +276,12 @@ class cdeductions_list extends cdeductions {
 		$this->ExportXmlUrl = $this->PageUrl() . "export=xml";
 		$this->ExportCsvUrl = $this->PageUrl() . "export=csv";
 		$this->ExportPdfUrl = $this->PageUrl() . "export=pdf";
-		$this->AddUrl = "deductionsadd.php";
+		$this->AddUrl = "userlevelpermissionsadd.php";
 		$this->InlineAddUrl = $this->PageUrl() . "a=add";
 		$this->GridAddUrl = $this->PageUrl() . "a=gridadd";
 		$this->GridEditUrl = $this->PageUrl() . "a=gridedit";
-		$this->MultiDeleteUrl = "deductionsdelete.php";
-		$this->MultiUpdateUrl = "deductionsupdate.php";
+		$this->MultiDeleteUrl = "userlevelpermissionsdelete.php";
+		$this->MultiUpdateUrl = "userlevelpermissionsupdate.php";
 
 		// Table object (emp)
 		if (!isset($GLOBALS['emp'])) $GLOBALS['emp'] = new cemp();
@@ -298,7 +292,7 @@ class cdeductions_list extends cdeductions {
 
 		// Table name (for backward compatibility)
 		if (!defined("EW_TABLE_NAME"))
-			define("EW_TABLE_NAME", 'deductions', TRUE);
+			define("EW_TABLE_NAME", 'userlevelpermissions', TRUE);
 
 		// Start timer
 		if (!isset($GLOBALS["gTimer"])) $GLOBALS["gTimer"] = new cTimer();
@@ -335,7 +329,7 @@ class cdeductions_list extends cdeductions {
 		// Filter options
 		$this->FilterOptions = new cListOptions();
 		$this->FilterOptions->Tag = "div";
-		$this->FilterOptions->TagClassName = "ewFilterOption fdeductionslistsrch";
+		$this->FilterOptions->TagClassName = "ewFilterOption fuserlevelpermissionslistsrch";
 
 		// List actions
 		$this->ListActions = new cListActions();
@@ -353,10 +347,9 @@ class cdeductions_list extends cdeductions {
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loading();
 		$Security->LoadCurrentUserLevel($this->ProjectID . $this->TableName);
 		if ($Security->IsLoggedIn()) $Security->TablePermission_Loaded();
-		if (!$Security->CanList()) {
+		if (!$Security->CanAdmin()) {
 			$Security->SaveLastUrl();
-			$this->setFailureMessage($Language->Phrase("NoPermission")); // Set no permission
-			$this->Page_Terminate(ew_GetUrl("index.php"));
+			$this->Page_Terminate(ew_GetUrl("login.php"));
 		}
 
 		// Get export parameters
@@ -467,13 +460,13 @@ class cdeductions_list extends cdeductions {
 		Page_Unloaded();
 
 		// Export
-		global $EW_EXPORT, $deductions;
+		global $EW_EXPORT, $userlevelpermissions;
 		if ($this->CustomExport <> "" && $this->CustomExport == $this->Export && array_key_exists($this->CustomExport, $EW_EXPORT)) {
 				$sContent = ob_get_contents();
 			if ($gsExportFile == "") $gsExportFile = $this->TableVar;
 			$class = $EW_EXPORT[$this->CustomExport];
 			if (class_exists($class)) {
-				$doc = new $class($deductions);
+				$doc = new $class($userlevelpermissions);
 				$doc->Text = $sContent;
 				if ($this->Export == "email")
 					echo $this->ExportEmail($doc->Text);
@@ -591,18 +584,12 @@ class cdeductions_list extends cdeductions {
 
 			// Get default search criteria
 			ew_AddFilter($this->DefaultSearchWhere, $this->BasicSearchWhere(TRUE));
-			ew_AddFilter($this->DefaultSearchWhere, $this->AdvancedSearchWhere(TRUE));
 
 			// Get basic search values
 			$this->LoadBasicSearchValues();
 
-			// Get and validate search values for advanced search
-			$this->LoadSearchValues(); // Get search values
-
 			// Restore filter list
 			$this->RestoreFilterList();
-			if (!$this->ValidateSearch())
-				$this->setFailureMessage($gsSearchError);
 
 			// Restore search parms from Session if not searching / reset / export
 			if (($this->Export <> "" || $this->Command <> "search" && $this->Command <> "reset" && $this->Command <> "resetall") && $this->CheckSearchParms())
@@ -617,10 +604,6 @@ class cdeductions_list extends cdeductions {
 			// Get basic search criteria
 			if ($gsSearchError == "")
 				$sSrchBasic = $this->BasicSearchWhere();
-
-			// Get search criteria for advanced search
-			if ($gsSearchError == "")
-				$sSrchAdvanced = $this->AdvancedSearchWhere();
 		}
 
 		// Restore display records
@@ -640,11 +623,6 @@ class cdeductions_list extends cdeductions {
 			$this->BasicSearch->LoadDefault();
 			if ($this->BasicSearch->Keyword != "")
 				$sSrchBasic = $this->BasicSearchWhere();
-
-			// Load advanced search from default
-			if ($this->LoadAdvancedSearchDefault()) {
-				$sSrchAdvanced = $this->AdvancedSearchWhere();
-			}
 		}
 
 		// Build search criteria
@@ -726,10 +704,11 @@ class cdeductions_list extends cdeductions {
 	// Set up key values
 	function SetupKeyValues($key) {
 		$arrKeyFlds = explode($GLOBALS["EW_COMPOSITE_KEY_SEPARATOR"], $key);
-		if (count($arrKeyFlds) >= 1) {
-			$this->Deduction_ID->setFormValue($arrKeyFlds[0]);
-			if (!is_numeric($this->Deduction_ID->FormValue))
+		if (count($arrKeyFlds) >= 2) {
+			$this->userlevelid->setFormValue($arrKeyFlds[0]);
+			if (!is_numeric($this->userlevelid->FormValue))
 				return FALSE;
+			$this->_tablename->setFormValue($arrKeyFlds[1]);
 		}
 		return TRUE;
 	}
@@ -739,16 +718,9 @@ class cdeductions_list extends cdeductions {
 
 		// Initialize
 		$sFilterList = "";
-		$sFilterList = ew_Concat($sFilterList, $this->PF->AdvancedSearch->ToJSON(), ","); // Field PF
-		$sFilterList = ew_Concat($sFilterList, $this->L_Ref->AdvancedSearch->ToJSON(), ","); // Field L_Ref
-		$sFilterList = ew_Concat($sFilterList, $this->YEAR->AdvancedSearch->ToJSON(), ","); // Field YEAR
-		$sFilterList = ew_Concat($sFilterList, $this->MONTH->AdvancedSearch->ToJSON(), ","); // Field MONTH
-		$sFilterList = ew_Concat($sFilterList, $this->Acc_ID->AdvancedSearch->ToJSON(), ","); // Field Acc_ID
-		$sFilterList = ew_Concat($sFilterList, $this->AMOUNT->AdvancedSearch->ToJSON(), ","); // Field AMOUNT
-		$sFilterList = ew_Concat($sFilterList, $this->STARTED->AdvancedSearch->ToJSON(), ","); // Field STARTED
-		$sFilterList = ew_Concat($sFilterList, $this->ENDED->AdvancedSearch->ToJSON(), ","); // Field ENDED
-		$sFilterList = ew_Concat($sFilterList, $this->TYPE->AdvancedSearch->ToJSON(), ","); // Field TYPE
-		$sFilterList = ew_Concat($sFilterList, $this->NOTES->AdvancedSearch->ToJSON(), ","); // Field NOTES
+		$sFilterList = ew_Concat($sFilterList, $this->userlevelid->AdvancedSearch->ToJSON(), ","); // Field userlevelid
+		$sFilterList = ew_Concat($sFilterList, $this->_tablename->AdvancedSearch->ToJSON(), ","); // Field tablename
+		$sFilterList = ew_Concat($sFilterList, $this->permission->AdvancedSearch->ToJSON(), ","); // Field permission
 		if ($this->BasicSearch->Keyword <> "") {
 			$sWrk = "\"" . EW_TABLE_BASIC_SEARCH . "\":\"" . ew_JsEncode2($this->BasicSearch->Keyword) . "\",\"" . EW_TABLE_BASIC_SEARCH_TYPE . "\":\"" . ew_JsEncode2($this->BasicSearch->Type) . "\"";
 			$sFilterList = ew_Concat($sFilterList, $sWrk, ",");
@@ -767,183 +739,37 @@ class cdeductions_list extends cdeductions {
 		$filter = json_decode(ew_StripSlashes(@$_POST["filter"]), TRUE);
 		$this->Command = "search";
 
-		// Field PF
-		$this->PF->AdvancedSearch->SearchValue = @$filter["x_PF"];
-		$this->PF->AdvancedSearch->SearchOperator = @$filter["z_PF"];
-		$this->PF->AdvancedSearch->SearchCondition = @$filter["v_PF"];
-		$this->PF->AdvancedSearch->SearchValue2 = @$filter["y_PF"];
-		$this->PF->AdvancedSearch->SearchOperator2 = @$filter["w_PF"];
-		$this->PF->AdvancedSearch->Save();
+		// Field userlevelid
+		$this->userlevelid->AdvancedSearch->SearchValue = @$filter["x_userlevelid"];
+		$this->userlevelid->AdvancedSearch->SearchOperator = @$filter["z_userlevelid"];
+		$this->userlevelid->AdvancedSearch->SearchCondition = @$filter["v_userlevelid"];
+		$this->userlevelid->AdvancedSearch->SearchValue2 = @$filter["y_userlevelid"];
+		$this->userlevelid->AdvancedSearch->SearchOperator2 = @$filter["w_userlevelid"];
+		$this->userlevelid->AdvancedSearch->Save();
 
-		// Field L_Ref
-		$this->L_Ref->AdvancedSearch->SearchValue = @$filter["x_L_Ref"];
-		$this->L_Ref->AdvancedSearch->SearchOperator = @$filter["z_L_Ref"];
-		$this->L_Ref->AdvancedSearch->SearchCondition = @$filter["v_L_Ref"];
-		$this->L_Ref->AdvancedSearch->SearchValue2 = @$filter["y_L_Ref"];
-		$this->L_Ref->AdvancedSearch->SearchOperator2 = @$filter["w_L_Ref"];
-		$this->L_Ref->AdvancedSearch->Save();
+		// Field tablename
+		$this->_tablename->AdvancedSearch->SearchValue = @$filter["x__tablename"];
+		$this->_tablename->AdvancedSearch->SearchOperator = @$filter["z__tablename"];
+		$this->_tablename->AdvancedSearch->SearchCondition = @$filter["v__tablename"];
+		$this->_tablename->AdvancedSearch->SearchValue2 = @$filter["y__tablename"];
+		$this->_tablename->AdvancedSearch->SearchOperator2 = @$filter["w__tablename"];
+		$this->_tablename->AdvancedSearch->Save();
 
-		// Field YEAR
-		$this->YEAR->AdvancedSearch->SearchValue = @$filter["x_YEAR"];
-		$this->YEAR->AdvancedSearch->SearchOperator = @$filter["z_YEAR"];
-		$this->YEAR->AdvancedSearch->SearchCondition = @$filter["v_YEAR"];
-		$this->YEAR->AdvancedSearch->SearchValue2 = @$filter["y_YEAR"];
-		$this->YEAR->AdvancedSearch->SearchOperator2 = @$filter["w_YEAR"];
-		$this->YEAR->AdvancedSearch->Save();
-
-		// Field MONTH
-		$this->MONTH->AdvancedSearch->SearchValue = @$filter["x_MONTH"];
-		$this->MONTH->AdvancedSearch->SearchOperator = @$filter["z_MONTH"];
-		$this->MONTH->AdvancedSearch->SearchCondition = @$filter["v_MONTH"];
-		$this->MONTH->AdvancedSearch->SearchValue2 = @$filter["y_MONTH"];
-		$this->MONTH->AdvancedSearch->SearchOperator2 = @$filter["w_MONTH"];
-		$this->MONTH->AdvancedSearch->Save();
-
-		// Field Acc_ID
-		$this->Acc_ID->AdvancedSearch->SearchValue = @$filter["x_Acc_ID"];
-		$this->Acc_ID->AdvancedSearch->SearchOperator = @$filter["z_Acc_ID"];
-		$this->Acc_ID->AdvancedSearch->SearchCondition = @$filter["v_Acc_ID"];
-		$this->Acc_ID->AdvancedSearch->SearchValue2 = @$filter["y_Acc_ID"];
-		$this->Acc_ID->AdvancedSearch->SearchOperator2 = @$filter["w_Acc_ID"];
-		$this->Acc_ID->AdvancedSearch->Save();
-
-		// Field AMOUNT
-		$this->AMOUNT->AdvancedSearch->SearchValue = @$filter["x_AMOUNT"];
-		$this->AMOUNT->AdvancedSearch->SearchOperator = @$filter["z_AMOUNT"];
-		$this->AMOUNT->AdvancedSearch->SearchCondition = @$filter["v_AMOUNT"];
-		$this->AMOUNT->AdvancedSearch->SearchValue2 = @$filter["y_AMOUNT"];
-		$this->AMOUNT->AdvancedSearch->SearchOperator2 = @$filter["w_AMOUNT"];
-		$this->AMOUNT->AdvancedSearch->Save();
-
-		// Field STARTED
-		$this->STARTED->AdvancedSearch->SearchValue = @$filter["x_STARTED"];
-		$this->STARTED->AdvancedSearch->SearchOperator = @$filter["z_STARTED"];
-		$this->STARTED->AdvancedSearch->SearchCondition = @$filter["v_STARTED"];
-		$this->STARTED->AdvancedSearch->SearchValue2 = @$filter["y_STARTED"];
-		$this->STARTED->AdvancedSearch->SearchOperator2 = @$filter["w_STARTED"];
-		$this->STARTED->AdvancedSearch->Save();
-
-		// Field ENDED
-		$this->ENDED->AdvancedSearch->SearchValue = @$filter["x_ENDED"];
-		$this->ENDED->AdvancedSearch->SearchOperator = @$filter["z_ENDED"];
-		$this->ENDED->AdvancedSearch->SearchCondition = @$filter["v_ENDED"];
-		$this->ENDED->AdvancedSearch->SearchValue2 = @$filter["y_ENDED"];
-		$this->ENDED->AdvancedSearch->SearchOperator2 = @$filter["w_ENDED"];
-		$this->ENDED->AdvancedSearch->Save();
-
-		// Field TYPE
-		$this->TYPE->AdvancedSearch->SearchValue = @$filter["x_TYPE"];
-		$this->TYPE->AdvancedSearch->SearchOperator = @$filter["z_TYPE"];
-		$this->TYPE->AdvancedSearch->SearchCondition = @$filter["v_TYPE"];
-		$this->TYPE->AdvancedSearch->SearchValue2 = @$filter["y_TYPE"];
-		$this->TYPE->AdvancedSearch->SearchOperator2 = @$filter["w_TYPE"];
-		$this->TYPE->AdvancedSearch->Save();
-
-		// Field NOTES
-		$this->NOTES->AdvancedSearch->SearchValue = @$filter["x_NOTES"];
-		$this->NOTES->AdvancedSearch->SearchOperator = @$filter["z_NOTES"];
-		$this->NOTES->AdvancedSearch->SearchCondition = @$filter["v_NOTES"];
-		$this->NOTES->AdvancedSearch->SearchValue2 = @$filter["y_NOTES"];
-		$this->NOTES->AdvancedSearch->SearchOperator2 = @$filter["w_NOTES"];
-		$this->NOTES->AdvancedSearch->Save();
+		// Field permission
+		$this->permission->AdvancedSearch->SearchValue = @$filter["x_permission"];
+		$this->permission->AdvancedSearch->SearchOperator = @$filter["z_permission"];
+		$this->permission->AdvancedSearch->SearchCondition = @$filter["v_permission"];
+		$this->permission->AdvancedSearch->SearchValue2 = @$filter["y_permission"];
+		$this->permission->AdvancedSearch->SearchOperator2 = @$filter["w_permission"];
+		$this->permission->AdvancedSearch->Save();
 		$this->BasicSearch->setKeyword(@$filter[EW_TABLE_BASIC_SEARCH]);
 		$this->BasicSearch->setType(@$filter[EW_TABLE_BASIC_SEARCH_TYPE]);
-	}
-
-	// Advanced search WHERE clause based on QueryString
-	function AdvancedSearchWhere($Default = FALSE) {
-		global $Security;
-		$sWhere = "";
-		if (!$Security->CanSearch()) return "";
-		$this->BuildSearchSql($sWhere, $this->PF, $Default, FALSE); // PF
-		$this->BuildSearchSql($sWhere, $this->L_Ref, $Default, FALSE); // L_Ref
-		$this->BuildSearchSql($sWhere, $this->YEAR, $Default, FALSE); // YEAR
-		$this->BuildSearchSql($sWhere, $this->MONTH, $Default, FALSE); // MONTH
-		$this->BuildSearchSql($sWhere, $this->Acc_ID, $Default, FALSE); // Acc_ID
-		$this->BuildSearchSql($sWhere, $this->AMOUNT, $Default, FALSE); // AMOUNT
-		$this->BuildSearchSql($sWhere, $this->STARTED, $Default, FALSE); // STARTED
-		$this->BuildSearchSql($sWhere, $this->ENDED, $Default, FALSE); // ENDED
-		$this->BuildSearchSql($sWhere, $this->TYPE, $Default, FALSE); // TYPE
-		$this->BuildSearchSql($sWhere, $this->NOTES, $Default, FALSE); // NOTES
-
-		// Set up search parm
-		if (!$Default && $sWhere <> "") {
-			$this->Command = "search";
-		}
-		if (!$Default && $this->Command == "search") {
-			$this->PF->AdvancedSearch->Save(); // PF
-			$this->L_Ref->AdvancedSearch->Save(); // L_Ref
-			$this->YEAR->AdvancedSearch->Save(); // YEAR
-			$this->MONTH->AdvancedSearch->Save(); // MONTH
-			$this->Acc_ID->AdvancedSearch->Save(); // Acc_ID
-			$this->AMOUNT->AdvancedSearch->Save(); // AMOUNT
-			$this->STARTED->AdvancedSearch->Save(); // STARTED
-			$this->ENDED->AdvancedSearch->Save(); // ENDED
-			$this->TYPE->AdvancedSearch->Save(); // TYPE
-			$this->NOTES->AdvancedSearch->Save(); // NOTES
-		}
-		return $sWhere;
-	}
-
-	// Build search SQL
-	function BuildSearchSql(&$Where, &$Fld, $Default, $MultiValue) {
-		$FldParm = substr($Fld->FldVar, 2);
-		$FldVal = ($Default) ? $Fld->AdvancedSearch->SearchValueDefault : $Fld->AdvancedSearch->SearchValue; // @$_GET["x_$FldParm"]
-		$FldOpr = ($Default) ? $Fld->AdvancedSearch->SearchOperatorDefault : $Fld->AdvancedSearch->SearchOperator; // @$_GET["z_$FldParm"]
-		$FldCond = ($Default) ? $Fld->AdvancedSearch->SearchConditionDefault : $Fld->AdvancedSearch->SearchCondition; // @$_GET["v_$FldParm"]
-		$FldVal2 = ($Default) ? $Fld->AdvancedSearch->SearchValue2Default : $Fld->AdvancedSearch->SearchValue2; // @$_GET["y_$FldParm"]
-		$FldOpr2 = ($Default) ? $Fld->AdvancedSearch->SearchOperator2Default : $Fld->AdvancedSearch->SearchOperator2; // @$_GET["w_$FldParm"]
-		$sWrk = "";
-
-		//$FldVal = ew_StripSlashes($FldVal);
-		if (is_array($FldVal)) $FldVal = implode(",", $FldVal);
-
-		//$FldVal2 = ew_StripSlashes($FldVal2);
-		if (is_array($FldVal2)) $FldVal2 = implode(",", $FldVal2);
-		$FldOpr = strtoupper(trim($FldOpr));
-		if ($FldOpr == "") $FldOpr = "=";
-		$FldOpr2 = strtoupper(trim($FldOpr2));
-		if ($FldOpr2 == "") $FldOpr2 = "=";
-		if (EW_SEARCH_MULTI_VALUE_OPTION == 1 || $FldOpr <> "LIKE" ||
-			($FldOpr2 <> "LIKE" && $FldVal2 <> ""))
-			$MultiValue = FALSE;
-		if ($MultiValue) {
-			$sWrk1 = ($FldVal <> "") ? ew_GetMultiSearchSql($Fld, $FldOpr, $FldVal, $this->DBID) : ""; // Field value 1
-			$sWrk2 = ($FldVal2 <> "") ? ew_GetMultiSearchSql($Fld, $FldOpr2, $FldVal2, $this->DBID) : ""; // Field value 2
-			$sWrk = $sWrk1; // Build final SQL
-			if ($sWrk2 <> "")
-				$sWrk = ($sWrk <> "") ? "($sWrk) $FldCond ($sWrk2)" : $sWrk2;
-		} else {
-			$FldVal = $this->ConvertSearchValue($Fld, $FldVal);
-			$FldVal2 = $this->ConvertSearchValue($Fld, $FldVal2);
-			$sWrk = ew_GetSearchSql($Fld, $FldVal, $FldOpr, $FldCond, $FldVal2, $FldOpr2, $this->DBID);
-		}
-		ew_AddFilter($Where, $sWrk);
-	}
-
-	// Convert search value
-	function ConvertSearchValue(&$Fld, $FldVal) {
-		if ($FldVal == EW_NULL_VALUE || $FldVal == EW_NOT_NULL_VALUE)
-			return $FldVal;
-		$Value = $FldVal;
-		if ($Fld->FldDataType == EW_DATATYPE_BOOLEAN) {
-			if ($FldVal <> "") $Value = ($FldVal == "1" || strtolower(strval($FldVal)) == "y" || strtolower(strval($FldVal)) == "t") ? $Fld->TrueValue : $Fld->FalseValue;
-		} elseif ($Fld->FldDataType == EW_DATATYPE_DATE) {
-			if ($FldVal <> "") $Value = ew_UnFormatDateTime($FldVal, $Fld->FldDateTimeFormat);
-		}
-		return $Value;
 	}
 
 	// Return basic search SQL
 	function BasicSearchSQL($arKeywords, $type) {
 		$sWhere = "";
-		$this->BuildBasicSearchSQL($sWhere, $this->PF, $arKeywords, $type);
-		$this->BuildBasicSearchSQL($sWhere, $this->L_Ref, $arKeywords, $type);
-		$this->BuildBasicSearchSQL($sWhere, $this->YEAR, $arKeywords, $type);
-		$this->BuildBasicSearchSQL($sWhere, $this->MONTH, $arKeywords, $type);
-		$this->BuildBasicSearchSQL($sWhere, $this->STARTED, $arKeywords, $type);
-		$this->BuildBasicSearchSQL($sWhere, $this->TYPE, $arKeywords, $type);
-		$this->BuildBasicSearchSQL($sWhere, $this->NOTES, $arKeywords, $type);
+		$this->BuildBasicSearchSQL($sWhere, $this->_tablename, $arKeywords, $type);
 		return $sWhere;
 	}
 
@@ -1069,26 +895,6 @@ class cdeductions_list extends cdeductions {
 		// Check basic search
 		if ($this->BasicSearch->IssetSession())
 			return TRUE;
-		if ($this->PF->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->L_Ref->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->YEAR->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->MONTH->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->Acc_ID->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->AMOUNT->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->STARTED->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->ENDED->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->TYPE->AdvancedSearch->IssetSession())
-			return TRUE;
-		if ($this->NOTES->AdvancedSearch->IssetSession())
-			return TRUE;
 		return FALSE;
 	}
 
@@ -1101,9 +907,6 @@ class cdeductions_list extends cdeductions {
 
 		// Clear basic search parameters
 		$this->ResetBasicSearchParms();
-
-		// Clear advanced search parameters
-		$this->ResetAdvancedSearchParms();
 	}
 
 	// Load advanced search default values
@@ -1116,38 +919,12 @@ class cdeductions_list extends cdeductions {
 		$this->BasicSearch->UnsetSession();
 	}
 
-	// Clear all advanced search parameters
-	function ResetAdvancedSearchParms() {
-		$this->PF->AdvancedSearch->UnsetSession();
-		$this->L_Ref->AdvancedSearch->UnsetSession();
-		$this->YEAR->AdvancedSearch->UnsetSession();
-		$this->MONTH->AdvancedSearch->UnsetSession();
-		$this->Acc_ID->AdvancedSearch->UnsetSession();
-		$this->AMOUNT->AdvancedSearch->UnsetSession();
-		$this->STARTED->AdvancedSearch->UnsetSession();
-		$this->ENDED->AdvancedSearch->UnsetSession();
-		$this->TYPE->AdvancedSearch->UnsetSession();
-		$this->NOTES->AdvancedSearch->UnsetSession();
-	}
-
 	// Restore all search parameters
 	function RestoreSearchParms() {
 		$this->RestoreSearch = TRUE;
 
 		// Restore basic search values
 		$this->BasicSearch->Load();
-
-		// Restore advanced search values
-		$this->PF->AdvancedSearch->Load();
-		$this->L_Ref->AdvancedSearch->Load();
-		$this->YEAR->AdvancedSearch->Load();
-		$this->MONTH->AdvancedSearch->Load();
-		$this->Acc_ID->AdvancedSearch->Load();
-		$this->AMOUNT->AdvancedSearch->Load();
-		$this->STARTED->AdvancedSearch->Load();
-		$this->ENDED->AdvancedSearch->Load();
-		$this->TYPE->AdvancedSearch->Load();
-		$this->NOTES->AdvancedSearch->Load();
 	}
 
 	// Set up sort parameters
@@ -1157,16 +934,9 @@ class cdeductions_list extends cdeductions {
 		if (@$_GET["order"] <> "") {
 			$this->CurrentOrder = ew_StripSlashes(@$_GET["order"]);
 			$this->CurrentOrderType = @$_GET["ordertype"];
-			$this->UpdateSort($this->PF); // PF
-			$this->UpdateSort($this->L_Ref); // L_Ref
-			$this->UpdateSort($this->YEAR); // YEAR
-			$this->UpdateSort($this->MONTH); // MONTH
-			$this->UpdateSort($this->Acc_ID); // Acc_ID
-			$this->UpdateSort($this->AMOUNT); // AMOUNT
-			$this->UpdateSort($this->STARTED); // STARTED
-			$this->UpdateSort($this->ENDED); // ENDED
-			$this->UpdateSort($this->TYPE); // TYPE
-			$this->UpdateSort($this->NOTES); // NOTES
+			$this->UpdateSort($this->userlevelid); // userlevelid
+			$this->UpdateSort($this->_tablename); // tablename
+			$this->UpdateSort($this->permission); // permission
 			$this->setStartRecordNumber(1); // Reset start position
 		}
 	}
@@ -1199,16 +969,9 @@ class cdeductions_list extends cdeductions {
 			if ($this->Command == "resetsort") {
 				$sOrderBy = "";
 				$this->setSessionOrderBy($sOrderBy);
-				$this->PF->setSort("");
-				$this->L_Ref->setSort("");
-				$this->YEAR->setSort("");
-				$this->MONTH->setSort("");
-				$this->Acc_ID->setSort("");
-				$this->AMOUNT->setSort("");
-				$this->STARTED->setSort("");
-				$this->ENDED->setSort("");
-				$this->TYPE->setSort("");
-				$this->NOTES->setSort("");
+				$this->userlevelid->setSort("");
+				$this->_tablename->setSort("");
+				$this->permission->setSort("");
 			}
 
 			// Reset start position
@@ -1226,6 +989,12 @@ class cdeductions_list extends cdeductions {
 		$item->Body = "";
 		$item->OnLeft = FALSE;
 		$item->Visible = FALSE;
+
+		// "view"
+		$item = &$this->ListOptions->Add("view");
+		$item->CssStyle = "white-space: nowrap;";
+		$item->Visible = $Security->CanView();
+		$item->OnLeft = FALSE;
 
 		// "edit"
 		$item = &$this->ListOptions->Add("edit");
@@ -1255,14 +1024,6 @@ class cdeductions_list extends cdeductions {
 		$item->ShowInDropDown = FALSE;
 		$item->ShowInButtonGroup = FALSE;
 
-		// "sequence"
-		$item = &$this->ListOptions->Add("sequence");
-		$item->CssStyle = "white-space: nowrap;";
-		$item->Visible = TRUE;
-		$item->OnLeft = TRUE; // Always on left
-		$item->ShowInDropDown = FALSE;
-		$item->ShowInButtonGroup = FALSE;
-
 		// Drop down button for ListOptions
 		$this->ListOptions->UseImageAndText = TRUE;
 		$this->ListOptions->UseDropDownButton = FALSE;
@@ -1284,9 +1045,12 @@ class cdeductions_list extends cdeductions {
 		global $Security, $Language, $objForm;
 		$this->ListOptions->LoadDefault();
 
-		// "sequence"
-		$oListOpt = &$this->ListOptions->Items["sequence"];
-		$oListOpt->Body = ew_FormatSeqNo($this->RecCnt);
+		// "view"
+		$oListOpt = &$this->ListOptions->Items["view"];
+		if ($Security->CanView())
+			$oListOpt->Body = "<a class=\"ewRowLink ewView\" title=\"" . ew_HtmlTitle($Language->Phrase("ViewLink")) . "\" data-caption=\"" . ew_HtmlTitle($Language->Phrase("ViewLink")) . "\" href=\"" . ew_HtmlEncode($this->ViewUrl) . "\">" . $Language->Phrase("ViewLink") . "</a>";
+		else
+			$oListOpt->Body = "";
 
 		// "edit"
 		$oListOpt = &$this->ListOptions->Items["edit"];
@@ -1334,7 +1098,7 @@ class cdeductions_list extends cdeductions {
 
 		// "checkbox"
 		$oListOpt = &$this->ListOptions->Items["checkbox"];
-		$oListOpt->Body = "<input type=\"checkbox\" name=\"key_m[]\" value=\"" . ew_HtmlEncode($this->Deduction_ID->CurrentValue) . "\" onclick='ew_ClickMultiCheckbox(event);'>";
+		$oListOpt->Body = "<input type=\"checkbox\" name=\"key_m[]\" value=\"" . ew_HtmlEncode($this->userlevelid->CurrentValue . $GLOBALS["EW_COMPOSITE_KEY_SEPARATOR"] . $this->_tablename->CurrentValue) . "\" onclick='ew_ClickMultiCheckbox(event);'>";
 		$this->RenderListOptionsExt();
 
 		// Call ListOptions_Rendered event
@@ -1369,10 +1133,10 @@ class cdeductions_list extends cdeductions {
 
 		// Filter button
 		$item = &$this->FilterOptions->Add("savecurrentfilter");
-		$item->Body = "<a class=\"ewSaveFilter\" data-form=\"fdeductionslistsrch\" href=\"#\">" . $Language->Phrase("SaveCurrentFilter") . "</a>";
+		$item->Body = "<a class=\"ewSaveFilter\" data-form=\"fuserlevelpermissionslistsrch\" href=\"#\">" . $Language->Phrase("SaveCurrentFilter") . "</a>";
 		$item->Visible = TRUE;
 		$item = &$this->FilterOptions->Add("deletefilter");
-		$item->Body = "<a class=\"ewDeleteFilter\" data-form=\"fdeductionslistsrch\" href=\"#\">" . $Language->Phrase("DeleteFilter") . "</a>";
+		$item->Body = "<a class=\"ewDeleteFilter\" data-form=\"fuserlevelpermissionslistsrch\" href=\"#\">" . $Language->Phrase("DeleteFilter") . "</a>";
 		$item->Visible = TRUE;
 		$this->FilterOptions->UseDropDownButton = TRUE;
 		$this->FilterOptions->UseButtonGroup = !$this->FilterOptions->UseDropDownButton;
@@ -1396,7 +1160,7 @@ class cdeductions_list extends cdeductions {
 					$item = &$option->Add("custom_" . $listaction->Action);
 					$caption = $listaction->Caption;
 					$icon = ($listaction->Icon <> "") ? "<span class=\"" . ew_HtmlEncode($listaction->Icon) . "\" data-caption=\"" . ew_HtmlEncode($caption) . "\"></span> " : $caption;
-					$item->Body = "<a class=\"ewAction ewListAction\" title=\"" . ew_HtmlEncode($caption) . "\" data-caption=\"" . ew_HtmlEncode($caption) . "\" href=\"\" onclick=\"ew_SubmitAction(event,jQuery.extend({f:document.fdeductionslist}," . $listaction->ToJson(TRUE) . "));return false;\">" . $icon . "</a>";
+					$item->Body = "<a class=\"ewAction ewListAction\" title=\"" . ew_HtmlEncode($caption) . "\" data-caption=\"" . ew_HtmlEncode($caption) . "\" href=\"\" onclick=\"ew_SubmitAction(event,jQuery.extend({f:document.fuserlevelpermissionslist}," . $listaction->ToJson(TRUE) . "));return false;\">" . $icon . "</a>";
 					$item->Visible = $listaction->Allow;
 				}
 			}
@@ -1499,26 +1263,13 @@ class cdeductions_list extends cdeductions {
 		// Search button
 		$item = &$this->SearchOptions->Add("searchtoggle");
 		$SearchToggleClass = ($this->SearchWhere <> "") ? " active" : "";
-		$item->Body = "<button type=\"button\" class=\"btn btn-default ewSearchToggle" . $SearchToggleClass . "\" title=\"" . $Language->Phrase("SearchPanel") . "\" data-caption=\"" . $Language->Phrase("SearchPanel") . "\" data-toggle=\"button\" data-form=\"fdeductionslistsrch\">" . $Language->Phrase("SearchBtn") . "</button>";
+		$item->Body = "<button type=\"button\" class=\"btn btn-default ewSearchToggle" . $SearchToggleClass . "\" title=\"" . $Language->Phrase("SearchPanel") . "\" data-caption=\"" . $Language->Phrase("SearchPanel") . "\" data-toggle=\"button\" data-form=\"fuserlevelpermissionslistsrch\">" . $Language->Phrase("SearchBtn") . "</button>";
 		$item->Visible = TRUE;
 
 		// Show all button
 		$item = &$this->SearchOptions->Add("showall");
 		$item->Body = "<a class=\"btn btn-default ewShowAll\" title=\"" . $Language->Phrase("ShowAll") . "\" data-caption=\"" . $Language->Phrase("ShowAll") . "\" href=\"" . $this->PageUrl() . "cmd=reset\">" . $Language->Phrase("ShowAllBtn") . "</a>";
 		$item->Visible = ($this->SearchWhere <> $this->DefaultSearchWhere && $this->SearchWhere <> "0=101");
-
-		// Advanced search button
-		$item = &$this->SearchOptions->Add("advancedsearch");
-		if (ew_IsMobile())
-			$item->Body = "<a class=\"btn btn-default ewAdvancedSearch\" title=\"" . $Language->Phrase("AdvancedSearch") . "\" data-caption=\"" . $Language->Phrase("AdvancedSearch") . "\" href=\"deductionssrch.php\">" . $Language->Phrase("AdvancedSearchBtn") . "</a>";
-		else
-			$item->Body = "<button type=\"button\" class=\"btn btn-default ewAdvancedSearch\" title=\"" . $Language->Phrase("AdvancedSearch") . "\" data-caption=\"" . $Language->Phrase("AdvancedSearch") . "\" onclick=\"ew_SearchDialogShow({lnk:this,url:'deductionssrch.php'});\">" . $Language->Phrase("AdvancedSearchBtn") . "</a>";
-		$item->Visible = TRUE;
-
-		// Search highlight button
-		$item = &$this->SearchOptions->Add("searchhighlight");
-		$item->Body = "<button type=\"button\" class=\"btn btn-default ewHighlight active\" title=\"" . $Language->Phrase("Highlight") . "\" data-caption=\"" . $Language->Phrase("Highlight") . "\" data-toggle=\"button\" data-form=\"fdeductionslistsrch\" data-name=\"" . $this->HighlightName() . "\">" . $Language->Phrase("HighlightBtn") . "</button>";
-		$item->Visible = ($this->SearchWhere <> "" && $this->TotalRecs > 0);
 
 		// Button group for search
 		$this->SearchOptions->UseDropDownButton = FALSE;
@@ -1592,63 +1343,6 @@ class cdeductions_list extends cdeductions {
 		$this->BasicSearch->Type = @$_GET[EW_TABLE_BASIC_SEARCH_TYPE];
 	}
 
-	// Load search values for validation
-	function LoadSearchValues() {
-		global $objForm;
-
-		// Load search values
-		// PF
-
-		$this->PF->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_PF"]);
-		if ($this->PF->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->PF->AdvancedSearch->SearchOperator = @$_GET["z_PF"];
-
-		// L_Ref
-		$this->L_Ref->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_L_Ref"]);
-		if ($this->L_Ref->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->L_Ref->AdvancedSearch->SearchOperator = @$_GET["z_L_Ref"];
-
-		// YEAR
-		$this->YEAR->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_YEAR"]);
-		if ($this->YEAR->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->YEAR->AdvancedSearch->SearchOperator = @$_GET["z_YEAR"];
-
-		// MONTH
-		$this->MONTH->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_MONTH"]);
-		if ($this->MONTH->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->MONTH->AdvancedSearch->SearchOperator = @$_GET["z_MONTH"];
-
-		// Acc_ID
-		$this->Acc_ID->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Acc_ID"]);
-		if ($this->Acc_ID->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->Acc_ID->AdvancedSearch->SearchOperator = @$_GET["z_Acc_ID"];
-
-		// AMOUNT
-		$this->AMOUNT->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_AMOUNT"]);
-		if ($this->AMOUNT->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->AMOUNT->AdvancedSearch->SearchOperator = @$_GET["z_AMOUNT"];
-
-		// STARTED
-		$this->STARTED->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_STARTED"]);
-		if ($this->STARTED->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->STARTED->AdvancedSearch->SearchOperator = @$_GET["z_STARTED"];
-
-		// ENDED
-		$this->ENDED->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_ENDED"]);
-		if ($this->ENDED->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->ENDED->AdvancedSearch->SearchOperator = @$_GET["z_ENDED"];
-
-		// TYPE
-		$this->TYPE->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_TYPE"]);
-		if ($this->TYPE->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->TYPE->AdvancedSearch->SearchOperator = @$_GET["z_TYPE"];
-
-		// NOTES
-		$this->NOTES->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_NOTES"]);
-		if ($this->NOTES->AdvancedSearch->SearchValue <> "") $this->Command = "search";
-		$this->NOTES->AdvancedSearch->SearchOperator = @$_GET["z_NOTES"];
-	}
-
 	// Load recordset
 	function LoadRecordset($offset = -1, $rowcnt = -1) {
 
@@ -1704,34 +1398,18 @@ class cdeductions_list extends cdeductions {
 		// Call Row Selected event
 		$row = &$rs->fields;
 		$this->Row_Selected($row);
-		$this->Deduction_ID->setDbValue($rs->fields('Deduction_ID'));
-		$this->PF->setDbValue($rs->fields('PF'));
-		$this->L_Ref->setDbValue($rs->fields('L_Ref'));
-		$this->YEAR->setDbValue($rs->fields('YEAR'));
-		$this->MONTH->setDbValue($rs->fields('MONTH'));
-		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
-		$this->AMOUNT->setDbValue($rs->fields('AMOUNT'));
-		$this->STARTED->setDbValue($rs->fields('STARTED'));
-		$this->ENDED->setDbValue($rs->fields('ENDED'));
-		$this->TYPE->setDbValue($rs->fields('TYPE'));
-		$this->NOTES->setDbValue($rs->fields('NOTES'));
+		$this->userlevelid->setDbValue($rs->fields('userlevelid'));
+		$this->_tablename->setDbValue($rs->fields('tablename'));
+		$this->permission->setDbValue($rs->fields('permission'));
 	}
 
 	// Load DbValue from recordset
 	function LoadDbValues(&$rs) {
 		if (!$rs || !is_array($rs) && $rs->EOF) return;
 		$row = is_array($rs) ? $rs : $rs->fields;
-		$this->Deduction_ID->DbValue = $row['Deduction_ID'];
-		$this->PF->DbValue = $row['PF'];
-		$this->L_Ref->DbValue = $row['L_Ref'];
-		$this->YEAR->DbValue = $row['YEAR'];
-		$this->MONTH->DbValue = $row['MONTH'];
-		$this->Acc_ID->DbValue = $row['Acc_ID'];
-		$this->AMOUNT->DbValue = $row['AMOUNT'];
-		$this->STARTED->DbValue = $row['STARTED'];
-		$this->ENDED->DbValue = $row['ENDED'];
-		$this->TYPE->DbValue = $row['TYPE'];
-		$this->NOTES->DbValue = $row['NOTES'];
+		$this->userlevelid->DbValue = $row['userlevelid'];
+		$this->_tablename->DbValue = $row['tablename'];
+		$this->permission->DbValue = $row['permission'];
 	}
 
 	// Load old record
@@ -1739,8 +1417,12 @@ class cdeductions_list extends cdeductions {
 
 		// Load key values from Session
 		$bValidKey = TRUE;
-		if (strval($this->getKey("Deduction_ID")) <> "")
-			$this->Deduction_ID->CurrentValue = $this->getKey("Deduction_ID"); // Deduction_ID
+		if (strval($this->getKey("userlevelid")) <> "")
+			$this->userlevelid->CurrentValue = $this->getKey("userlevelid"); // userlevelid
+		else
+			$bValidKey = FALSE;
+		if (strval($this->getKey("_tablename")) <> "")
+			$this->_tablename->CurrentValue = $this->getKey("_tablename"); // tablename
 		else
 			$bValidKey = FALSE;
 
@@ -1769,219 +1451,47 @@ class cdeductions_list extends cdeductions {
 		$this->InlineCopyUrl = $this->GetInlineCopyUrl();
 		$this->DeleteUrl = $this->GetDeleteUrl();
 
-		// Convert decimal values if posted back
-		if ($this->AMOUNT->FormValue == $this->AMOUNT->CurrentValue && is_numeric(ew_StrToFloat($this->AMOUNT->CurrentValue)))
-			$this->AMOUNT->CurrentValue = ew_StrToFloat($this->AMOUNT->CurrentValue);
-
 		// Call Row_Rendering event
 		$this->Row_Rendering();
 
 		// Common render codes for all row types
-		// Deduction_ID
-
-		$this->Deduction_ID->CellCssStyle = "white-space: nowrap;";
-
-		// PF
-		// L_Ref
-		// YEAR
-		// MONTH
-		// Acc_ID
-		// AMOUNT
-		// STARTED
-		// ENDED
-		// TYPE
-		// NOTES
+		// userlevelid
+		// tablename
+		// permission
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
-		// PF
-		$this->PF->ViewValue = $this->PF->CurrentValue;
-		$this->PF->CellCssStyle .= "text-align: left;";
-		$this->PF->ViewCustomAttributes = "";
+		// userlevelid
+		$this->userlevelid->ViewValue = $this->userlevelid->CurrentValue;
+		$this->userlevelid->ViewCustomAttributes = "";
 
-		// L_Ref
-		$this->L_Ref->ViewValue = $this->L_Ref->CurrentValue;
-		$this->L_Ref->CssStyle = "font-weight: bold;";
-		$this->L_Ref->CellCssStyle .= "text-align: center;";
-		$this->L_Ref->ViewCustomAttributes = "";
+		// tablename
+		$this->_tablename->ViewValue = $this->_tablename->CurrentValue;
+		$this->_tablename->ViewCustomAttributes = "";
 
-		// YEAR
-		if (strval($this->YEAR->CurrentValue) <> "") {
-			$this->YEAR->ViewValue = $this->YEAR->OptionCaption($this->YEAR->CurrentValue);
-		} else {
-			$this->YEAR->ViewValue = NULL;
-		}
-		$this->YEAR->CellCssStyle .= "text-align: center;";
-		$this->YEAR->ViewCustomAttributes = "";
+		// permission
+		$this->permission->ViewValue = $this->permission->CurrentValue;
+		$this->permission->ViewCustomAttributes = "";
 
-		// MONTH
-		if (strval($this->MONTH->CurrentValue) <> "") {
-			$this->MONTH->ViewValue = $this->MONTH->OptionCaption($this->MONTH->CurrentValue);
-		} else {
-			$this->MONTH->ViewValue = NULL;
-		}
-		$this->MONTH->CellCssStyle .= "text-align: center;";
-		$this->MONTH->ViewCustomAttributes = "";
+			// userlevelid
+			$this->userlevelid->LinkCustomAttributes = "";
+			$this->userlevelid->HrefValue = "";
+			$this->userlevelid->TooltipValue = "";
 
-		// Acc_ID
-		if (strval($this->Acc_ID->CurrentValue) <> "") {
-			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Acc_ID->ViewValue = $this->Acc_ID->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Acc_ID->ViewValue = $this->Acc_ID->CurrentValue;
-			}
-		} else {
-			$this->Acc_ID->ViewValue = NULL;
-		}
-		$this->Acc_ID->CellCssStyle .= "text-align: right;";
-		$this->Acc_ID->ViewCustomAttributes = "";
+			// tablename
+			$this->_tablename->LinkCustomAttributes = "";
+			$this->_tablename->HrefValue = "";
+			$this->_tablename->TooltipValue = "";
 
-		// AMOUNT
-		$this->AMOUNT->ViewValue = $this->AMOUNT->CurrentValue;
-		$this->AMOUNT->ViewValue = ew_FormatCurrency($this->AMOUNT->ViewValue, 2, 0, -1, -1);
-		$this->AMOUNT->CellCssStyle .= "text-align: right;";
-		$this->AMOUNT->ViewCustomAttributes = "";
-
-		// STARTED
-		$this->STARTED->ViewValue = $this->STARTED->CurrentValue;
-		$this->STARTED->ViewValue = ew_FormatDateTime($this->STARTED->ViewValue, 5);
-		$this->STARTED->CellCssStyle .= "text-align: right;";
-		$this->STARTED->ViewCustomAttributes = "";
-
-		// ENDED
-		$this->ENDED->ViewValue = $this->ENDED->CurrentValue;
-		$this->ENDED->ViewValue = ew_FormatDateTime($this->ENDED->ViewValue, 5);
-		$this->ENDED->CellCssStyle .= "text-align: right;";
-		$this->ENDED->ViewCustomAttributes = "";
-
-		// TYPE
-		if (strval($this->TYPE->CurrentValue) <> "") {
-			$this->TYPE->ViewValue = $this->TYPE->OptionCaption($this->TYPE->CurrentValue);
-		} else {
-			$this->TYPE->ViewValue = NULL;
-		}
-		$this->TYPE->CellCssStyle .= "text-align: center;";
-		$this->TYPE->ViewCustomAttributes = "";
-
-		// NOTES
-		$this->NOTES->ViewValue = $this->NOTES->CurrentValue;
-		$this->NOTES->CellCssStyle .= "text-align: left;";
-		$this->NOTES->ViewCustomAttributes = "";
-
-			// PF
-			$this->PF->LinkCustomAttributes = "";
-			$this->PF->HrefValue = "";
-			if ($this->Export == "") {
-				$this->PF->TooltipValue = strval($this->NOTES->CurrentValue);
-				if ($this->PF->HrefValue == "") $this->PF->HrefValue = "javascript:void(0);";
-				$this->PF->LinkAttrs["class"] = "ewTooltipLink";
-				$this->PF->LinkAttrs["data-tooltip-id"] = "tt_deductions_x" . $this->RowCnt . "_PF";
-				$this->PF->LinkAttrs["data-tooltip-width"] = $this->PF->TooltipWidth;
-				$this->PF->LinkAttrs["data-placement"] = EW_CSS_FLIP ? "left" : "right";
-			}
-			if ($this->Export == "")
-				$this->PF->ViewValue = ew_Highlight($this->HighlightName(), $this->PF->ViewValue, $this->BasicSearch->getKeyword(), $this->BasicSearch->getType(), $this->PF->AdvancedSearch->getValue("x"), "");
-
-			// L_Ref
-			$this->L_Ref->LinkCustomAttributes = "";
-			$this->L_Ref->HrefValue = "";
-			$this->L_Ref->TooltipValue = "";
-			if ($this->Export == "")
-				$this->L_Ref->ViewValue = ew_Highlight($this->HighlightName(), $this->L_Ref->ViewValue, $this->BasicSearch->getKeyword(), $this->BasicSearch->getType(), $this->L_Ref->AdvancedSearch->getValue("x"), "");
-
-			// YEAR
-			$this->YEAR->LinkCustomAttributes = "";
-			$this->YEAR->HrefValue = "";
-			$this->YEAR->TooltipValue = "";
-
-			// MONTH
-			$this->MONTH->LinkCustomAttributes = "";
-			$this->MONTH->HrefValue = "";
-			$this->MONTH->TooltipValue = "";
-
-			// Acc_ID
-			$this->Acc_ID->LinkCustomAttributes = "";
-			$this->Acc_ID->HrefValue = "";
-			$this->Acc_ID->TooltipValue = "";
-
-			// AMOUNT
-			$this->AMOUNT->LinkCustomAttributes = "";
-			$this->AMOUNT->HrefValue = "";
-			$this->AMOUNT->TooltipValue = "";
-
-			// STARTED
-			$this->STARTED->LinkCustomAttributes = "";
-			$this->STARTED->HrefValue = "";
-			$this->STARTED->TooltipValue = "";
-
-			// ENDED
-			$this->ENDED->LinkCustomAttributes = "";
-			$this->ENDED->HrefValue = "";
-			$this->ENDED->TooltipValue = "";
-
-			// TYPE
-			$this->TYPE->LinkCustomAttributes = "";
-			$this->TYPE->HrefValue = "";
-			$this->TYPE->TooltipValue = "";
-
-			// NOTES
-			$this->NOTES->LinkCustomAttributes = "";
-			$this->NOTES->HrefValue = "";
-			$this->NOTES->TooltipValue = "";
-			if ($this->Export == "")
-				$this->NOTES->ViewValue = ew_Highlight($this->HighlightName(), $this->NOTES->ViewValue, $this->BasicSearch->getKeyword(), $this->BasicSearch->getType(), $this->NOTES->AdvancedSearch->getValue("x"), "");
+			// permission
+			$this->permission->LinkCustomAttributes = "";
+			$this->permission->HrefValue = "";
+			$this->permission->TooltipValue = "";
 		}
 
 		// Call Row Rendered event
 		if ($this->RowType <> EW_ROWTYPE_AGGREGATEINIT)
 			$this->Row_Rendered();
-	}
-
-	// Validate search
-	function ValidateSearch() {
-		global $gsSearchError;
-
-		// Initialize
-		$gsSearchError = "";
-
-		// Check if validation required
-		if (!EW_SERVER_VALIDATE)
-			return TRUE;
-
-		// Return validate result
-		$ValidateSearch = ($gsSearchError == "");
-
-		// Call Form_CustomValidate event
-		$sFormCustomError = "";
-		$ValidateSearch = $ValidateSearch && $this->Form_CustomValidate($sFormCustomError);
-		if ($sFormCustomError <> "") {
-			ew_AddMessage($gsSearchError, $sFormCustomError);
-		}
-		return $ValidateSearch;
-	}
-
-	// Load advanced search
-	function LoadAdvancedSearch() {
-		$this->PF->AdvancedSearch->Load();
-		$this->L_Ref->AdvancedSearch->Load();
-		$this->YEAR->AdvancedSearch->Load();
-		$this->MONTH->AdvancedSearch->Load();
-		$this->Acc_ID->AdvancedSearch->Load();
-		$this->AMOUNT->AdvancedSearch->Load();
-		$this->STARTED->AdvancedSearch->Load();
-		$this->ENDED->AdvancedSearch->Load();
-		$this->TYPE->AdvancedSearch->Load();
-		$this->NOTES->AdvancedSearch->Load();
 	}
 
 	// Set up export options
@@ -2026,7 +1536,7 @@ class cdeductions_list extends cdeductions {
 		// Export to Email
 		$item = &$this->ExportOptions->Add("email");
 		$url = "";
-		$item->Body = "<button id=\"emf_deductions\" class=\"ewExportLink ewEmail\" title=\"" . $Language->Phrase("ExportToEmailText") . "\" data-caption=\"" . $Language->Phrase("ExportToEmailText") . "\" onclick=\"ew_EmailDialogShow({lnk:'emf_deductions',hdr:ewLanguage.Phrase('ExportToEmailText'),f:document.fdeductionslist,sel:false" . $url . "});\">" . $Language->Phrase("ExportToEmail") . "</button>";
+		$item->Body = "<button id=\"emf_userlevelpermissions\" class=\"ewExportLink ewEmail\" title=\"" . $Language->Phrase("ExportToEmailText") . "\" data-caption=\"" . $Language->Phrase("ExportToEmailText") . "\" onclick=\"ew_EmailDialogShow({lnk:'emf_userlevelpermissions',hdr:ewLanguage.Phrase('ExportToEmailText'),f:document.fuserlevelpermissionslist,sel:false" . $url . "});\">" . $Language->Phrase("ExportToEmail") . "</button>";
 		$item->Visible = TRUE;
 
 		// Drop down button for export
@@ -2236,16 +1746,6 @@ class cdeductions_list extends cdeductions {
 		if ($this->BasicSearch->getKeyword() <> "") {
 			$sQry .= "&" . EW_TABLE_BASIC_SEARCH . "=" . urlencode($this->BasicSearch->getKeyword()) . "&" . EW_TABLE_BASIC_SEARCH_TYPE . "=" . urlencode($this->BasicSearch->getType());
 		}
-		$this->AddSearchQueryString($sQry, $this->PF); // PF
-		$this->AddSearchQueryString($sQry, $this->L_Ref); // L_Ref
-		$this->AddSearchQueryString($sQry, $this->YEAR); // YEAR
-		$this->AddSearchQueryString($sQry, $this->MONTH); // MONTH
-		$this->AddSearchQueryString($sQry, $this->Acc_ID); // Acc_ID
-		$this->AddSearchQueryString($sQry, $this->AMOUNT); // AMOUNT
-		$this->AddSearchQueryString($sQry, $this->STARTED); // STARTED
-		$this->AddSearchQueryString($sQry, $this->ENDED); // ENDED
-		$this->AddSearchQueryString($sQry, $this->TYPE); // TYPE
-		$this->AddSearchQueryString($sQry, $this->NOTES); // NOTES
 
 		// Build QueryString for pager
 		$sQry .= "&" . EW_TABLE_REC_PER_PAGE . "=" . urlencode($this->getRecordsPerPage()) . "&" . EW_TABLE_START_REC . "=" . urlencode($this->getStartRecordNumber());
@@ -2275,13 +1775,6 @@ class cdeductions_list extends cdeductions {
 		$url = substr(ew_CurrentUrl(), strrpos(ew_CurrentUrl(), "/")+1);
 		$url = preg_replace('/\?cmd=reset(all){0,1}$/i', '', $url); // Remove cmd=reset / cmd=resetall
 		$Breadcrumb->Add("list", $this->TableVar, $url, "", $this->TableVar, TRUE);
-	}
-
-	// Write Audit Trail start/end for grid update
-	function WriteAuditTrailDummy($typ) {
-		$table = 'deductions';
-		$usr = CurrentUserName();
-		ew_WriteAuditTrail("log", ew_StdCurrentDateTime(), ew_ScriptName(), $usr, $typ, $table, "", "", "", "");
 	}
 
 	// Page Load event
@@ -2408,31 +1901,31 @@ class cdeductions_list extends cdeductions {
 <?php
 
 // Create page object
-if (!isset($deductions_list)) $deductions_list = new cdeductions_list();
+if (!isset($userlevelpermissions_list)) $userlevelpermissions_list = new cuserlevelpermissions_list();
 
 // Page init
-$deductions_list->Page_Init();
+$userlevelpermissions_list->Page_Init();
 
 // Page main
-$deductions_list->Page_Main();
+$userlevelpermissions_list->Page_Main();
 
 // Global Page Rendering event (in userfn*.php)
 Page_Rendering();
 
 // Page Rendering event
-$deductions_list->Page_Render();
+$userlevelpermissions_list->Page_Render();
 ?>
 <?php include_once "header.php" ?>
-<?php if ($deductions->Export == "") { ?>
+<?php if ($userlevelpermissions->Export == "") { ?>
 <script type="text/javascript">
 
 // Form object
 var CurrentPageID = EW_PAGE_ID = "list";
-var CurrentForm = fdeductionslist = new ew_Form("fdeductionslist", "list");
-fdeductionslist.FormKeyCountName = '<?php echo $deductions_list->FormKeyCountName ?>';
+var CurrentForm = fuserlevelpermissionslist = new ew_Form("fuserlevelpermissionslist", "list");
+fuserlevelpermissionslist.FormKeyCountName = '<?php echo $userlevelpermissions_list->FormKeyCountName ?>';
 
 // Form_CustomValidate event
-fdeductionslist.Form_CustomValidate = 
+fuserlevelpermissionslist.Form_CustomValidate = 
  function(fobj) { // DO NOT CHANGE THIS LINE!
 
  	// Your custom validation code here, return false if invalid. 
@@ -2441,105 +1934,91 @@ fdeductionslist.Form_CustomValidate =
 
 // Use JavaScript validation or not
 <?php if (EW_CLIENT_VALIDATE) { ?>
-fdeductionslist.ValidateRequired = true;
+fuserlevelpermissionslist.ValidateRequired = true;
 <?php } else { ?>
-fdeductionslist.ValidateRequired = false; 
+fuserlevelpermissionslist.ValidateRequired = false; 
 <?php } ?>
 
 // Dynamic selection lists
-fdeductionslist.Lists["x_YEAR"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-fdeductionslist.Lists["x_YEAR"].Options = <?php echo json_encode($deductions->YEAR->Options()) ?>;
-fdeductionslist.Lists["x_MONTH"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-fdeductionslist.Lists["x_MONTH"].Options = <?php echo json_encode($deductions->MONTH->Options()) ?>;
-fdeductionslist.Lists["x_Acc_ID"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_Acc_NO","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-fdeductionslist.Lists["x_TYPE"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-fdeductionslist.Lists["x_TYPE"].Options = <?php echo json_encode($deductions->TYPE->Options()) ?>;
-
 // Form object for search
-var CurrentSearchForm = fdeductionslistsrch = new ew_Form("fdeductionslistsrch");
+
+var CurrentSearchForm = fuserlevelpermissionslistsrch = new ew_Form("fuserlevelpermissionslistsrch");
 
 // Init search panel as collapsed
-if (fdeductionslistsrch) fdeductionslistsrch.InitSearchPanel = true;
+if (fuserlevelpermissionslistsrch) fuserlevelpermissionslistsrch.InitSearchPanel = true;
 </script>
 <script type="text/javascript">
 
 // Write your client script here, no need to add script tags.
 </script>
 <?php } ?>
-<?php if ($deductions->Export == "") { ?>
+<?php if ($userlevelpermissions->Export == "") { ?>
 <div class="ewToolbar">
-<?php if ($deductions->Export == "") { ?>
+<?php if ($userlevelpermissions->Export == "") { ?>
 <?php $Breadcrumb->Render(); ?>
 <?php } ?>
-<?php if ($deductions_list->TotalRecs > 0 && $deductions_list->ExportOptions->Visible()) { ?>
-<?php $deductions_list->ExportOptions->Render("body") ?>
+<?php if ($userlevelpermissions_list->TotalRecs > 0 && $userlevelpermissions_list->ExportOptions->Visible()) { ?>
+<?php $userlevelpermissions_list->ExportOptions->Render("body") ?>
 <?php } ?>
-<?php if ($deductions_list->SearchOptions->Visible()) { ?>
-<?php $deductions_list->SearchOptions->Render("body") ?>
+<?php if ($userlevelpermissions_list->SearchOptions->Visible()) { ?>
+<?php $userlevelpermissions_list->SearchOptions->Render("body") ?>
 <?php } ?>
-<?php if ($deductions_list->FilterOptions->Visible()) { ?>
-<?php $deductions_list->FilterOptions->Render("body") ?>
+<?php if ($userlevelpermissions_list->FilterOptions->Visible()) { ?>
+<?php $userlevelpermissions_list->FilterOptions->Render("body") ?>
 <?php } ?>
-<?php if ($deductions->Export == "") { ?>
+<?php if ($userlevelpermissions->Export == "") { ?>
 <?php echo $Language->SelectionForm(); ?>
 <?php } ?>
 <div class="clearfix"></div>
 </div>
 <?php } ?>
 <?php
-	$bSelectLimit = $deductions_list->UseSelectLimit;
+	$bSelectLimit = $userlevelpermissions_list->UseSelectLimit;
 	if ($bSelectLimit) {
-		if ($deductions_list->TotalRecs <= 0)
-			$deductions_list->TotalRecs = $deductions->SelectRecordCount();
+		if ($userlevelpermissions_list->TotalRecs <= 0)
+			$userlevelpermissions_list->TotalRecs = $userlevelpermissions->SelectRecordCount();
 	} else {
-		if (!$deductions_list->Recordset && ($deductions_list->Recordset = $deductions_list->LoadRecordset()))
-			$deductions_list->TotalRecs = $deductions_list->Recordset->RecordCount();
+		if (!$userlevelpermissions_list->Recordset && ($userlevelpermissions_list->Recordset = $userlevelpermissions_list->LoadRecordset()))
+			$userlevelpermissions_list->TotalRecs = $userlevelpermissions_list->Recordset->RecordCount();
 	}
-	$deductions_list->StartRec = 1;
-	if ($deductions_list->DisplayRecs <= 0 || ($deductions->Export <> "" && $deductions->ExportAll)) // Display all records
-		$deductions_list->DisplayRecs = $deductions_list->TotalRecs;
-	if (!($deductions->Export <> "" && $deductions->ExportAll))
-		$deductions_list->SetUpStartRec(); // Set up start record position
+	$userlevelpermissions_list->StartRec = 1;
+	if ($userlevelpermissions_list->DisplayRecs <= 0 || ($userlevelpermissions->Export <> "" && $userlevelpermissions->ExportAll)) // Display all records
+		$userlevelpermissions_list->DisplayRecs = $userlevelpermissions_list->TotalRecs;
+	if (!($userlevelpermissions->Export <> "" && $userlevelpermissions->ExportAll))
+		$userlevelpermissions_list->SetUpStartRec(); // Set up start record position
 	if ($bSelectLimit)
-		$deductions_list->Recordset = $deductions_list->LoadRecordset($deductions_list->StartRec-1, $deductions_list->DisplayRecs);
+		$userlevelpermissions_list->Recordset = $userlevelpermissions_list->LoadRecordset($userlevelpermissions_list->StartRec-1, $userlevelpermissions_list->DisplayRecs);
 
 	// Set no record found message
-	if ($deductions->CurrentAction == "" && $deductions_list->TotalRecs == 0) {
+	if ($userlevelpermissions->CurrentAction == "" && $userlevelpermissions_list->TotalRecs == 0) {
 		if (!$Security->CanList())
-			$deductions_list->setWarningMessage($Language->Phrase("NoPermission"));
-		if ($deductions_list->SearchWhere == "0=101")
-			$deductions_list->setWarningMessage($Language->Phrase("EnterSearchCriteria"));
+			$userlevelpermissions_list->setWarningMessage($Language->Phrase("NoPermission"));
+		if ($userlevelpermissions_list->SearchWhere == "0=101")
+			$userlevelpermissions_list->setWarningMessage($Language->Phrase("EnterSearchCriteria"));
 		else
-			$deductions_list->setWarningMessage($Language->Phrase("NoRecord"));
+			$userlevelpermissions_list->setWarningMessage($Language->Phrase("NoRecord"));
 	}
-
-	// Audit trail on search
-	if ($deductions_list->AuditTrailOnSearch && $deductions_list->Command == "search" && !$deductions_list->RestoreSearch) {
-		$searchparm = ew_ServerVar("QUERY_STRING");
-		$searchsql = $deductions_list->getSessionWhere();
-		$deductions_list->WriteAuditTrailOnSearch($searchparm, $searchsql);
-	}
-$deductions_list->RenderOtherOptions();
+$userlevelpermissions_list->RenderOtherOptions();
 ?>
 <?php if ($Security->CanSearch()) { ?>
-<?php if ($deductions->Export == "" && $deductions->CurrentAction == "") { ?>
-<form name="fdeductionslistsrch" id="fdeductionslistsrch" class="form-inline ewForm" action="<?php echo ew_CurrentPage() ?>">
-<?php $SearchPanelClass = ($deductions_list->SearchWhere <> "") ? " in" : ""; ?>
-<div id="fdeductionslistsrch_SearchPanel" class="ewSearchPanel collapse<?php echo $SearchPanelClass ?>">
+<?php if ($userlevelpermissions->Export == "" && $userlevelpermissions->CurrentAction == "") { ?>
+<form name="fuserlevelpermissionslistsrch" id="fuserlevelpermissionslistsrch" class="form-inline ewForm" action="<?php echo ew_CurrentPage() ?>">
+<?php $SearchPanelClass = ($userlevelpermissions_list->SearchWhere <> "") ? " in" : ""; ?>
+<div id="fuserlevelpermissionslistsrch_SearchPanel" class="ewSearchPanel collapse<?php echo $SearchPanelClass ?>">
 <input type="hidden" name="cmd" value="search">
-<input type="hidden" name="t" value="deductions">
+<input type="hidden" name="t" value="userlevelpermissions">
 	<div class="ewBasicSearch">
 <div id="xsr_1" class="ewRow">
 	<div class="ewQuickSearch input-group">
-	<input type="text" name="<?php echo EW_TABLE_BASIC_SEARCH ?>" id="<?php echo EW_TABLE_BASIC_SEARCH ?>" class="form-control" value="<?php echo ew_HtmlEncode($deductions_list->BasicSearch->getKeyword()) ?>" placeholder="<?php echo ew_HtmlEncode($Language->Phrase("Search")) ?>">
-	<input type="hidden" name="<?php echo EW_TABLE_BASIC_SEARCH_TYPE ?>" id="<?php echo EW_TABLE_BASIC_SEARCH_TYPE ?>" value="<?php echo ew_HtmlEncode($deductions_list->BasicSearch->getType()) ?>">
+	<input type="text" name="<?php echo EW_TABLE_BASIC_SEARCH ?>" id="<?php echo EW_TABLE_BASIC_SEARCH ?>" class="form-control" value="<?php echo ew_HtmlEncode($userlevelpermissions_list->BasicSearch->getKeyword()) ?>" placeholder="<?php echo ew_HtmlEncode($Language->Phrase("Search")) ?>">
+	<input type="hidden" name="<?php echo EW_TABLE_BASIC_SEARCH_TYPE ?>" id="<?php echo EW_TABLE_BASIC_SEARCH_TYPE ?>" value="<?php echo ew_HtmlEncode($userlevelpermissions_list->BasicSearch->getType()) ?>">
 	<div class="input-group-btn">
-		<button type="button" data-toggle="dropdown" class="btn btn-default"><span id="searchtype"><?php echo $deductions_list->BasicSearch->getTypeNameShort() ?></span><span class="caret"></span></button>
+		<button type="button" data-toggle="dropdown" class="btn btn-default"><span id="searchtype"><?php echo $userlevelpermissions_list->BasicSearch->getTypeNameShort() ?></span><span class="caret"></span></button>
 		<ul class="dropdown-menu pull-right" role="menu">
-			<li<?php if ($deductions_list->BasicSearch->getType() == "") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this)"><?php echo $Language->Phrase("QuickSearchAuto") ?></a></li>
-			<li<?php if ($deductions_list->BasicSearch->getType() == "=") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this,'=')"><?php echo $Language->Phrase("QuickSearchExact") ?></a></li>
-			<li<?php if ($deductions_list->BasicSearch->getType() == "AND") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this,'AND')"><?php echo $Language->Phrase("QuickSearchAll") ?></a></li>
-			<li<?php if ($deductions_list->BasicSearch->getType() == "OR") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this,'OR')"><?php echo $Language->Phrase("QuickSearchAny") ?></a></li>
+			<li<?php if ($userlevelpermissions_list->BasicSearch->getType() == "") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this)"><?php echo $Language->Phrase("QuickSearchAuto") ?></a></li>
+			<li<?php if ($userlevelpermissions_list->BasicSearch->getType() == "=") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this,'=')"><?php echo $Language->Phrase("QuickSearchExact") ?></a></li>
+			<li<?php if ($userlevelpermissions_list->BasicSearch->getType() == "AND") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this,'AND')"><?php echo $Language->Phrase("QuickSearchAll") ?></a></li>
+			<li<?php if ($userlevelpermissions_list->BasicSearch->getType() == "OR") echo " class=\"active\""; ?>><a href="javascript:void(0);" onclick="ew_SetSearchType(this,'OR')"><?php echo $Language->Phrase("QuickSearchAny") ?></a></li>
 		</ul>
 	<button class="btn btn-primary ewButton" name="btnsubmit" id="btnsubmit" type="submit"><?php echo $Language->Phrase("QuickSearchBtn") ?></button>
 	</div>
@@ -2550,292 +2029,166 @@ $deductions_list->RenderOtherOptions();
 </form>
 <?php } ?>
 <?php } ?>
-<?php $deductions_list->ShowPageHeader(); ?>
+<?php $userlevelpermissions_list->ShowPageHeader(); ?>
 <?php
-$deductions_list->ShowMessage();
+$userlevelpermissions_list->ShowMessage();
 ?>
-<?php if ($deductions_list->TotalRecs > 0 || $deductions->CurrentAction <> "") { ?>
+<?php if ($userlevelpermissions_list->TotalRecs > 0 || $userlevelpermissions->CurrentAction <> "") { ?>
 <div class="panel panel-default ewGrid">
-<form name="fdeductionslist" id="fdeductionslist" class="form-inline ewForm ewListForm" action="<?php echo ew_CurrentPage() ?>" method="post">
-<?php if ($deductions_list->CheckToken) { ?>
-<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $deductions_list->Token ?>">
+<form name="fuserlevelpermissionslist" id="fuserlevelpermissionslist" class="form-inline ewForm ewListForm" action="<?php echo ew_CurrentPage() ?>" method="post">
+<?php if ($userlevelpermissions_list->CheckToken) { ?>
+<input type="hidden" name="<?php echo EW_TOKEN_NAME ?>" value="<?php echo $userlevelpermissions_list->Token ?>">
 <?php } ?>
-<input type="hidden" name="t" value="deductions">
-<div id="gmp_deductions" class="<?php if (ew_IsResponsiveLayout()) { echo "table-responsive "; } ?>ewGridMiddlePanel">
-<?php if ($deductions_list->TotalRecs > 0) { ?>
-<table id="tbl_deductionslist" class="table ewTable">
-<?php echo $deductions->TableCustomInnerHtml ?>
+<input type="hidden" name="t" value="userlevelpermissions">
+<div id="gmp_userlevelpermissions" class="<?php if (ew_IsResponsiveLayout()) { echo "table-responsive "; } ?>ewGridMiddlePanel">
+<?php if ($userlevelpermissions_list->TotalRecs > 0) { ?>
+<table id="tbl_userlevelpermissionslist" class="table ewTable">
+<?php echo $userlevelpermissions->TableCustomInnerHtml ?>
 <thead><!-- Table header -->
 	<tr class="ewTableHeader">
 <?php
 
 // Header row
-$deductions_list->RowType = EW_ROWTYPE_HEADER;
+$userlevelpermissions_list->RowType = EW_ROWTYPE_HEADER;
 
 // Render list options
-$deductions_list->RenderListOptions();
+$userlevelpermissions_list->RenderListOptions();
 
 // Render list options (header, left)
-$deductions_list->ListOptions->Render("header", "left");
+$userlevelpermissions_list->ListOptions->Render("header", "left");
 ?>
-<?php if ($deductions->PF->Visible) { // PF ?>
-	<?php if ($deductions->SortUrl($deductions->PF) == "") { ?>
-		<th data-name="PF"><div id="elh_deductions_PF" class="deductions_PF"><div class="ewTableHeaderCaption"><?php echo $deductions->PF->FldCaption() ?></div></div></th>
+<?php if ($userlevelpermissions->userlevelid->Visible) { // userlevelid ?>
+	<?php if ($userlevelpermissions->SortUrl($userlevelpermissions->userlevelid) == "") { ?>
+		<th data-name="userlevelid"><div id="elh_userlevelpermissions_userlevelid" class="userlevelpermissions_userlevelid"><div class="ewTableHeaderCaption"><?php echo $userlevelpermissions->userlevelid->FldCaption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="PF"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->PF) ?>',1);"><div id="elh_deductions_PF" class="deductions_PF">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->PF->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($deductions->PF->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->PF->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+		<th data-name="userlevelid"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $userlevelpermissions->SortUrl($userlevelpermissions->userlevelid) ?>',1);"><div id="elh_userlevelpermissions_userlevelid" class="userlevelpermissions_userlevelid">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $userlevelpermissions->userlevelid->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($userlevelpermissions->userlevelid->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($userlevelpermissions->userlevelid->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
-<?php if ($deductions->L_Ref->Visible) { // L_Ref ?>
-	<?php if ($deductions->SortUrl($deductions->L_Ref) == "") { ?>
-		<th data-name="L_Ref"><div id="elh_deductions_L_Ref" class="deductions_L_Ref"><div class="ewTableHeaderCaption"><?php echo $deductions->L_Ref->FldCaption() ?></div></div></th>
+<?php if ($userlevelpermissions->_tablename->Visible) { // tablename ?>
+	<?php if ($userlevelpermissions->SortUrl($userlevelpermissions->_tablename) == "") { ?>
+		<th data-name="_tablename"><div id="elh_userlevelpermissions__tablename" class="userlevelpermissions__tablename"><div class="ewTableHeaderCaption"><?php echo $userlevelpermissions->_tablename->FldCaption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="L_Ref"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->L_Ref) ?>',1);"><div id="elh_deductions_L_Ref" class="deductions_L_Ref">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->L_Ref->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($deductions->L_Ref->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->L_Ref->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+		<th data-name="_tablename"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $userlevelpermissions->SortUrl($userlevelpermissions->_tablename) ?>',1);"><div id="elh_userlevelpermissions__tablename" class="userlevelpermissions__tablename">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $userlevelpermissions->_tablename->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($userlevelpermissions->_tablename->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($userlevelpermissions->_tablename->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
-<?php if ($deductions->YEAR->Visible) { // YEAR ?>
-	<?php if ($deductions->SortUrl($deductions->YEAR) == "") { ?>
-		<th data-name="YEAR"><div id="elh_deductions_YEAR" class="deductions_YEAR"><div class="ewTableHeaderCaption"><?php echo $deductions->YEAR->FldCaption() ?></div></div></th>
+<?php if ($userlevelpermissions->permission->Visible) { // permission ?>
+	<?php if ($userlevelpermissions->SortUrl($userlevelpermissions->permission) == "") { ?>
+		<th data-name="permission"><div id="elh_userlevelpermissions_permission" class="userlevelpermissions_permission"><div class="ewTableHeaderCaption"><?php echo $userlevelpermissions->permission->FldCaption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="YEAR"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->YEAR) ?>',1);"><div id="elh_deductions_YEAR" class="deductions_YEAR">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->YEAR->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->YEAR->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->YEAR->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
-        </div></div></th>
-	<?php } ?>
-<?php } ?>		
-<?php if ($deductions->MONTH->Visible) { // MONTH ?>
-	<?php if ($deductions->SortUrl($deductions->MONTH) == "") { ?>
-		<th data-name="MONTH"><div id="elh_deductions_MONTH" class="deductions_MONTH"><div class="ewTableHeaderCaption"><?php echo $deductions->MONTH->FldCaption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="MONTH"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->MONTH) ?>',1);"><div id="elh_deductions_MONTH" class="deductions_MONTH">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->MONTH->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->MONTH->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->MONTH->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
-        </div></div></th>
-	<?php } ?>
-<?php } ?>		
-<?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
-	<?php if ($deductions->SortUrl($deductions->Acc_ID) == "") { ?>
-		<th data-name="Acc_ID"><div id="elh_deductions_Acc_ID" class="deductions_Acc_ID"><div class="ewTableHeaderCaption"><?php echo $deductions->Acc_ID->FldCaption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="Acc_ID"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->Acc_ID) ?>',1);"><div id="elh_deductions_Acc_ID" class="deductions_Acc_ID">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->Acc_ID->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->Acc_ID->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->Acc_ID->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
-        </div></div></th>
-	<?php } ?>
-<?php } ?>		
-<?php if ($deductions->AMOUNT->Visible) { // AMOUNT ?>
-	<?php if ($deductions->SortUrl($deductions->AMOUNT) == "") { ?>
-		<th data-name="AMOUNT"><div id="elh_deductions_AMOUNT" class="deductions_AMOUNT"><div class="ewTableHeaderCaption"><?php echo $deductions->AMOUNT->FldCaption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="AMOUNT"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->AMOUNT) ?>',1);"><div id="elh_deductions_AMOUNT" class="deductions_AMOUNT">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->AMOUNT->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->AMOUNT->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->AMOUNT->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
-        </div></div></th>
-	<?php } ?>
-<?php } ?>		
-<?php if ($deductions->STARTED->Visible) { // STARTED ?>
-	<?php if ($deductions->SortUrl($deductions->STARTED) == "") { ?>
-		<th data-name="STARTED"><div id="elh_deductions_STARTED" class="deductions_STARTED"><div class="ewTableHeaderCaption"><?php echo $deductions->STARTED->FldCaption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="STARTED"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->STARTED) ?>',1);"><div id="elh_deductions_STARTED" class="deductions_STARTED">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->STARTED->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($deductions->STARTED->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->STARTED->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
-        </div></div></th>
-	<?php } ?>
-<?php } ?>		
-<?php if ($deductions->ENDED->Visible) { // ENDED ?>
-	<?php if ($deductions->SortUrl($deductions->ENDED) == "") { ?>
-		<th data-name="ENDED"><div id="elh_deductions_ENDED" class="deductions_ENDED"><div class="ewTableHeaderCaption"><?php echo $deductions->ENDED->FldCaption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="ENDED"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->ENDED) ?>',1);"><div id="elh_deductions_ENDED" class="deductions_ENDED">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->ENDED->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->ENDED->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->ENDED->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
-        </div></div></th>
-	<?php } ?>
-<?php } ?>		
-<?php if ($deductions->TYPE->Visible) { // TYPE ?>
-	<?php if ($deductions->SortUrl($deductions->TYPE) == "") { ?>
-		<th data-name="TYPE"><div id="elh_deductions_TYPE" class="deductions_TYPE"><div class="ewTableHeaderCaption"><?php echo $deductions->TYPE->FldCaption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="TYPE"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->TYPE) ?>',1);"><div id="elh_deductions_TYPE" class="deductions_TYPE">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->TYPE->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->TYPE->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->TYPE->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
-        </div></div></th>
-	<?php } ?>
-<?php } ?>		
-<?php if ($deductions->NOTES->Visible) { // NOTES ?>
-	<?php if ($deductions->SortUrl($deductions->NOTES) == "") { ?>
-		<th data-name="NOTES"><div id="elh_deductions_NOTES" class="deductions_NOTES"><div class="ewTableHeaderCaption"><?php echo $deductions->NOTES->FldCaption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="NOTES"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->NOTES) ?>',1);"><div id="elh_deductions_NOTES" class="deductions_NOTES">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->NOTES->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($deductions->NOTES->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->NOTES->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+		<th data-name="permission"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $userlevelpermissions->SortUrl($userlevelpermissions->permission) ?>',1);"><div id="elh_userlevelpermissions_permission" class="userlevelpermissions_permission">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $userlevelpermissions->permission->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($userlevelpermissions->permission->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($userlevelpermissions->permission->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
 <?php
 
 // Render list options (header, right)
-$deductions_list->ListOptions->Render("header", "right");
+$userlevelpermissions_list->ListOptions->Render("header", "right");
 ?>
 	</tr>
 </thead>
 <tbody>
 <?php
-if ($deductions->ExportAll && $deductions->Export <> "") {
-	$deductions_list->StopRec = $deductions_list->TotalRecs;
+if ($userlevelpermissions->ExportAll && $userlevelpermissions->Export <> "") {
+	$userlevelpermissions_list->StopRec = $userlevelpermissions_list->TotalRecs;
 } else {
 
 	// Set the last record to display
-	if ($deductions_list->TotalRecs > $deductions_list->StartRec + $deductions_list->DisplayRecs - 1)
-		$deductions_list->StopRec = $deductions_list->StartRec + $deductions_list->DisplayRecs - 1;
+	if ($userlevelpermissions_list->TotalRecs > $userlevelpermissions_list->StartRec + $userlevelpermissions_list->DisplayRecs - 1)
+		$userlevelpermissions_list->StopRec = $userlevelpermissions_list->StartRec + $userlevelpermissions_list->DisplayRecs - 1;
 	else
-		$deductions_list->StopRec = $deductions_list->TotalRecs;
+		$userlevelpermissions_list->StopRec = $userlevelpermissions_list->TotalRecs;
 }
-$deductions_list->RecCnt = $deductions_list->StartRec - 1;
-if ($deductions_list->Recordset && !$deductions_list->Recordset->EOF) {
-	$deductions_list->Recordset->MoveFirst();
-	$bSelectLimit = $deductions_list->UseSelectLimit;
-	if (!$bSelectLimit && $deductions_list->StartRec > 1)
-		$deductions_list->Recordset->Move($deductions_list->StartRec - 1);
-} elseif (!$deductions->AllowAddDeleteRow && $deductions_list->StopRec == 0) {
-	$deductions_list->StopRec = $deductions->GridAddRowCount;
+$userlevelpermissions_list->RecCnt = $userlevelpermissions_list->StartRec - 1;
+if ($userlevelpermissions_list->Recordset && !$userlevelpermissions_list->Recordset->EOF) {
+	$userlevelpermissions_list->Recordset->MoveFirst();
+	$bSelectLimit = $userlevelpermissions_list->UseSelectLimit;
+	if (!$bSelectLimit && $userlevelpermissions_list->StartRec > 1)
+		$userlevelpermissions_list->Recordset->Move($userlevelpermissions_list->StartRec - 1);
+} elseif (!$userlevelpermissions->AllowAddDeleteRow && $userlevelpermissions_list->StopRec == 0) {
+	$userlevelpermissions_list->StopRec = $userlevelpermissions->GridAddRowCount;
 }
 
 // Initialize aggregate
-$deductions->RowType = EW_ROWTYPE_AGGREGATEINIT;
-$deductions->ResetAttrs();
-$deductions_list->RenderRow();
-while ($deductions_list->RecCnt < $deductions_list->StopRec) {
-	$deductions_list->RecCnt++;
-	if (intval($deductions_list->RecCnt) >= intval($deductions_list->StartRec)) {
-		$deductions_list->RowCnt++;
+$userlevelpermissions->RowType = EW_ROWTYPE_AGGREGATEINIT;
+$userlevelpermissions->ResetAttrs();
+$userlevelpermissions_list->RenderRow();
+while ($userlevelpermissions_list->RecCnt < $userlevelpermissions_list->StopRec) {
+	$userlevelpermissions_list->RecCnt++;
+	if (intval($userlevelpermissions_list->RecCnt) >= intval($userlevelpermissions_list->StartRec)) {
+		$userlevelpermissions_list->RowCnt++;
 
 		// Set up key count
-		$deductions_list->KeyCount = $deductions_list->RowIndex;
+		$userlevelpermissions_list->KeyCount = $userlevelpermissions_list->RowIndex;
 
 		// Init row class and style
-		$deductions->ResetAttrs();
-		$deductions->CssClass = "";
-		if ($deductions->CurrentAction == "gridadd") {
+		$userlevelpermissions->ResetAttrs();
+		$userlevelpermissions->CssClass = "";
+		if ($userlevelpermissions->CurrentAction == "gridadd") {
 		} else {
-			$deductions_list->LoadRowValues($deductions_list->Recordset); // Load row values
+			$userlevelpermissions_list->LoadRowValues($userlevelpermissions_list->Recordset); // Load row values
 		}
-		$deductions->RowType = EW_ROWTYPE_VIEW; // Render view
+		$userlevelpermissions->RowType = EW_ROWTYPE_VIEW; // Render view
 
 		// Set up row id / data-rowindex
-		$deductions->RowAttrs = array_merge($deductions->RowAttrs, array('data-rowindex'=>$deductions_list->RowCnt, 'id'=>'r' . $deductions_list->RowCnt . '_deductions', 'data-rowtype'=>$deductions->RowType));
+		$userlevelpermissions->RowAttrs = array_merge($userlevelpermissions->RowAttrs, array('data-rowindex'=>$userlevelpermissions_list->RowCnt, 'id'=>'r' . $userlevelpermissions_list->RowCnt . '_userlevelpermissions', 'data-rowtype'=>$userlevelpermissions->RowType));
 
 		// Render row
-		$deductions_list->RenderRow();
+		$userlevelpermissions_list->RenderRow();
 
 		// Render list options
-		$deductions_list->RenderListOptions();
+		$userlevelpermissions_list->RenderListOptions();
 ?>
-	<tr<?php echo $deductions->RowAttributes() ?>>
+	<tr<?php echo $userlevelpermissions->RowAttributes() ?>>
 <?php
 
 // Render list options (body, left)
-$deductions_list->ListOptions->Render("body", "left", $deductions_list->RowCnt);
+$userlevelpermissions_list->ListOptions->Render("body", "left", $userlevelpermissions_list->RowCnt);
 ?>
-	<?php if ($deductions->PF->Visible) { // PF ?>
-		<td data-name="PF"<?php echo $deductions->PF->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_PF" class="deductions_PF">
-<span<?php echo $deductions->PF->ViewAttributes() ?>>
-<?php if ((!ew_EmptyStr($deductions->PF->TooltipValue)) && $deductions->PF->LinkAttributes() <> "") { ?>
-<a<?php echo $deductions->PF->LinkAttributes() ?>><?php echo $deductions->PF->ListViewValue() ?></a>
-<?php } else { ?>
-<?php echo $deductions->PF->ListViewValue() ?>
-<?php } ?>
-<span id="tt_deductions_x<?php echo $deductions_list->RowCnt ?>_PF" style="display: none">
-<?php echo $deductions->PF->TooltipValue ?>
-</span></span>
+	<?php if ($userlevelpermissions->userlevelid->Visible) { // userlevelid ?>
+		<td data-name="userlevelid"<?php echo $userlevelpermissions->userlevelid->CellAttributes() ?>>
+<span id="el<?php echo $userlevelpermissions_list->RowCnt ?>_userlevelpermissions_userlevelid" class="userlevelpermissions_userlevelid">
+<span<?php echo $userlevelpermissions->userlevelid->ViewAttributes() ?>>
+<?php echo $userlevelpermissions->userlevelid->ListViewValue() ?></span>
 </span>
-<a id="<?php echo $deductions_list->PageObjName . "_row_" . $deductions_list->RowCnt ?>"></a></td>
+<a id="<?php echo $userlevelpermissions_list->PageObjName . "_row_" . $userlevelpermissions_list->RowCnt ?>"></a></td>
 	<?php } ?>
-	<?php if ($deductions->L_Ref->Visible) { // L_Ref ?>
-		<td data-name="L_Ref"<?php echo $deductions->L_Ref->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_L_Ref" class="deductions_L_Ref">
-<span<?php echo $deductions->L_Ref->ViewAttributes() ?>>
-<?php echo $deductions->L_Ref->ListViewValue() ?></span>
+	<?php if ($userlevelpermissions->_tablename->Visible) { // tablename ?>
+		<td data-name="_tablename"<?php echo $userlevelpermissions->_tablename->CellAttributes() ?>>
+<span id="el<?php echo $userlevelpermissions_list->RowCnt ?>_userlevelpermissions__tablename" class="userlevelpermissions__tablename">
+<span<?php echo $userlevelpermissions->_tablename->ViewAttributes() ?>>
+<?php echo $userlevelpermissions->_tablename->ListViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>
-	<?php if ($deductions->YEAR->Visible) { // YEAR ?>
-		<td data-name="YEAR"<?php echo $deductions->YEAR->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_YEAR" class="deductions_YEAR">
-<span<?php echo $deductions->YEAR->ViewAttributes() ?>>
-<?php echo $deductions->YEAR->ListViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($deductions->MONTH->Visible) { // MONTH ?>
-		<td data-name="MONTH"<?php echo $deductions->MONTH->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_MONTH" class="deductions_MONTH">
-<span<?php echo $deductions->MONTH->ViewAttributes() ?>>
-<?php echo $deductions->MONTH->ListViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
-		<td data-name="Acc_ID"<?php echo $deductions->Acc_ID->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_Acc_ID" class="deductions_Acc_ID">
-<span<?php echo $deductions->Acc_ID->ViewAttributes() ?>>
-<?php echo $deductions->Acc_ID->ListViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($deductions->AMOUNT->Visible) { // AMOUNT ?>
-		<td data-name="AMOUNT"<?php echo $deductions->AMOUNT->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_AMOUNT" class="deductions_AMOUNT">
-<span<?php echo $deductions->AMOUNT->ViewAttributes() ?>>
-<?php echo $deductions->AMOUNT->ListViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($deductions->STARTED->Visible) { // STARTED ?>
-		<td data-name="STARTED"<?php echo $deductions->STARTED->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_STARTED" class="deductions_STARTED">
-<span<?php echo $deductions->STARTED->ViewAttributes() ?>>
-<?php echo $deductions->STARTED->ListViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($deductions->ENDED->Visible) { // ENDED ?>
-		<td data-name="ENDED"<?php echo $deductions->ENDED->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_ENDED" class="deductions_ENDED">
-<span<?php echo $deductions->ENDED->ViewAttributes() ?>>
-<?php echo $deductions->ENDED->ListViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($deductions->TYPE->Visible) { // TYPE ?>
-		<td data-name="TYPE"<?php echo $deductions->TYPE->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_TYPE" class="deductions_TYPE">
-<span<?php echo $deductions->TYPE->ViewAttributes() ?>>
-<?php echo $deductions->TYPE->ListViewValue() ?></span>
-</span>
-</td>
-	<?php } ?>
-	<?php if ($deductions->NOTES->Visible) { // NOTES ?>
-		<td data-name="NOTES"<?php echo $deductions->NOTES->CellAttributes() ?>>
-<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_NOTES" class="deductions_NOTES">
-<span<?php echo $deductions->NOTES->ViewAttributes() ?>>
-<?php echo $deductions->NOTES->ListViewValue() ?></span>
+	<?php if ($userlevelpermissions->permission->Visible) { // permission ?>
+		<td data-name="permission"<?php echo $userlevelpermissions->permission->CellAttributes() ?>>
+<span id="el<?php echo $userlevelpermissions_list->RowCnt ?>_userlevelpermissions_permission" class="userlevelpermissions_permission">
+<span<?php echo $userlevelpermissions->permission->ViewAttributes() ?>>
+<?php echo $userlevelpermissions->permission->ListViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>
 <?php
 
 // Render list options (body, right)
-$deductions_list->ListOptions->Render("body", "right", $deductions_list->RowCnt);
+$userlevelpermissions_list->ListOptions->Render("body", "right", $userlevelpermissions_list->RowCnt);
 ?>
 	</tr>
 <?php
 	}
-	if ($deductions->CurrentAction <> "gridadd")
-		$deductions_list->Recordset->MoveNext();
+	if ($userlevelpermissions->CurrentAction <> "gridadd")
+		$userlevelpermissions_list->Recordset->MoveNext();
 }
 ?>
 </tbody>
 </table>
 <?php } ?>
-<?php if ($deductions->CurrentAction == "") { ?>
+<?php if ($userlevelpermissions->CurrentAction == "") { ?>
 <input type="hidden" name="a_list" id="a_list" value="">
 <?php } ?>
 </div>
@@ -2843,61 +2196,61 @@ $deductions_list->ListOptions->Render("body", "right", $deductions_list->RowCnt)
 <?php
 
 // Close recordset
-if ($deductions_list->Recordset)
-	$deductions_list->Recordset->Close();
+if ($userlevelpermissions_list->Recordset)
+	$userlevelpermissions_list->Recordset->Close();
 ?>
-<?php if ($deductions->Export == "") { ?>
+<?php if ($userlevelpermissions->Export == "") { ?>
 <div class="panel-footer ewGridLowerPanel">
-<?php if ($deductions->CurrentAction <> "gridadd" && $deductions->CurrentAction <> "gridedit") { ?>
+<?php if ($userlevelpermissions->CurrentAction <> "gridadd" && $userlevelpermissions->CurrentAction <> "gridedit") { ?>
 <form name="ewPagerForm" class="ewForm form-inline ewPagerForm" action="<?php echo ew_CurrentPage() ?>">
-<?php if (!isset($deductions_list->Pager)) $deductions_list->Pager = new cPrevNextPager($deductions_list->StartRec, $deductions_list->DisplayRecs, $deductions_list->TotalRecs) ?>
-<?php if ($deductions_list->Pager->RecordCount > 0) { ?>
+<?php if (!isset($userlevelpermissions_list->Pager)) $userlevelpermissions_list->Pager = new cPrevNextPager($userlevelpermissions_list->StartRec, $userlevelpermissions_list->DisplayRecs, $userlevelpermissions_list->TotalRecs) ?>
+<?php if ($userlevelpermissions_list->Pager->RecordCount > 0) { ?>
 <div class="ewPager">
 <span><?php echo $Language->Phrase("Page") ?>&nbsp;</span>
 <div class="ewPrevNext"><div class="input-group">
 <div class="input-group-btn">
 <!--first page button-->
-	<?php if ($deductions_list->Pager->FirstButton->Enabled) { ?>
-	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerFirst") ?>" href="<?php echo $deductions_list->PageUrl() ?>start=<?php echo $deductions_list->Pager->FirstButton->Start ?>"><span class="icon-first ewIcon"></span></a>
+	<?php if ($userlevelpermissions_list->Pager->FirstButton->Enabled) { ?>
+	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerFirst") ?>" href="<?php echo $userlevelpermissions_list->PageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->FirstButton->Start ?>"><span class="icon-first ewIcon"></span></a>
 	<?php } else { ?>
 	<a class="btn btn-default btn-sm disabled" title="<?php echo $Language->Phrase("PagerFirst") ?>"><span class="icon-first ewIcon"></span></a>
 	<?php } ?>
 <!--previous page button-->
-	<?php if ($deductions_list->Pager->PrevButton->Enabled) { ?>
-	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerPrevious") ?>" href="<?php echo $deductions_list->PageUrl() ?>start=<?php echo $deductions_list->Pager->PrevButton->Start ?>"><span class="icon-prev ewIcon"></span></a>
+	<?php if ($userlevelpermissions_list->Pager->PrevButton->Enabled) { ?>
+	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerPrevious") ?>" href="<?php echo $userlevelpermissions_list->PageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->PrevButton->Start ?>"><span class="icon-prev ewIcon"></span></a>
 	<?php } else { ?>
 	<a class="btn btn-default btn-sm disabled" title="<?php echo $Language->Phrase("PagerPrevious") ?>"><span class="icon-prev ewIcon"></span></a>
 	<?php } ?>
 </div>
 <!--current page number-->
-	<input class="form-control input-sm" type="text" name="<?php echo EW_TABLE_PAGE_NO ?>" value="<?php echo $deductions_list->Pager->CurrentPage ?>">
+	<input class="form-control input-sm" type="text" name="<?php echo EW_TABLE_PAGE_NO ?>" value="<?php echo $userlevelpermissions_list->Pager->CurrentPage ?>">
 <div class="input-group-btn">
 <!--next page button-->
-	<?php if ($deductions_list->Pager->NextButton->Enabled) { ?>
-	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerNext") ?>" href="<?php echo $deductions_list->PageUrl() ?>start=<?php echo $deductions_list->Pager->NextButton->Start ?>"><span class="icon-next ewIcon"></span></a>
+	<?php if ($userlevelpermissions_list->Pager->NextButton->Enabled) { ?>
+	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerNext") ?>" href="<?php echo $userlevelpermissions_list->PageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->NextButton->Start ?>"><span class="icon-next ewIcon"></span></a>
 	<?php } else { ?>
 	<a class="btn btn-default btn-sm disabled" title="<?php echo $Language->Phrase("PagerNext") ?>"><span class="icon-next ewIcon"></span></a>
 	<?php } ?>
 <!--last page button-->
-	<?php if ($deductions_list->Pager->LastButton->Enabled) { ?>
-	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerLast") ?>" href="<?php echo $deductions_list->PageUrl() ?>start=<?php echo $deductions_list->Pager->LastButton->Start ?>"><span class="icon-last ewIcon"></span></a>
+	<?php if ($userlevelpermissions_list->Pager->LastButton->Enabled) { ?>
+	<a class="btn btn-default btn-sm" title="<?php echo $Language->Phrase("PagerLast") ?>" href="<?php echo $userlevelpermissions_list->PageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->LastButton->Start ?>"><span class="icon-last ewIcon"></span></a>
 	<?php } else { ?>
 	<a class="btn btn-default btn-sm disabled" title="<?php echo $Language->Phrase("PagerLast") ?>"><span class="icon-last ewIcon"></span></a>
 	<?php } ?>
 </div>
 </div>
 </div>
-<span>&nbsp;<?php echo $Language->Phrase("of") ?>&nbsp;<?php echo $deductions_list->Pager->PageCount ?></span>
+<span>&nbsp;<?php echo $Language->Phrase("of") ?>&nbsp;<?php echo $userlevelpermissions_list->Pager->PageCount ?></span>
 </div>
 <div class="ewPager ewRec">
-	<span><?php echo $Language->Phrase("Record") ?>&nbsp;<?php echo $deductions_list->Pager->FromIndex ?>&nbsp;<?php echo $Language->Phrase("To") ?>&nbsp;<?php echo $deductions_list->Pager->ToIndex ?>&nbsp;<?php echo $Language->Phrase("Of") ?>&nbsp;<?php echo $deductions_list->Pager->RecordCount ?></span>
+	<span><?php echo $Language->Phrase("Record") ?>&nbsp;<?php echo $userlevelpermissions_list->Pager->FromIndex ?>&nbsp;<?php echo $Language->Phrase("To") ?>&nbsp;<?php echo $userlevelpermissions_list->Pager->ToIndex ?>&nbsp;<?php echo $Language->Phrase("Of") ?>&nbsp;<?php echo $userlevelpermissions_list->Pager->RecordCount ?></span>
 </div>
 <?php } ?>
 </form>
 <?php } ?>
 <div class="ewListOtherOptions">
 <?php
-	foreach ($deductions_list->OtherOptions as &$option)
+	foreach ($userlevelpermissions_list->OtherOptions as &$option)
 		$option->Render("body", "bottom");
 ?>
 </div>
@@ -2906,10 +2259,10 @@ if ($deductions_list->Recordset)
 <?php } ?>
 </div>
 <?php } ?>
-<?php if ($deductions_list->TotalRecs == 0 && $deductions->CurrentAction == "") { // Show other options ?>
+<?php if ($userlevelpermissions_list->TotalRecs == 0 && $userlevelpermissions->CurrentAction == "") { // Show other options ?>
 <div class="ewListOtherOptions">
 <?php
-	foreach ($deductions_list->OtherOptions as &$option) {
+	foreach ($userlevelpermissions_list->OtherOptions as &$option) {
 		$option->ButtonClass = "";
 		$option->Render("body", "");
 	}
@@ -2917,19 +2270,19 @@ if ($deductions_list->Recordset)
 </div>
 <div class="clearfix"></div>
 <?php } ?>
-<?php if ($deductions->Export == "") { ?>
+<?php if ($userlevelpermissions->Export == "") { ?>
 <script type="text/javascript">
-fdeductionslistsrch.Init();
-fdeductionslistsrch.FilterList = <?php echo $deductions_list->GetFilterList() ?>;
-fdeductionslist.Init();
+fuserlevelpermissionslistsrch.Init();
+fuserlevelpermissionslistsrch.FilterList = <?php echo $userlevelpermissions_list->GetFilterList() ?>;
+fuserlevelpermissionslist.Init();
 </script>
 <?php } ?>
 <?php
-$deductions_list->ShowPageFooter();
+$userlevelpermissions_list->ShowPageFooter();
 if (EW_DEBUG_ENABLED)
 	echo ew_DebugMsg();
 ?>
-<?php if ($deductions->Export == "") { ?>
+<?php if ($userlevelpermissions->Export == "") { ?>
 <script type="text/javascript">
 
 // Write your table-specific startup script here
@@ -2939,5 +2292,5 @@ if (EW_DEBUG_ENABLED)
 <?php } ?>
 <?php include_once "footer.php" ?>
 <?php
-$deductions_list->Page_Terminate();
+$userlevelpermissions_list->Page_Terminate();
 ?>
