@@ -270,6 +270,8 @@ class cdefault {
 			$this->Page_Terminate("userlevelpermissionslist.php");
 		if ($Security->AllowList(CurrentProjectID() . 'userlevels'))
 			$this->Page_Terminate("userlevelslist.php");
+		if ($Security->AllowList(CurrentProjectID() . 'batches'))
+			$this->Page_Terminate("batcheslist.php");
 		if ($Security->IsLoggedIn()) {
 			$this->setFailureMessage($Language->Phrase("NoPermission") . "<br><br><a href=\"logout.php\">" . $Language->Phrase("BackToLogin") . "</a>");
 		} else {

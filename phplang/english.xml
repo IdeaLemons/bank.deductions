@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ew-language date="2019/4/5" version="12.0.0" id="en" name="English" desc="English" author="e.World Technology Ltd.">
+<ew-language date="2019/4/7" version="12.0.0" id="en" name="English" desc="English" author="e.World Technology Ltd.">
   <locale>
     <phrase id="locale" value=""/>
     <!-- *** system locale for this language -->
@@ -575,6 +575,9 @@
     <menu id="6">
       <phrase id="menutext" value="User Levels"/>
     </menu>
+    <menu id="7">
+      <phrase id="menutext" value="Batches"/>
+    </menu>
     <menu id="1">
       <phrase id="menutext" value="Deductions"/>
     </menu>
@@ -723,8 +726,14 @@
         <phrase id="fldtagvalue4" value="4"/>
         <phrase id="fldtagcaption4" value="DELETE"/>
       </field>
+      <field id="batch">
+        <phrase id="fldcaption" value="BATCH"/>
+      </field>
       <field id="notes">
         <phrase id="fldcaption" value="NOTES"/>
+      </field>
+      <field id="bank_id">
+        <phrase id="fldcaption" value="BANK"/>
       </field>
     </table>
     <table id="emp">
@@ -771,6 +780,18 @@
       </field>
       <field id="userlevelname">
         <phrase id="fldcaption" value="userlevelname"/>
+      </field>
+    </table>
+    <table id="batches">
+      <phrase id="tblcaption" value="Batches"/>
+      <field id="batch_id">
+        <phrase id="fldcaption" value="Batch ID"/>
+      </field>
+      <field id="batch_number">
+        <phrase id="fldcaption" value="Batch Number"/>
+      </field>
+      <field id="name">
+        <phrase id="fldcaption" value="Name"/>
       </field>
     </table>
   </project>

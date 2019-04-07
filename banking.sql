@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 06, 2019 at 12:22 AM
+-- Generation Time: Apr 07, 2019 at 04:29 PM
 -- Server version: 5.7.21
 -- PHP Version: 5.6.35
 
@@ -3656,6 +3656,35 @@ INSERT INTO `banks` (`Bank_ID`, `Bank_Code`, `Branch_Code`, `Name`, `City`) VALU
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `batches`
+--
+
+DROP TABLE IF EXISTS `batches`;
+CREATE TABLE IF NOT EXISTS `batches` (
+  `Batch_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `Batch_Number` int(11) NOT NULL,
+  `Name` text NOT NULL,
+  PRIMARY KEY (`Batch_ID`)
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `batches`
+--
+
+INSERT INTO `batches` (`Batch_ID`, `Batch_Number`, `Name`) VALUES
+(1, 120, 'BANK DEDU1'),
+(2, 121, 'BANK DEDU2'),
+(3, 122, 'BANK DEDU3'),
+(4, 123, 'BANK DEDU4'),
+(5, 124, 'BANK DEDU5'),
+(6, 125, 'BANK DEDU6'),
+(7, 126, 'BANK DEDU7'),
+(8, 414, 'NHDA'),
+(9, 415, 'NHDA');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `deductions`
 --
 
@@ -3666,11 +3695,13 @@ CREATE TABLE IF NOT EXISTS `deductions` (
   `L_Ref` text,
   `YEAR` int(4) NOT NULL,
   `MONTH` int(2) NOT NULL,
+  `Bank_ID` int(11) NOT NULL,
   `Acc_ID` int(11) NOT NULL,
   `AMOUNT` decimal(10,0) NOT NULL,
   `STARTED` date DEFAULT NULL,
   `ENDED` date DEFAULT NULL,
   `TYPE` int(1) NOT NULL,
+  `Batch` int(11) NOT NULL,
   `NOTES` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`Deduction_ID`)
 ) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
@@ -3679,13 +3710,13 @@ CREATE TABLE IF NOT EXISTS `deductions` (
 -- Dumping data for table `deductions`
 --
 
-INSERT INTO `deductions` (`Deduction_ID`, `PF`, `L_Ref`, `YEAR`, `MONTH`, `Acc_ID`, `AMOUNT`, `STARTED`, `ENDED`, `TYPE`, `NOTES`) VALUES
-(1, 9141, '2', 2019, 3, 0, '25000', '2011-08-14', '2019-09-26', 2, '<p>Personal deposit</p>'),
-(2, 8705, NULL, 2019, 3, 2, '18500', '2019-03-03', '2019-08-23', 1, NULL),
-(3, 8705, NULL, 2019, 3, 2, '1000', '2019-03-04', '2019-04-26', 3, NULL),
-(4, 9141, NULL, 2019, 3, 7890, '18500', NULL, NULL, 4, NULL),
-(5, 8540, '87', 2019, 3, 8705, '4500', '2019-03-03', '2019-03-30', 3, NULL),
-(6, 8705, '25', 2019, 3, 8705, '2000', '2019-03-30', '2019-03-31', 2, NULL);
+INSERT INTO `deductions` (`Deduction_ID`, `PF`, `L_Ref`, `YEAR`, `MONTH`, `Bank_ID`, `Acc_ID`, `AMOUNT`, `STARTED`, `ENDED`, `TYPE`, `Batch`, `NOTES`) VALUES
+(1, 9141, '2', 2019, 3, 0, 0, '25000', '2011-08-14', '2019-09-26', 2, 0, '<p>Personal deposit</p>'),
+(2, 8705, NULL, 2019, 3, 0, 2, '18500', '2019-03-03', '2019-08-23', 1, 0, NULL),
+(3, 8705, NULL, 2019, 3, 0, 2, '1000', '2019-03-04', '2019-04-26', 3, 0, NULL),
+(4, 9141, NULL, 2019, 3, 0, 7890, '18500', NULL, NULL, 4, 0, NULL),
+(5, 8540, '87', 2019, 3, 0, 8705, '4500', '2019-03-03', '2019-03-30', 3, 0, NULL),
+(6, 8705, '25', 2019, 3, 0, 8705, '2000', '2019-03-30', '2019-03-31', 2, 6, NULL);
 
 -- --------------------------------------------------------
 

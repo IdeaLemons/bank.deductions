@@ -398,7 +398,7 @@ class cdeductions_delete extends cdeductions {
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = $GLOBALS["EW_ERROR_FN"];
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset, array("_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())));
+				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset, array("_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())));
 			} else {
 				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset);
 			}
@@ -443,14 +443,21 @@ class cdeductions_delete extends cdeductions {
 		$this->Row_Selected($row);
 		$this->Deduction_ID->setDbValue($rs->fields('Deduction_ID'));
 		$this->PF->setDbValue($rs->fields('PF'));
+		if (array_key_exists('EV__PF', $rs->fields)) {
+			$this->PF->VirtualValue = $rs->fields('EV__PF'); // Set up virtual field value
+		} else {
+			$this->PF->VirtualValue = ""; // Clear value
+		}
 		$this->L_Ref->setDbValue($rs->fields('L_Ref'));
 		$this->YEAR->setDbValue($rs->fields('YEAR'));
 		$this->MONTH->setDbValue($rs->fields('MONTH'));
+		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
 		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
 		$this->AMOUNT->setDbValue($rs->fields('AMOUNT'));
 		$this->STARTED->setDbValue($rs->fields('STARTED'));
 		$this->ENDED->setDbValue($rs->fields('ENDED'));
 		$this->TYPE->setDbValue($rs->fields('TYPE'));
+		$this->Batch->setDbValue($rs->fields('Batch'));
 		$this->NOTES->setDbValue($rs->fields('NOTES'));
 	}
 
@@ -463,11 +470,13 @@ class cdeductions_delete extends cdeductions {
 		$this->L_Ref->DbValue = $row['L_Ref'];
 		$this->YEAR->DbValue = $row['YEAR'];
 		$this->MONTH->DbValue = $row['MONTH'];
+		$this->Bank_ID->DbValue = $row['Bank_ID'];
 		$this->Acc_ID->DbValue = $row['Acc_ID'];
 		$this->AMOUNT->DbValue = $row['AMOUNT'];
 		$this->STARTED->DbValue = $row['STARTED'];
 		$this->ENDED->DbValue = $row['ENDED'];
 		$this->TYPE->DbValue = $row['TYPE'];
+		$this->Batch->DbValue = $row['Batch'];
 		$this->NOTES->DbValue = $row['NOTES'];
 	}
 
@@ -493,17 +502,43 @@ class cdeductions_delete extends cdeductions {
 		// L_Ref
 		// YEAR
 		// MONTH
+		// Bank_ID
 		// Acc_ID
 		// AMOUNT
 		// STARTED
 		// ENDED
 		// TYPE
+		// Batch
 		// NOTES
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
 		// PF
-		$this->PF->ViewValue = $this->PF->CurrentValue;
+		if ($this->PF->VirtualValue <> "") {
+			$this->PF->ViewValue = $this->PF->VirtualValue;
+		} else {
+			$this->PF->ViewValue = $this->PF->CurrentValue;
+		if (strval($this->PF->CurrentValue) <> "") {
+			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->PF->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `emp`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->PF, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$arwrk[2] = $rswrk->fields('Disp2Fld');
+				$this->PF->ViewValue = $this->PF->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->PF->ViewValue = $this->PF->CurrentValue;
+			}
+		} else {
+			$this->PF->ViewValue = NULL;
+		}
+		}
 		$this->PF->CellCssStyle .= "text-align: left;";
 		$this->PF->ViewCustomAttributes = "";
 
@@ -530,6 +565,28 @@ class cdeductions_delete extends cdeductions {
 		}
 		$this->MONTH->CellCssStyle .= "text-align: center;";
 		$this->MONTH->ViewCustomAttributes = "";
+
+		// Bank_ID
+		if (strval($this->Bank_ID->CurrentValue) <> "") {
+			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
+			}
+		} else {
+			$this->Bank_ID->ViewValue = NULL;
+		}
+		$this->Bank_ID->ViewCustomAttributes = "";
 
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
@@ -578,8 +635,30 @@ class cdeductions_delete extends cdeductions {
 		} else {
 			$this->TYPE->ViewValue = NULL;
 		}
-		$this->TYPE->CellCssStyle .= "text-align: center;";
+		$this->TYPE->CellCssStyle .= "text-align: left;";
 		$this->TYPE->ViewCustomAttributes = "";
+
+		// Batch
+		if (strval($this->Batch->CurrentValue) <> "") {
+			$sFilterWrk = "`Batch_ID`" . ew_SearchString("=", $this->Batch->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Batch_ID`, `Batch_Number` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `batches`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Batch, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Batch->ViewValue = $this->Batch->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Batch->ViewValue = $this->Batch->CurrentValue;
+			}
+		} else {
+			$this->Batch->ViewValue = NULL;
+		}
+		$this->Batch->ViewCustomAttributes = "";
 
 		// NOTES
 		$this->NOTES->ViewValue = $this->NOTES->CurrentValue;
@@ -613,6 +692,11 @@ class cdeductions_delete extends cdeductions {
 			$this->MONTH->HrefValue = "";
 			$this->MONTH->TooltipValue = "";
 
+			// Bank_ID
+			$this->Bank_ID->LinkCustomAttributes = "";
+			$this->Bank_ID->HrefValue = "";
+			$this->Bank_ID->TooltipValue = "";
+
 			// Acc_ID
 			$this->Acc_ID->LinkCustomAttributes = "";
 			$this->Acc_ID->HrefValue = "";
@@ -637,6 +721,11 @@ class cdeductions_delete extends cdeductions {
 			$this->TYPE->LinkCustomAttributes = "";
 			$this->TYPE->HrefValue = "";
 			$this->TYPE->TooltipValue = "";
+
+			// Batch
+			$this->Batch->LinkCustomAttributes = "";
+			$this->Batch->HrefValue = "";
+			$this->Batch->TooltipValue = "";
 
 			// NOTES
 			$this->NOTES->LinkCustomAttributes = "";
@@ -911,13 +1000,16 @@ fdeductionsdelete.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
+fdeductionsdelete.Lists["x_PF"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_PF","x_Name","",""],"ParentFields":[],"ChildFields":["x_Acc_ID"],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsdelete.Lists["x_YEAR"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsdelete.Lists["x_YEAR"].Options = <?php echo json_encode($deductions->YEAR->Options()) ?>;
 fdeductionsdelete.Lists["x_MONTH"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsdelete.Lists["x_MONTH"].Options = <?php echo json_encode($deductions->MONTH->Options()) ?>;
+fdeductionsdelete.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":[],"ChildFields":["x_Acc_ID"],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsdelete.Lists["x_Acc_ID"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_Acc_NO","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsdelete.Lists["x_TYPE"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsdelete.Lists["x_TYPE"].Options = <?php echo json_encode($deductions->TYPE->Options()) ?>;
+fdeductionsdelete.Lists["x_Batch"] = {"LinkField":"x_Batch_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Batch_Number","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 </script>
@@ -973,6 +1065,9 @@ $deductions_delete->ShowMessage();
 <?php if ($deductions->MONTH->Visible) { // MONTH ?>
 		<th><span id="elh_deductions_MONTH" class="deductions_MONTH"><?php echo $deductions->MONTH->FldCaption() ?></span></th>
 <?php } ?>
+<?php if ($deductions->Bank_ID->Visible) { // Bank_ID ?>
+		<th><span id="elh_deductions_Bank_ID" class="deductions_Bank_ID"><?php echo $deductions->Bank_ID->FldCaption() ?></span></th>
+<?php } ?>
 <?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
 		<th><span id="elh_deductions_Acc_ID" class="deductions_Acc_ID"><?php echo $deductions->Acc_ID->FldCaption() ?></span></th>
 <?php } ?>
@@ -987,6 +1082,9 @@ $deductions_delete->ShowMessage();
 <?php } ?>
 <?php if ($deductions->TYPE->Visible) { // TYPE ?>
 		<th><span id="elh_deductions_TYPE" class="deductions_TYPE"><?php echo $deductions->TYPE->FldCaption() ?></span></th>
+<?php } ?>
+<?php if ($deductions->Batch->Visible) { // Batch ?>
+		<th><span id="elh_deductions_Batch" class="deductions_Batch"><?php echo $deductions->Batch->FldCaption() ?></span></th>
 <?php } ?>
 <?php if ($deductions->NOTES->Visible) { // NOTES ?>
 		<th><span id="elh_deductions_NOTES" class="deductions_NOTES"><?php echo $deductions->NOTES->FldCaption() ?></span></th>
@@ -1051,6 +1149,14 @@ while (!$deductions_delete->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
+<?php if ($deductions->Bank_ID->Visible) { // Bank_ID ?>
+		<td<?php echo $deductions->Bank_ID->CellAttributes() ?>>
+<span id="el<?php echo $deductions_delete->RowCnt ?>_deductions_Bank_ID" class="deductions_Bank_ID">
+<span<?php echo $deductions->Bank_ID->ViewAttributes() ?>>
+<?php echo $deductions->Bank_ID->ListViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
 <?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
 		<td<?php echo $deductions->Acc_ID->CellAttributes() ?>>
 <span id="el<?php echo $deductions_delete->RowCnt ?>_deductions_Acc_ID" class="deductions_Acc_ID">
@@ -1088,6 +1194,14 @@ while (!$deductions_delete->Recordset->EOF) {
 <span id="el<?php echo $deductions_delete->RowCnt ?>_deductions_TYPE" class="deductions_TYPE">
 <span<?php echo $deductions->TYPE->ViewAttributes() ?>>
 <?php echo $deductions->TYPE->ListViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($deductions->Batch->Visible) { // Batch ?>
+		<td<?php echo $deductions->Batch->CellAttributes() ?>>
+<span id="el<?php echo $deductions_delete->RowCnt ?>_deductions_Batch" class="deductions_Batch">
+<span<?php echo $deductions->Batch->ViewAttributes() ?>>
+<?php echo $deductions->Batch->ListViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

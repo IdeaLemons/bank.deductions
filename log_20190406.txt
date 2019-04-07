@@ -1,0 +1,2 @@
+date/time	script	user	action	table	field	key value	old value	new value
+2019/04/06 20:58:42	/bank.deductions/deductionsedit.php	Administrator	U	deductions	Batch	6	0	6

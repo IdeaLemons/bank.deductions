@@ -743,11 +743,13 @@ class cdeductions_list extends cdeductions {
 		$sFilterList = ew_Concat($sFilterList, $this->L_Ref->AdvancedSearch->ToJSON(), ","); // Field L_Ref
 		$sFilterList = ew_Concat($sFilterList, $this->YEAR->AdvancedSearch->ToJSON(), ","); // Field YEAR
 		$sFilterList = ew_Concat($sFilterList, $this->MONTH->AdvancedSearch->ToJSON(), ","); // Field MONTH
+		$sFilterList = ew_Concat($sFilterList, $this->Bank_ID->AdvancedSearch->ToJSON(), ","); // Field Bank_ID
 		$sFilterList = ew_Concat($sFilterList, $this->Acc_ID->AdvancedSearch->ToJSON(), ","); // Field Acc_ID
 		$sFilterList = ew_Concat($sFilterList, $this->AMOUNT->AdvancedSearch->ToJSON(), ","); // Field AMOUNT
 		$sFilterList = ew_Concat($sFilterList, $this->STARTED->AdvancedSearch->ToJSON(), ","); // Field STARTED
 		$sFilterList = ew_Concat($sFilterList, $this->ENDED->AdvancedSearch->ToJSON(), ","); // Field ENDED
 		$sFilterList = ew_Concat($sFilterList, $this->TYPE->AdvancedSearch->ToJSON(), ","); // Field TYPE
+		$sFilterList = ew_Concat($sFilterList, $this->Batch->AdvancedSearch->ToJSON(), ","); // Field Batch
 		$sFilterList = ew_Concat($sFilterList, $this->NOTES->AdvancedSearch->ToJSON(), ","); // Field NOTES
 		if ($this->BasicSearch->Keyword <> "") {
 			$sWrk = "\"" . EW_TABLE_BASIC_SEARCH . "\":\"" . ew_JsEncode2($this->BasicSearch->Keyword) . "\",\"" . EW_TABLE_BASIC_SEARCH_TYPE . "\":\"" . ew_JsEncode2($this->BasicSearch->Type) . "\"";
@@ -799,6 +801,14 @@ class cdeductions_list extends cdeductions {
 		$this->MONTH->AdvancedSearch->SearchOperator2 = @$filter["w_MONTH"];
 		$this->MONTH->AdvancedSearch->Save();
 
+		// Field Bank_ID
+		$this->Bank_ID->AdvancedSearch->SearchValue = @$filter["x_Bank_ID"];
+		$this->Bank_ID->AdvancedSearch->SearchOperator = @$filter["z_Bank_ID"];
+		$this->Bank_ID->AdvancedSearch->SearchCondition = @$filter["v_Bank_ID"];
+		$this->Bank_ID->AdvancedSearch->SearchValue2 = @$filter["y_Bank_ID"];
+		$this->Bank_ID->AdvancedSearch->SearchOperator2 = @$filter["w_Bank_ID"];
+		$this->Bank_ID->AdvancedSearch->Save();
+
 		// Field Acc_ID
 		$this->Acc_ID->AdvancedSearch->SearchValue = @$filter["x_Acc_ID"];
 		$this->Acc_ID->AdvancedSearch->SearchOperator = @$filter["z_Acc_ID"];
@@ -839,6 +849,14 @@ class cdeductions_list extends cdeductions {
 		$this->TYPE->AdvancedSearch->SearchOperator2 = @$filter["w_TYPE"];
 		$this->TYPE->AdvancedSearch->Save();
 
+		// Field Batch
+		$this->Batch->AdvancedSearch->SearchValue = @$filter["x_Batch"];
+		$this->Batch->AdvancedSearch->SearchOperator = @$filter["z_Batch"];
+		$this->Batch->AdvancedSearch->SearchCondition = @$filter["v_Batch"];
+		$this->Batch->AdvancedSearch->SearchValue2 = @$filter["y_Batch"];
+		$this->Batch->AdvancedSearch->SearchOperator2 = @$filter["w_Batch"];
+		$this->Batch->AdvancedSearch->Save();
+
 		// Field NOTES
 		$this->NOTES->AdvancedSearch->SearchValue = @$filter["x_NOTES"];
 		$this->NOTES->AdvancedSearch->SearchOperator = @$filter["z_NOTES"];
@@ -859,11 +877,13 @@ class cdeductions_list extends cdeductions {
 		$this->BuildSearchSql($sWhere, $this->L_Ref, $Default, FALSE); // L_Ref
 		$this->BuildSearchSql($sWhere, $this->YEAR, $Default, FALSE); // YEAR
 		$this->BuildSearchSql($sWhere, $this->MONTH, $Default, FALSE); // MONTH
+		$this->BuildSearchSql($sWhere, $this->Bank_ID, $Default, FALSE); // Bank_ID
 		$this->BuildSearchSql($sWhere, $this->Acc_ID, $Default, FALSE); // Acc_ID
 		$this->BuildSearchSql($sWhere, $this->AMOUNT, $Default, FALSE); // AMOUNT
 		$this->BuildSearchSql($sWhere, $this->STARTED, $Default, FALSE); // STARTED
 		$this->BuildSearchSql($sWhere, $this->ENDED, $Default, FALSE); // ENDED
 		$this->BuildSearchSql($sWhere, $this->TYPE, $Default, FALSE); // TYPE
+		$this->BuildSearchSql($sWhere, $this->Batch, $Default, FALSE); // Batch
 		$this->BuildSearchSql($sWhere, $this->NOTES, $Default, FALSE); // NOTES
 
 		// Set up search parm
@@ -875,11 +895,13 @@ class cdeductions_list extends cdeductions {
 			$this->L_Ref->AdvancedSearch->Save(); // L_Ref
 			$this->YEAR->AdvancedSearch->Save(); // YEAR
 			$this->MONTH->AdvancedSearch->Save(); // MONTH
+			$this->Bank_ID->AdvancedSearch->Save(); // Bank_ID
 			$this->Acc_ID->AdvancedSearch->Save(); // Acc_ID
 			$this->AMOUNT->AdvancedSearch->Save(); // AMOUNT
 			$this->STARTED->AdvancedSearch->Save(); // STARTED
 			$this->ENDED->AdvancedSearch->Save(); // ENDED
 			$this->TYPE->AdvancedSearch->Save(); // TYPE
+			$this->Batch->AdvancedSearch->Save(); // Batch
 			$this->NOTES->AdvancedSearch->Save(); // NOTES
 		}
 		return $sWhere;
@@ -1077,6 +1099,8 @@ class cdeductions_list extends cdeductions {
 			return TRUE;
 		if ($this->MONTH->AdvancedSearch->IssetSession())
 			return TRUE;
+		if ($this->Bank_ID->AdvancedSearch->IssetSession())
+			return TRUE;
 		if ($this->Acc_ID->AdvancedSearch->IssetSession())
 			return TRUE;
 		if ($this->AMOUNT->AdvancedSearch->IssetSession())
@@ -1086,6 +1110,8 @@ class cdeductions_list extends cdeductions {
 		if ($this->ENDED->AdvancedSearch->IssetSession())
 			return TRUE;
 		if ($this->TYPE->AdvancedSearch->IssetSession())
+			return TRUE;
+		if ($this->Batch->AdvancedSearch->IssetSession())
 			return TRUE;
 		if ($this->NOTES->AdvancedSearch->IssetSession())
 			return TRUE;
@@ -1122,11 +1148,13 @@ class cdeductions_list extends cdeductions {
 		$this->L_Ref->AdvancedSearch->UnsetSession();
 		$this->YEAR->AdvancedSearch->UnsetSession();
 		$this->MONTH->AdvancedSearch->UnsetSession();
+		$this->Bank_ID->AdvancedSearch->UnsetSession();
 		$this->Acc_ID->AdvancedSearch->UnsetSession();
 		$this->AMOUNT->AdvancedSearch->UnsetSession();
 		$this->STARTED->AdvancedSearch->UnsetSession();
 		$this->ENDED->AdvancedSearch->UnsetSession();
 		$this->TYPE->AdvancedSearch->UnsetSession();
+		$this->Batch->AdvancedSearch->UnsetSession();
 		$this->NOTES->AdvancedSearch->UnsetSession();
 	}
 
@@ -1142,11 +1170,13 @@ class cdeductions_list extends cdeductions {
 		$this->L_Ref->AdvancedSearch->Load();
 		$this->YEAR->AdvancedSearch->Load();
 		$this->MONTH->AdvancedSearch->Load();
+		$this->Bank_ID->AdvancedSearch->Load();
 		$this->Acc_ID->AdvancedSearch->Load();
 		$this->AMOUNT->AdvancedSearch->Load();
 		$this->STARTED->AdvancedSearch->Load();
 		$this->ENDED->AdvancedSearch->Load();
 		$this->TYPE->AdvancedSearch->Load();
+		$this->Batch->AdvancedSearch->Load();
 		$this->NOTES->AdvancedSearch->Load();
 	}
 
@@ -1161,11 +1191,13 @@ class cdeductions_list extends cdeductions {
 			$this->UpdateSort($this->L_Ref); // L_Ref
 			$this->UpdateSort($this->YEAR); // YEAR
 			$this->UpdateSort($this->MONTH); // MONTH
+			$this->UpdateSort($this->Bank_ID); // Bank_ID
 			$this->UpdateSort($this->Acc_ID); // Acc_ID
 			$this->UpdateSort($this->AMOUNT); // AMOUNT
 			$this->UpdateSort($this->STARTED); // STARTED
 			$this->UpdateSort($this->ENDED); // ENDED
 			$this->UpdateSort($this->TYPE); // TYPE
+			$this->UpdateSort($this->Batch); // Batch
 			$this->UpdateSort($this->NOTES); // NOTES
 			$this->setStartRecordNumber(1); // Reset start position
 		}
@@ -1199,15 +1231,18 @@ class cdeductions_list extends cdeductions {
 			if ($this->Command == "resetsort") {
 				$sOrderBy = "";
 				$this->setSessionOrderBy($sOrderBy);
+				$this->setSessionOrderByList($sOrderBy);
 				$this->PF->setSort("");
 				$this->L_Ref->setSort("");
 				$this->YEAR->setSort("");
 				$this->MONTH->setSort("");
+				$this->Bank_ID->setSort("");
 				$this->Acc_ID->setSort("");
 				$this->AMOUNT->setSort("");
 				$this->STARTED->setSort("");
 				$this->ENDED->setSort("");
 				$this->TYPE->setSort("");
+				$this->Batch->setSort("");
 				$this->NOTES->setSort("");
 			}
 
@@ -1618,6 +1653,11 @@ class cdeductions_list extends cdeductions {
 		if ($this->MONTH->AdvancedSearch->SearchValue <> "") $this->Command = "search";
 		$this->MONTH->AdvancedSearch->SearchOperator = @$_GET["z_MONTH"];
 
+		// Bank_ID
+		$this->Bank_ID->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Bank_ID"]);
+		if ($this->Bank_ID->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->Bank_ID->AdvancedSearch->SearchOperator = @$_GET["z_Bank_ID"];
+
 		// Acc_ID
 		$this->Acc_ID->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Acc_ID"]);
 		if ($this->Acc_ID->AdvancedSearch->SearchValue <> "") $this->Command = "search";
@@ -1643,6 +1683,11 @@ class cdeductions_list extends cdeductions {
 		if ($this->TYPE->AdvancedSearch->SearchValue <> "") $this->Command = "search";
 		$this->TYPE->AdvancedSearch->SearchOperator = @$_GET["z_TYPE"];
 
+		// Batch
+		$this->Batch->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Batch"]);
+		if ($this->Batch->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->Batch->AdvancedSearch->SearchOperator = @$_GET["z_Batch"];
+
 		// NOTES
 		$this->NOTES->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_NOTES"]);
 		if ($this->NOTES->AdvancedSearch->SearchValue <> "") $this->Command = "search";
@@ -1661,7 +1706,7 @@ class cdeductions_list extends cdeductions {
 		if ($this->UseSelectLimit) {
 			$conn->raiseErrorFn = $GLOBALS["EW_ERROR_FN"];
 			if ($dbtype == "MSSQL") {
-				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset, array("_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())));
+				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset, array("_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())));
 			} else {
 				$rs = $conn->SelectLimit($sSql, $rowcnt, $offset);
 			}
@@ -1706,14 +1751,21 @@ class cdeductions_list extends cdeductions {
 		$this->Row_Selected($row);
 		$this->Deduction_ID->setDbValue($rs->fields('Deduction_ID'));
 		$this->PF->setDbValue($rs->fields('PF'));
+		if (array_key_exists('EV__PF', $rs->fields)) {
+			$this->PF->VirtualValue = $rs->fields('EV__PF'); // Set up virtual field value
+		} else {
+			$this->PF->VirtualValue = ""; // Clear value
+		}
 		$this->L_Ref->setDbValue($rs->fields('L_Ref'));
 		$this->YEAR->setDbValue($rs->fields('YEAR'));
 		$this->MONTH->setDbValue($rs->fields('MONTH'));
+		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
 		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
 		$this->AMOUNT->setDbValue($rs->fields('AMOUNT'));
 		$this->STARTED->setDbValue($rs->fields('STARTED'));
 		$this->ENDED->setDbValue($rs->fields('ENDED'));
 		$this->TYPE->setDbValue($rs->fields('TYPE'));
+		$this->Batch->setDbValue($rs->fields('Batch'));
 		$this->NOTES->setDbValue($rs->fields('NOTES'));
 	}
 
@@ -1726,11 +1778,13 @@ class cdeductions_list extends cdeductions {
 		$this->L_Ref->DbValue = $row['L_Ref'];
 		$this->YEAR->DbValue = $row['YEAR'];
 		$this->MONTH->DbValue = $row['MONTH'];
+		$this->Bank_ID->DbValue = $row['Bank_ID'];
 		$this->Acc_ID->DbValue = $row['Acc_ID'];
 		$this->AMOUNT->DbValue = $row['AMOUNT'];
 		$this->STARTED->DbValue = $row['STARTED'];
 		$this->ENDED->DbValue = $row['ENDED'];
 		$this->TYPE->DbValue = $row['TYPE'];
+		$this->Batch->DbValue = $row['Batch'];
 		$this->NOTES->DbValue = $row['NOTES'];
 	}
 
@@ -1785,17 +1839,43 @@ class cdeductions_list extends cdeductions {
 		// L_Ref
 		// YEAR
 		// MONTH
+		// Bank_ID
 		// Acc_ID
 		// AMOUNT
 		// STARTED
 		// ENDED
 		// TYPE
+		// Batch
 		// NOTES
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
 		// PF
-		$this->PF->ViewValue = $this->PF->CurrentValue;
+		if ($this->PF->VirtualValue <> "") {
+			$this->PF->ViewValue = $this->PF->VirtualValue;
+		} else {
+			$this->PF->ViewValue = $this->PF->CurrentValue;
+		if (strval($this->PF->CurrentValue) <> "") {
+			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->PF->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `emp`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->PF, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$arwrk[2] = $rswrk->fields('Disp2Fld');
+				$this->PF->ViewValue = $this->PF->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->PF->ViewValue = $this->PF->CurrentValue;
+			}
+		} else {
+			$this->PF->ViewValue = NULL;
+		}
+		}
 		$this->PF->CellCssStyle .= "text-align: left;";
 		$this->PF->ViewCustomAttributes = "";
 
@@ -1822,6 +1902,28 @@ class cdeductions_list extends cdeductions {
 		}
 		$this->MONTH->CellCssStyle .= "text-align: center;";
 		$this->MONTH->ViewCustomAttributes = "";
+
+		// Bank_ID
+		if (strval($this->Bank_ID->CurrentValue) <> "") {
+			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
+			}
+		} else {
+			$this->Bank_ID->ViewValue = NULL;
+		}
+		$this->Bank_ID->ViewCustomAttributes = "";
 
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
@@ -1870,8 +1972,30 @@ class cdeductions_list extends cdeductions {
 		} else {
 			$this->TYPE->ViewValue = NULL;
 		}
-		$this->TYPE->CellCssStyle .= "text-align: center;";
+		$this->TYPE->CellCssStyle .= "text-align: left;";
 		$this->TYPE->ViewCustomAttributes = "";
+
+		// Batch
+		if (strval($this->Batch->CurrentValue) <> "") {
+			$sFilterWrk = "`Batch_ID`" . ew_SearchString("=", $this->Batch->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Batch_ID`, `Batch_Number` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `batches`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Batch, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Batch->ViewValue = $this->Batch->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Batch->ViewValue = $this->Batch->CurrentValue;
+			}
+		} else {
+			$this->Batch->ViewValue = NULL;
+		}
+		$this->Batch->ViewCustomAttributes = "";
 
 		// NOTES
 		$this->NOTES->ViewValue = $this->NOTES->CurrentValue;
@@ -1909,6 +2033,11 @@ class cdeductions_list extends cdeductions {
 			$this->MONTH->HrefValue = "";
 			$this->MONTH->TooltipValue = "";
 
+			// Bank_ID
+			$this->Bank_ID->LinkCustomAttributes = "";
+			$this->Bank_ID->HrefValue = "";
+			$this->Bank_ID->TooltipValue = "";
+
 			// Acc_ID
 			$this->Acc_ID->LinkCustomAttributes = "";
 			$this->Acc_ID->HrefValue = "";
@@ -1933,6 +2062,11 @@ class cdeductions_list extends cdeductions {
 			$this->TYPE->LinkCustomAttributes = "";
 			$this->TYPE->HrefValue = "";
 			$this->TYPE->TooltipValue = "";
+
+			// Batch
+			$this->Batch->LinkCustomAttributes = "";
+			$this->Batch->HrefValue = "";
+			$this->Batch->TooltipValue = "";
 
 			// NOTES
 			$this->NOTES->LinkCustomAttributes = "";
@@ -1976,11 +2110,13 @@ class cdeductions_list extends cdeductions {
 		$this->L_Ref->AdvancedSearch->Load();
 		$this->YEAR->AdvancedSearch->Load();
 		$this->MONTH->AdvancedSearch->Load();
+		$this->Bank_ID->AdvancedSearch->Load();
 		$this->Acc_ID->AdvancedSearch->Load();
 		$this->AMOUNT->AdvancedSearch->Load();
 		$this->STARTED->AdvancedSearch->Load();
 		$this->ENDED->AdvancedSearch->Load();
 		$this->TYPE->AdvancedSearch->Load();
+		$this->Batch->AdvancedSearch->Load();
 		$this->NOTES->AdvancedSearch->Load();
 	}
 
@@ -2240,11 +2376,13 @@ class cdeductions_list extends cdeductions {
 		$this->AddSearchQueryString($sQry, $this->L_Ref); // L_Ref
 		$this->AddSearchQueryString($sQry, $this->YEAR); // YEAR
 		$this->AddSearchQueryString($sQry, $this->MONTH); // MONTH
+		$this->AddSearchQueryString($sQry, $this->Bank_ID); // Bank_ID
 		$this->AddSearchQueryString($sQry, $this->Acc_ID); // Acc_ID
 		$this->AddSearchQueryString($sQry, $this->AMOUNT); // AMOUNT
 		$this->AddSearchQueryString($sQry, $this->STARTED); // STARTED
 		$this->AddSearchQueryString($sQry, $this->ENDED); // ENDED
 		$this->AddSearchQueryString($sQry, $this->TYPE); // TYPE
+		$this->AddSearchQueryString($sQry, $this->Batch); // Batch
 		$this->AddSearchQueryString($sQry, $this->NOTES); // NOTES
 
 		// Build QueryString for pager
@@ -2447,13 +2585,16 @@ fdeductionslist.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
+fdeductionslist.Lists["x_PF"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_PF","x_Name","",""],"ParentFields":[],"ChildFields":["x_Acc_ID"],"FilterFields":[],"Options":[],"Template":""};
 fdeductionslist.Lists["x_YEAR"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionslist.Lists["x_YEAR"].Options = <?php echo json_encode($deductions->YEAR->Options()) ?>;
 fdeductionslist.Lists["x_MONTH"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionslist.Lists["x_MONTH"].Options = <?php echo json_encode($deductions->MONTH->Options()) ?>;
+fdeductionslist.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":[],"ChildFields":["x_Acc_ID"],"FilterFields":[],"Options":[],"Template":""};
 fdeductionslist.Lists["x_Acc_ID"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_Acc_NO","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionslist.Lists["x_TYPE"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionslist.Lists["x_TYPE"].Options = <?php echo json_encode($deductions->TYPE->Options()) ?>;
+fdeductionslist.Lists["x_Batch"] = {"LinkField":"x_Batch_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Batch_Number","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 var CurrentSearchForm = fdeductionslistsrch = new ew_Form("fdeductionslistsrch");
@@ -2614,6 +2755,15 @@ $deductions_list->ListOptions->Render("header", "left");
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
+<?php if ($deductions->Bank_ID->Visible) { // Bank_ID ?>
+	<?php if ($deductions->SortUrl($deductions->Bank_ID) == "") { ?>
+		<th data-name="Bank_ID"><div id="elh_deductions_Bank_ID" class="deductions_Bank_ID"><div class="ewTableHeaderCaption"><?php echo $deductions->Bank_ID->FldCaption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="Bank_ID"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->Bank_ID) ?>',1);"><div id="elh_deductions_Bank_ID" class="deductions_Bank_ID">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->Bank_ID->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->Bank_ID->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->Bank_ID->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+        </div></div></th>
+	<?php } ?>
+<?php } ?>		
 <?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
 	<?php if ($deductions->SortUrl($deductions->Acc_ID) == "") { ?>
 		<th data-name="Acc_ID"><div id="elh_deductions_Acc_ID" class="deductions_Acc_ID"><div class="ewTableHeaderCaption"><?php echo $deductions->Acc_ID->FldCaption() ?></div></div></th>
@@ -2656,6 +2806,15 @@ $deductions_list->ListOptions->Render("header", "left");
 	<?php } else { ?>
 		<th data-name="TYPE"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->TYPE) ?>',1);"><div id="elh_deductions_TYPE" class="deductions_TYPE">
 			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->TYPE->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->TYPE->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->TYPE->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+        </div></div></th>
+	<?php } ?>
+<?php } ?>		
+<?php if ($deductions->Batch->Visible) { // Batch ?>
+	<?php if ($deductions->SortUrl($deductions->Batch) == "") { ?>
+		<th data-name="Batch"><div id="elh_deductions_Batch" class="deductions_Batch"><div class="ewTableHeaderCaption"><?php echo $deductions->Batch->FldCaption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="Batch"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $deductions->SortUrl($deductions->Batch) ?>',1);"><div id="elh_deductions_Batch" class="deductions_Batch">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $deductions->Batch->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($deductions->Batch->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($deductions->Batch->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
@@ -2772,6 +2931,14 @@ $deductions_list->ListOptions->Render("body", "left", $deductions_list->RowCnt);
 </span>
 </td>
 	<?php } ?>
+	<?php if ($deductions->Bank_ID->Visible) { // Bank_ID ?>
+		<td data-name="Bank_ID"<?php echo $deductions->Bank_ID->CellAttributes() ?>>
+<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_Bank_ID" class="deductions_Bank_ID">
+<span<?php echo $deductions->Bank_ID->ViewAttributes() ?>>
+<?php echo $deductions->Bank_ID->ListViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
 	<?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
 		<td data-name="Acc_ID"<?php echo $deductions->Acc_ID->CellAttributes() ?>>
 <span id="el<?php echo $deductions_list->RowCnt ?>_deductions_Acc_ID" class="deductions_Acc_ID">
@@ -2809,6 +2976,14 @@ $deductions_list->ListOptions->Render("body", "left", $deductions_list->RowCnt);
 <span id="el<?php echo $deductions_list->RowCnt ?>_deductions_TYPE" class="deductions_TYPE">
 <span<?php echo $deductions->TYPE->ViewAttributes() ?>>
 <?php echo $deductions->TYPE->ListViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($deductions->Batch->Visible) { // Batch ?>
+		<td data-name="Batch"<?php echo $deductions->Batch->CellAttributes() ?>>
+<span id="el<?php echo $deductions_list->RowCnt ?>_deductions_Batch" class="deductions_Batch">
+<span<?php echo $deductions->Batch->ViewAttributes() ?>>
+<?php echo $deductions->Batch->ListViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>

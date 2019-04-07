@@ -12,11 +12,13 @@ class cdeductions extends cTable {
 	var $L_Ref;
 	var $YEAR;
 	var $MONTH;
+	var $Bank_ID;
 	var $Acc_ID;
 	var $AMOUNT;
 	var $STARTED;
 	var $ENDED;
 	var $TYPE;
+	var $Batch;
 	var $NOTES;
 
 	//
@@ -55,7 +57,7 @@ class cdeductions extends cTable {
 		$this->fields['Deduction_ID'] = &$this->Deduction_ID;
 
 		// PF
-		$this->PF = new cField('deductions', 'deductions', 'x_PF', 'PF', '`PF`', '`PF`', 3, -1, FALSE, '`PF`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->PF = new cField('deductions', 'deductions', 'x_PF', 'PF', '`PF`', '`PF`', 3, -1, FALSE, '`EV__PF`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'TEXT');
 		$this->PF->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
 		$this->fields['PF'] = &$this->PF;
 
@@ -74,6 +76,11 @@ class cdeductions extends cTable {
 		$this->MONTH->OptionCount = 12;
 		$this->MONTH->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
 		$this->fields['MONTH'] = &$this->MONTH;
+
+		// Bank_ID
+		$this->Bank_ID = new cField('deductions', 'deductions', 'x_Bank_ID', 'Bank_ID', '`Bank_ID`', '`Bank_ID`', 3, -1, FALSE, '`Bank_ID`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->Bank_ID->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
+		$this->fields['Bank_ID'] = &$this->Bank_ID;
 
 		// Acc_ID
 		$this->Acc_ID = new cField('deductions', 'deductions', 'x_Acc_ID', 'Acc_ID', '`Acc_ID`', '`Acc_ID`', 3, -1, FALSE, '`Acc_ID`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
@@ -101,6 +108,11 @@ class cdeductions extends cTable {
 		$this->TYPE->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
 		$this->fields['TYPE'] = &$this->TYPE;
 
+		// Batch
+		$this->Batch = new cField('deductions', 'deductions', 'x_Batch', 'Batch', '`Batch`', '`Batch`', 3, -1, FALSE, '`Batch`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
+		$this->Batch->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
+		$this->fields['Batch'] = &$this->Batch;
+
 		// NOTES
 		$this->NOTES = new cField('deductions', 'deductions', 'x_NOTES', 'NOTES', '`NOTES`', '`NOTES`', 200, -1, FALSE, '`NOTES`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->fields['NOTES'] = &$this->NOTES;
@@ -118,9 +130,20 @@ class cdeductions extends cTable {
 			}
 			$ofld->setSort($sThisSort);
 			$this->setSessionOrderBy($sSortField . " " . $sThisSort); // Save to Session
+			$sSortFieldList = ($ofld->FldVirtualExpression <> "") ? $ofld->FldVirtualExpression : $sSortField;
+			$this->setSessionOrderByList($sSortFieldList . " " . $sThisSort); // Save to Session
 		} else {
 			$ofld->setSort("");
 		}
+	}
+
+	// Session ORDER BY for List page
+	function getSessionOrderByList() {
+		return @$_SESSION[EW_PROJECT_NAME . "_" . $this->TableVar . "_" . EW_TABLE_ORDER_BY_LIST];
+	}
+
+	function setSessionOrderByList($v) {
+		$_SESSION[EW_PROJECT_NAME . "_" . $this->TableVar . "_" . EW_TABLE_ORDER_BY_LIST] = $v;
 	}
 
 	// Table level SQL
@@ -149,6 +172,23 @@ class cdeductions extends cTable {
 
 	function setSqlSelect($v) {
     	$this->_SqlSelect = $v;
+	}
+	var $_SqlSelectList = "";
+
+	function getSqlSelectList() { // Select for List page
+		$select = "";
+		$select = "SELECT * FROM (" .
+			"SELECT *, (SELECT CONCAT(`PF`,'" . ew_ValueSeparator(1, $this->PF) . "',`Name`) FROM `emp` `EW_TMP_LOOKUPTABLE` WHERE `EW_TMP_LOOKUPTABLE`.`PF` = `deductions`.`PF` LIMIT 1) AS `EV__PF` FROM `deductions`" .
+			") `EW_TMP_TABLE`";
+		return ($this->_SqlSelectList <> "") ? $this->_SqlSelectList : $select;
+	}
+
+	function SqlSelectList() { // For backward compatibility
+    	return $this->getSqlSelectList();
+	}
+
+	function setSqlSelectList($v) {
+    	$this->_SqlSelectList = $v;
 	}
 	var $_SqlWhere = "";
 
@@ -261,15 +301,40 @@ class cdeductions extends cTable {
 		ew_AddFilter($sFilter, $this->CurrentFilter);
 		$sFilter = $this->ApplyUserIDFilters($sFilter);
 		$this->Recordset_Selecting($sFilter);
-		$sSort = $this->getSessionOrderBy();
-		return ew_BuildSelectSql($this->getSqlSelect(), $this->getSqlWhere(), $this->getSqlGroupBy(),
-			$this->getSqlHaving(), $this->getSqlOrderBy(), $sFilter, $sSort);
+		if ($this->UseVirtualFields()) {
+			$sSort = $this->getSessionOrderByList();
+			return ew_BuildSelectSql($this->getSqlSelectList(), $this->getSqlWhere(), $this->getSqlGroupBy(),
+				$this->getSqlHaving(), $this->getSqlOrderBy(), $sFilter, $sSort);
+		} else {
+			$sSort = $this->getSessionOrderBy();
+			return ew_BuildSelectSql($this->getSqlSelect(), $this->getSqlWhere(), $this->getSqlGroupBy(),
+				$this->getSqlHaving(), $this->getSqlOrderBy(), $sFilter, $sSort);
+		}
 	}
 
 	// Get ORDER BY clause
 	function GetOrderBy() {
-		$sSort = $this->getSessionOrderBy();
+		$sSort = ($this->UseVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
 		return ew_BuildSelectSql("", "", "", "", $this->getSqlOrderBy(), "", $sSort);
+	}
+
+	// Check if virtual fields is used in SQL
+	function UseVirtualFields() {
+		$sWhere = $this->getSessionWhere();
+		$sOrderBy = $this->getSessionOrderByList();
+		if ($sWhere <> "")
+			$sWhere = " " . str_replace(array("(",")"), array("",""), $sWhere) . " ";
+		if ($sOrderBy <> "")
+			$sOrderBy = " " . str_replace(array("(",")"), array("",""), $sOrderBy) . " ";
+		if ($this->BasicSearch->getKeyword() <> "")
+			return TRUE;
+		if ($this->PF->AdvancedSearch->SearchValue <> "" ||
+			$this->PF->AdvancedSearch->SearchValue2 <> "" ||
+			strpos($sWhere, " " . $this->PF->FldVirtualExpression . " ") !== FALSE)
+			return TRUE;
+		if (strpos($sOrderBy, " " . $this->PF->FldVirtualExpression . " ") !== FALSE)
+			return TRUE;
+		return FALSE;
 	}
 
 	// Try to get record count
@@ -578,11 +643,13 @@ class cdeductions extends cTable {
 		$this->L_Ref->setDbValue($rs->fields('L_Ref'));
 		$this->YEAR->setDbValue($rs->fields('YEAR'));
 		$this->MONTH->setDbValue($rs->fields('MONTH'));
+		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
 		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
 		$this->AMOUNT->setDbValue($rs->fields('AMOUNT'));
 		$this->STARTED->setDbValue($rs->fields('STARTED'));
 		$this->ENDED->setDbValue($rs->fields('ENDED'));
 		$this->TYPE->setDbValue($rs->fields('TYPE'));
+		$this->Batch->setDbValue($rs->fields('Batch'));
 		$this->NOTES->setDbValue($rs->fields('NOTES'));
 	}
 
@@ -602,11 +669,13 @@ class cdeductions extends cTable {
 		// L_Ref
 		// YEAR
 		// MONTH
+		// Bank_ID
 		// Acc_ID
 		// AMOUNT
 		// STARTED
 		// ENDED
 		// TYPE
+		// Batch
 		// NOTES
 		// Deduction_ID
 
@@ -614,7 +683,31 @@ class cdeductions extends cTable {
 		$this->Deduction_ID->ViewCustomAttributes = "";
 
 		// PF
-		$this->PF->ViewValue = $this->PF->CurrentValue;
+		if ($this->PF->VirtualValue <> "") {
+			$this->PF->ViewValue = $this->PF->VirtualValue;
+		} else {
+			$this->PF->ViewValue = $this->PF->CurrentValue;
+		if (strval($this->PF->CurrentValue) <> "") {
+			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->PF->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `emp`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->PF, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$arwrk[2] = $rswrk->fields('Disp2Fld');
+				$this->PF->ViewValue = $this->PF->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->PF->ViewValue = $this->PF->CurrentValue;
+			}
+		} else {
+			$this->PF->ViewValue = NULL;
+		}
+		}
 		$this->PF->CellCssStyle .= "text-align: left;";
 		$this->PF->ViewCustomAttributes = "";
 
@@ -641,6 +734,28 @@ class cdeductions extends cTable {
 		}
 		$this->MONTH->CellCssStyle .= "text-align: center;";
 		$this->MONTH->ViewCustomAttributes = "";
+
+		// Bank_ID
+		if (strval($this->Bank_ID->CurrentValue) <> "") {
+			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
+			}
+		} else {
+			$this->Bank_ID->ViewValue = NULL;
+		}
+		$this->Bank_ID->ViewCustomAttributes = "";
 
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
@@ -689,8 +804,30 @@ class cdeductions extends cTable {
 		} else {
 			$this->TYPE->ViewValue = NULL;
 		}
-		$this->TYPE->CellCssStyle .= "text-align: center;";
+		$this->TYPE->CellCssStyle .= "text-align: left;";
 		$this->TYPE->ViewCustomAttributes = "";
+
+		// Batch
+		if (strval($this->Batch->CurrentValue) <> "") {
+			$sFilterWrk = "`Batch_ID`" . ew_SearchString("=", $this->Batch->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Batch_ID`, `Batch_Number` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `batches`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Batch, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Batch->ViewValue = $this->Batch->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Batch->ViewValue = $this->Batch->CurrentValue;
+			}
+		} else {
+			$this->Batch->ViewValue = NULL;
+		}
+		$this->Batch->ViewCustomAttributes = "";
 
 		// NOTES
 		$this->NOTES->ViewValue = $this->NOTES->CurrentValue;
@@ -729,6 +866,11 @@ class cdeductions extends cTable {
 		$this->MONTH->HrefValue = "";
 		$this->MONTH->TooltipValue = "";
 
+		// Bank_ID
+		$this->Bank_ID->LinkCustomAttributes = "";
+		$this->Bank_ID->HrefValue = "";
+		$this->Bank_ID->TooltipValue = "";
+
 		// Acc_ID
 		$this->Acc_ID->LinkCustomAttributes = "";
 		$this->Acc_ID->HrefValue = "";
@@ -753,6 +895,11 @@ class cdeductions extends cTable {
 		$this->TYPE->LinkCustomAttributes = "";
 		$this->TYPE->HrefValue = "";
 		$this->TYPE->TooltipValue = "";
+
+		// Batch
+		$this->Batch->LinkCustomAttributes = "";
+		$this->Batch->HrefValue = "";
+		$this->Batch->TooltipValue = "";
 
 		// NOTES
 		$this->NOTES->LinkCustomAttributes = "";
@@ -796,6 +943,9 @@ class cdeductions extends cTable {
 		$this->MONTH->EditCustomAttributes = "";
 		$this->MONTH->EditValue = $this->MONTH->Options(TRUE);
 
+		// Bank_ID
+		$this->Bank_ID->EditCustomAttributes = "";
+
 		// Acc_ID
 		$this->Acc_ID->EditCustomAttributes = "";
 
@@ -821,6 +971,9 @@ class cdeductions extends cTable {
 		// TYPE
 		$this->TYPE->EditCustomAttributes = "";
 		$this->TYPE->EditValue = $this->TYPE->Options(FALSE);
+
+		// Batch
+		$this->Batch->EditCustomAttributes = "";
 
 		// NOTES
 		$this->NOTES->EditAttrs["class"] = "form-control";
@@ -859,21 +1012,25 @@ class cdeductions extends cTable {
 					if ($this->L_Ref->Exportable) $Doc->ExportCaption($this->L_Ref);
 					if ($this->YEAR->Exportable) $Doc->ExportCaption($this->YEAR);
 					if ($this->MONTH->Exportable) $Doc->ExportCaption($this->MONTH);
+					if ($this->Bank_ID->Exportable) $Doc->ExportCaption($this->Bank_ID);
 					if ($this->Acc_ID->Exportable) $Doc->ExportCaption($this->Acc_ID);
 					if ($this->AMOUNT->Exportable) $Doc->ExportCaption($this->AMOUNT);
 					if ($this->STARTED->Exportable) $Doc->ExportCaption($this->STARTED);
 					if ($this->ENDED->Exportable) $Doc->ExportCaption($this->ENDED);
 					if ($this->TYPE->Exportable) $Doc->ExportCaption($this->TYPE);
+					if ($this->Batch->Exportable) $Doc->ExportCaption($this->Batch);
 					if ($this->NOTES->Exportable) $Doc->ExportCaption($this->NOTES);
 				} else {
 					if ($this->PF->Exportable) $Doc->ExportCaption($this->PF);
 					if ($this->YEAR->Exportable) $Doc->ExportCaption($this->YEAR);
 					if ($this->MONTH->Exportable) $Doc->ExportCaption($this->MONTH);
+					if ($this->Bank_ID->Exportable) $Doc->ExportCaption($this->Bank_ID);
 					if ($this->Acc_ID->Exportable) $Doc->ExportCaption($this->Acc_ID);
 					if ($this->AMOUNT->Exportable) $Doc->ExportCaption($this->AMOUNT);
 					if ($this->STARTED->Exportable) $Doc->ExportCaption($this->STARTED);
 					if ($this->ENDED->Exportable) $Doc->ExportCaption($this->ENDED);
 					if ($this->TYPE->Exportable) $Doc->ExportCaption($this->TYPE);
+					if ($this->Batch->Exportable) $Doc->ExportCaption($this->Batch);
 					if ($this->NOTES->Exportable) $Doc->ExportCaption($this->NOTES);
 				}
 				$Doc->EndExportRow();
@@ -910,21 +1067,25 @@ class cdeductions extends cTable {
 						if ($this->L_Ref->Exportable) $Doc->ExportField($this->L_Ref);
 						if ($this->YEAR->Exportable) $Doc->ExportField($this->YEAR);
 						if ($this->MONTH->Exportable) $Doc->ExportField($this->MONTH);
+						if ($this->Bank_ID->Exportable) $Doc->ExportField($this->Bank_ID);
 						if ($this->Acc_ID->Exportable) $Doc->ExportField($this->Acc_ID);
 						if ($this->AMOUNT->Exportable) $Doc->ExportField($this->AMOUNT);
 						if ($this->STARTED->Exportable) $Doc->ExportField($this->STARTED);
 						if ($this->ENDED->Exportable) $Doc->ExportField($this->ENDED);
 						if ($this->TYPE->Exportable) $Doc->ExportField($this->TYPE);
+						if ($this->Batch->Exportable) $Doc->ExportField($this->Batch);
 						if ($this->NOTES->Exportable) $Doc->ExportField($this->NOTES);
 					} else {
 						if ($this->PF->Exportable) $Doc->ExportField($this->PF);
 						if ($this->YEAR->Exportable) $Doc->ExportField($this->YEAR);
 						if ($this->MONTH->Exportable) $Doc->ExportField($this->MONTH);
+						if ($this->Bank_ID->Exportable) $Doc->ExportField($this->Bank_ID);
 						if ($this->Acc_ID->Exportable) $Doc->ExportField($this->Acc_ID);
 						if ($this->AMOUNT->Exportable) $Doc->ExportField($this->AMOUNT);
 						if ($this->STARTED->Exportable) $Doc->ExportField($this->STARTED);
 						if ($this->ENDED->Exportable) $Doc->ExportField($this->ENDED);
 						if ($this->TYPE->Exportable) $Doc->ExportField($this->TYPE);
+						if ($this->Batch->Exportable) $Doc->ExportField($this->Batch);
 						if ($this->NOTES->Exportable) $Doc->ExportField($this->NOTES);
 					}
 					$Doc->EndExportRow();

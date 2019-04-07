@@ -412,11 +412,13 @@ class cdeductions_search extends cdeductions {
 		$this->BuildSearchUrl($sSrchUrl, $this->L_Ref); // L_Ref
 		$this->BuildSearchUrl($sSrchUrl, $this->YEAR); // YEAR
 		$this->BuildSearchUrl($sSrchUrl, $this->MONTH); // MONTH
+		$this->BuildSearchUrl($sSrchUrl, $this->Bank_ID); // Bank_ID
 		$this->BuildSearchUrl($sSrchUrl, $this->Acc_ID); // Acc_ID
 		$this->BuildSearchUrl($sSrchUrl, $this->AMOUNT); // AMOUNT
 		$this->BuildSearchUrl($sSrchUrl, $this->STARTED); // STARTED
 		$this->BuildSearchUrl($sSrchUrl, $this->ENDED); // ENDED
 		$this->BuildSearchUrl($sSrchUrl, $this->TYPE); // TYPE
+		$this->BuildSearchUrl($sSrchUrl, $this->Batch); // Batch
 		$this->BuildSearchUrl($sSrchUrl, $this->NOTES); // NOTES
 		if ($sSrchUrl <> "") $sSrchUrl .= "&";
 		$sSrchUrl .= "cmd=search";
@@ -500,6 +502,10 @@ class cdeductions_search extends cdeductions {
 		$this->MONTH->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_MONTH"));
 		$this->MONTH->AdvancedSearch->SearchOperator = $objForm->GetValue("z_MONTH");
 
+		// Bank_ID
+		$this->Bank_ID->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_Bank_ID"));
+		$this->Bank_ID->AdvancedSearch->SearchOperator = $objForm->GetValue("z_Bank_ID");
+
 		// Acc_ID
 		$this->Acc_ID->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_Acc_ID"));
 		$this->Acc_ID->AdvancedSearch->SearchOperator = $objForm->GetValue("z_Acc_ID");
@@ -519,6 +525,10 @@ class cdeductions_search extends cdeductions {
 		// TYPE
 		$this->TYPE->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_TYPE"));
 		$this->TYPE->AdvancedSearch->SearchOperator = $objForm->GetValue("z_TYPE");
+
+		// Batch
+		$this->Batch->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_Batch"));
+		$this->Batch->AdvancedSearch->SearchOperator = $objForm->GetValue("z_Batch");
 
 		// NOTES
 		$this->NOTES->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_NOTES"));
@@ -544,17 +554,43 @@ class cdeductions_search extends cdeductions {
 		// L_Ref
 		// YEAR
 		// MONTH
+		// Bank_ID
 		// Acc_ID
 		// AMOUNT
 		// STARTED
 		// ENDED
 		// TYPE
+		// Batch
 		// NOTES
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
 
 		// PF
-		$this->PF->ViewValue = $this->PF->CurrentValue;
+		if ($this->PF->VirtualValue <> "") {
+			$this->PF->ViewValue = $this->PF->VirtualValue;
+		} else {
+			$this->PF->ViewValue = $this->PF->CurrentValue;
+		if (strval($this->PF->CurrentValue) <> "") {
+			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->PF->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `emp`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->PF, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$arwrk[2] = $rswrk->fields('Disp2Fld');
+				$this->PF->ViewValue = $this->PF->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->PF->ViewValue = $this->PF->CurrentValue;
+			}
+		} else {
+			$this->PF->ViewValue = NULL;
+		}
+		}
 		$this->PF->CellCssStyle .= "text-align: left;";
 		$this->PF->ViewCustomAttributes = "";
 
@@ -581,6 +617,28 @@ class cdeductions_search extends cdeductions {
 		}
 		$this->MONTH->CellCssStyle .= "text-align: center;";
 		$this->MONTH->ViewCustomAttributes = "";
+
+		// Bank_ID
+		if (strval($this->Bank_ID->CurrentValue) <> "") {
+			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
+			}
+		} else {
+			$this->Bank_ID->ViewValue = NULL;
+		}
+		$this->Bank_ID->ViewCustomAttributes = "";
 
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
@@ -629,8 +687,30 @@ class cdeductions_search extends cdeductions {
 		} else {
 			$this->TYPE->ViewValue = NULL;
 		}
-		$this->TYPE->CellCssStyle .= "text-align: center;";
+		$this->TYPE->CellCssStyle .= "text-align: left;";
 		$this->TYPE->ViewCustomAttributes = "";
+
+		// Batch
+		if (strval($this->Batch->CurrentValue) <> "") {
+			$sFilterWrk = "`Batch_ID`" . ew_SearchString("=", $this->Batch->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Batch_ID`, `Batch_Number` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `batches`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Batch, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$this->Batch->ViewValue = $this->Batch->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Batch->ViewValue = $this->Batch->CurrentValue;
+			}
+		} else {
+			$this->Batch->ViewValue = NULL;
+		}
+		$this->Batch->ViewCustomAttributes = "";
 
 		// NOTES
 		$this->NOTES->ViewValue = $this->NOTES->CurrentValue;
@@ -664,6 +744,11 @@ class cdeductions_search extends cdeductions {
 			$this->MONTH->HrefValue = "";
 			$this->MONTH->TooltipValue = "";
 
+			// Bank_ID
+			$this->Bank_ID->LinkCustomAttributes = "";
+			$this->Bank_ID->HrefValue = "";
+			$this->Bank_ID->TooltipValue = "";
+
 			// Acc_ID
 			$this->Acc_ID->LinkCustomAttributes = "";
 			$this->Acc_ID->HrefValue = "";
@@ -688,6 +773,11 @@ class cdeductions_search extends cdeductions {
 			$this->TYPE->LinkCustomAttributes = "";
 			$this->TYPE->HrefValue = "";
 			$this->TYPE->TooltipValue = "";
+
+			// Batch
+			$this->Batch->LinkCustomAttributes = "";
+			$this->Batch->HrefValue = "";
+			$this->Batch->TooltipValue = "";
 
 			// NOTES
 			$this->NOTES->LinkCustomAttributes = "";
@@ -715,6 +805,31 @@ class cdeductions_search extends cdeductions {
 			$this->MONTH->EditCustomAttributes = "";
 			$this->MONTH->EditValue = $this->MONTH->Options(TRUE);
 
+			// Bank_ID
+			$this->Bank_ID->EditCustomAttributes = "";
+			if (trim(strval($this->Bank_ID->AdvancedSearch->SearchValue)) == "") {
+				$sFilterWrk = "0=1";
+			} else {
+				$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->AdvancedSearch->SearchValue, EW_DATATYPE_NUMBER, "");
+			}
+			$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `banks`";
+			$sWhereWrk = "";
+			ew_AddFilter($sWhereWrk, $sFilterWrk);
+			$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = ew_HtmlEncode($rswrk->fields('DispFld'));
+				$this->Bank_ID->AdvancedSearch->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
+			} else {
+				$this->Bank_ID->AdvancedSearch->ViewValue = $Language->Phrase("PleaseSelect");
+			}
+			$arwrk = ($rswrk) ? $rswrk->GetRows() : array();
+			if ($rswrk) $rswrk->Close();
+			array_unshift($arwrk, array("", $Language->Phrase("PleaseSelect"), "", "", "", "", "", "", ""));
+			$this->Bank_ID->EditValue = $arwrk;
+
 			// Acc_ID
 			$this->Acc_ID->EditCustomAttributes = "";
 			if (trim(strval($this->Acc_ID->AdvancedSearch->SearchValue)) == "") {
@@ -722,7 +837,7 @@ class cdeductions_search extends cdeductions {
 			} else {
 				$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->AdvancedSearch->SearchValue, EW_DATATYPE_NUMBER, "");
 			}
-			$sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `PF` AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
+			$sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `Bank_ID` AS `SelectFilterFld`, `PF` AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
 			$sWhereWrk = "";
 			ew_AddFilter($sWhereWrk, $sFilterWrk);
 			$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -762,6 +877,31 @@ class cdeductions_search extends cdeductions {
 			$this->TYPE->EditCustomAttributes = "";
 			$this->TYPE->EditValue = $this->TYPE->Options(FALSE);
 
+			// Batch
+			$this->Batch->EditCustomAttributes = "";
+			if (trim(strval($this->Batch->AdvancedSearch->SearchValue)) == "") {
+				$sFilterWrk = "0=1";
+			} else {
+				$sFilterWrk = "`Batch_ID`" . ew_SearchString("=", $this->Batch->AdvancedSearch->SearchValue, EW_DATATYPE_NUMBER, "");
+			}
+			$sSqlWrk = "SELECT `Batch_ID`, `Batch_Number` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `batches`";
+			$sWhereWrk = "";
+			ew_AddFilter($sWhereWrk, $sFilterWrk);
+			$this->Lookup_Selecting($this->Batch, $sWhereWrk); // Call Lookup selecting
+			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = ew_HtmlEncode($rswrk->fields('DispFld'));
+				$this->Batch->AdvancedSearch->ViewValue = $this->Batch->DisplayValue($arwrk);
+			} else {
+				$this->Batch->AdvancedSearch->ViewValue = $Language->Phrase("PleaseSelect");
+			}
+			$arwrk = ($rswrk) ? $rswrk->GetRows() : array();
+			if ($rswrk) $rswrk->Close();
+			array_unshift($arwrk, array("", $Language->Phrase("PleaseSelect"), "", "", "", "", "", "", ""));
+			$this->Batch->EditValue = $arwrk;
+
 			// NOTES
 			$this->NOTES->EditAttrs["class"] = "form-control";
 			$this->NOTES->EditCustomAttributes = "";
@@ -789,9 +929,6 @@ class cdeductions_search extends cdeductions {
 		// Check if validation required
 		if (!EW_SERVER_VALIDATE)
 			return TRUE;
-		if (!ew_CheckInteger($this->PF->AdvancedSearch->SearchValue)) {
-			ew_AddMessage($gsSearchError, $this->PF->FldErrMsg());
-		}
 		if (!ew_CheckNumber($this->AMOUNT->AdvancedSearch->SearchValue)) {
 			ew_AddMessage($gsSearchError, $this->AMOUNT->FldErrMsg());
 		}
@@ -820,11 +957,13 @@ class cdeductions_search extends cdeductions {
 		$this->L_Ref->AdvancedSearch->Load();
 		$this->YEAR->AdvancedSearch->Load();
 		$this->MONTH->AdvancedSearch->Load();
+		$this->Bank_ID->AdvancedSearch->Load();
 		$this->Acc_ID->AdvancedSearch->Load();
 		$this->AMOUNT->AdvancedSearch->Load();
 		$this->STARTED->AdvancedSearch->Load();
 		$this->ENDED->AdvancedSearch->Load();
 		$this->TYPE->AdvancedSearch->Load();
+		$this->Batch->AdvancedSearch->Load();
 		$this->NOTES->AdvancedSearch->Load();
 	}
 
@@ -951,13 +1090,16 @@ fdeductionssearch.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
+fdeductionssearch.Lists["x_PF"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_PF","x_Name","",""],"ParentFields":[],"ChildFields":["x_Acc_ID"],"FilterFields":[],"Options":[],"Template":""};
 fdeductionssearch.Lists["x_YEAR"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionssearch.Lists["x_YEAR"].Options = <?php echo json_encode($deductions->YEAR->Options()) ?>;
 fdeductionssearch.Lists["x_MONTH"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionssearch.Lists["x_MONTH"].Options = <?php echo json_encode($deductions->MONTH->Options()) ?>;
-fdeductionssearch.Lists["x_Acc_ID"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_Acc_NO","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+fdeductionssearch.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":[],"ChildFields":["x_Acc_ID"],"FilterFields":[],"Options":[],"Template":""};
+fdeductionssearch.Lists["x_Acc_ID"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_Acc_NO","","",""],"ParentFields":["x_Bank_ID","x_PF"],"ChildFields":[],"FilterFields":["x_Bank_ID","x_PF"],"Options":[],"Template":""};
 fdeductionssearch.Lists["x_TYPE"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionssearch.Lists["x_TYPE"].Options = <?php echo json_encode($deductions->TYPE->Options()) ?>;
+fdeductionssearch.Lists["x_Batch"] = {"LinkField":"x_Batch_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Batch_Number","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 // Validate function for search
@@ -967,9 +1109,6 @@ fdeductionssearch.Validate = function(fobj) {
 		return true; // Ignore validation
 	fobj = fobj || this.Form;
 	var infix = "";
-	elm = this.GetElements("x" + infix + "_PF");
-	if (elm && !ew_CheckInteger(elm.value))
-		return this.OnError(elm, "<?php echo ew_JsEncode2($deductions->PF->FldErrMsg()) ?>");
 	elm = this.GetElements("x" + infix + "_AMOUNT");
 	if (elm && !ew_CheckNumber(elm.value))
 		return this.OnError(elm, "<?php echo ew_JsEncode2($deductions->AMOUNT->FldErrMsg()) ?>");
@@ -1022,12 +1161,31 @@ $deductions_search->ShowMessage();
 <?php if ($deductions->PF->Visible) { // PF ?>
 <?php if (ew_IsMobile() || $deductions_search->IsModal) { ?>
 	<div id="r_PF" class="form-group">
-		<label for="x_PF" class="<?php echo $deductions_search->SearchLabelClass ?>"><span id="elh_deductions_PF"><?php echo $deductions->PF->FldCaption() ?></span>	
+		<label class="<?php echo $deductions_search->SearchLabelClass ?>"><span id="elh_deductions_PF"><?php echo $deductions->PF->FldCaption() ?></span>	
 		<p class="form-control-static ewSearchOperator"><?php echo $Language->Phrase("=") ?><input type="hidden" name="z_PF" id="z_PF" value="="></p>
 		</label>
 		<div class="<?php echo $deductions_search->SearchRightColumnClass ?>"><div<?php echo $deductions->PF->CellAttributes() ?>>
 			<span id="el_deductions_PF">
-<input type="text" data-table="deductions" data-field="x_PF" name="x_PF" id="x_PF" size="6" maxlength="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" value="<?php echo $deductions->PF->EditValue ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+<?php
+$wrkonchange = trim("ew_UpdateOpt.call(this); " . @$deductions->PF->EditAttrs["onchange"]);
+if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
+$deductions->PF->EditAttrs["onchange"] = "";
+?>
+<span id="as_x_PF" style="white-space: nowrap; z-index: 8980">
+	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+</span>
+<input type="hidden" data-table="deductions" data-field="x_PF" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->PF->DisplayValueSeparator) ? json_encode($deductions->PF->DisplayValueSeparator) : $deductions->PF->DisplayValueSeparator) ?>" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($deductions->PF->AdvancedSearch->SearchValue) ?>"<?php echo $wrkonchange ?>>
+<?php
+$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld` FROM `emp`";
+$sWhereWrk = "`PF` LIKE '{query_value}%' OR CONCAT(`PF`,'" . ew_ValueSeparator(1, $Page->PF) . "',`Name`) LIKE '{query_value}%'";
+$deductions->Lookup_Selecting($deductions->PF, $sWhereWrk); // Call Lookup selecting
+if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+$sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
+?>
+<input type="hidden" name="q_x_PF" id="q_x_PF" value="s=<?php echo ew_Encrypt($sSqlWrk) ?>&d=">
+<script type="text/javascript">
+fdeductionssearch.CreateAutoSuggest({"id":"x_PF","forceSelect":false});
+</script>
 </span>
 		</div></div>
 	</div>
@@ -1038,7 +1196,26 @@ $deductions_search->ShowMessage();
 		<td<?php echo $deductions->PF->CellAttributes() ?>>
 			<div style="white-space: nowrap;">
 				<span id="el_deductions_PF">
-<input type="text" data-table="deductions" data-field="x_PF" name="x_PF" id="x_PF" size="6" maxlength="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" value="<?php echo $deductions->PF->EditValue ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+<?php
+$wrkonchange = trim("ew_UpdateOpt.call(this); " . @$deductions->PF->EditAttrs["onchange"]);
+if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
+$deductions->PF->EditAttrs["onchange"] = "";
+?>
+<span id="as_x_PF" style="white-space: nowrap; z-index: 8980">
+	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+</span>
+<input type="hidden" data-table="deductions" data-field="x_PF" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->PF->DisplayValueSeparator) ? json_encode($deductions->PF->DisplayValueSeparator) : $deductions->PF->DisplayValueSeparator) ?>" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($deductions->PF->AdvancedSearch->SearchValue) ?>"<?php echo $wrkonchange ?>>
+<?php
+$sSqlWrk = "SELECT `PF`, `PF` AS `DispFld`, `Name` AS `Disp2Fld` FROM `emp`";
+$sWhereWrk = "`PF` LIKE '{query_value}%' OR CONCAT(`PF`,'" . ew_ValueSeparator(1, $Page->PF) . "',`Name`) LIKE '{query_value}%'";
+$deductions->Lookup_Selecting($deductions->PF, $sWhereWrk); // Call Lookup selecting
+if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+$sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
+?>
+<input type="hidden" name="q_x_PF" id="q_x_PF" value="s=<?php echo ew_Encrypt($sSqlWrk) ?>&d=">
+<script type="text/javascript">
+fdeductionssearch.CreateAutoSuggest({"id":"x_PF","forceSelect":false});
+</script>
 </span>
 			</div>
 		</td>
@@ -1247,6 +1424,120 @@ if (is_array($arwrk)) {
 	</tr>
 <?php } ?>
 <?php } ?>
+<?php if ($deductions->Bank_ID->Visible) { // Bank_ID ?>
+<?php if (ew_IsMobile() || $deductions_search->IsModal) { ?>
+	<div id="r_Bank_ID" class="form-group">
+		<label for="x_Bank_ID" class="<?php echo $deductions_search->SearchLabelClass ?>"><span id="elh_deductions_Bank_ID"><?php echo $deductions->Bank_ID->FldCaption() ?></span>	
+		<p class="form-control-static ewSearchOperator"><?php echo $Language->Phrase("=") ?><input type="hidden" name="z_Bank_ID" id="z_Bank_ID" value="="></p>
+		</label>
+		<div class="<?php echo $deductions_search->SearchRightColumnClass ?>"><div<?php echo $deductions->Bank_ID->CellAttributes() ?>>
+			<span id="el_deductions_Bank_ID">
+<?php $deductions->Bank_ID->EditAttrs["onclick"] = "ew_UpdateOpt.call(this); " . @$deductions->Bank_ID->EditAttrs["onclick"]; ?>
+<div class="ewDropdownList has-feedback">
+	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		<?php echo $deductions->Bank_ID->AdvancedSearch->ViewValue ?>
+	</span>
+	<span class="glyphicon glyphicon-remove form-control-feedback ewDropdownListClear"></span>
+	<span class="form-control-feedback"><span class="caret"></span></span>
+	<div id="dsl_x_Bank_ID" data-repeatcolumn="1" class="dropdown-menu">
+		<div class="ewItems" style="position: relative; overflow-x: hidden;">
+<?php
+$arwrk = $deductions->Bank_ID->EditValue;
+if (is_array($arwrk)) {
+	$rowswrk = count($arwrk);
+	$emptywrk = TRUE;
+	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
+		$selwrk = (strval($deductions->Bank_ID->AdvancedSearch->SearchValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
+		if ($selwrk <> "") {
+			$emptywrk = FALSE;
+?>
+<input type="radio" data-table="deductions" data-field="x_Bank_ID" name="x_Bank_ID" id="x_Bank_ID_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $deductions->Bank_ID->EditAttributes() ?>><?php echo $deductions->Bank_ID->DisplayValue($arwrk[$rowcntwrk]) ?>
+<?php
+		}
+	}
+	if ($emptywrk && strval($deductions->Bank_ID->CurrentValue) <> "") {
+?>
+<input type="radio" data-table="deductions" data-field="x_Bank_ID" name="x_Bank_ID" id="x_Bank_ID_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($deductions->Bank_ID->CurrentValue) ?>" checked<?php echo $deductions->Bank_ID->EditAttributes() ?>><?php echo $deductions->Bank_ID->CurrentValue ?>
+<?php
+    }
+}
+?>
+		</div>
+	</div>
+	<div id="tp_x_Bank_ID" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Bank_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Bank_ID->DisplayValueSeparator) ? json_encode($deductions->Bank_ID->DisplayValueSeparator) : $deductions->Bank_ID->DisplayValueSeparator) ?>" name="x_Bank_ID" id="x_Bank_ID" value="{value}"<?php echo $deductions->Bank_ID->EditAttributes() ?>></div>
+</div>
+<?php
+$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
+$sWhereWrk = "";
+$deductions->Bank_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
+$deductions->Bank_ID->LookupFilters += array("f0" => "`Bank_ID` = {filter_value}", "t0" => "3", "fn0" => "");
+$sSqlWrk = "";
+$deductions->Lookup_Selecting($deductions->Bank_ID, $sWhereWrk); // Call Lookup selecting
+if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+if ($sSqlWrk <> "") $deductions->Bank_ID->LookupFilters["s"] .= $sSqlWrk;
+?>
+<input type="hidden" name="s_x_Bank_ID" id="s_x_Bank_ID" value="<?php echo $deductions->Bank_ID->LookupFilterQuery() ?>">
+</span>
+		</div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_Bank_ID">
+		<td><span id="elh_deductions_Bank_ID"><?php echo $deductions->Bank_ID->FldCaption() ?></span></td>
+		<td><span class="ewSearchOperator"><?php echo $Language->Phrase("=") ?><input type="hidden" name="z_Bank_ID" id="z_Bank_ID" value="="></span></td>
+		<td<?php echo $deductions->Bank_ID->CellAttributes() ?>>
+			<div style="white-space: nowrap;">
+				<span id="el_deductions_Bank_ID">
+<?php $deductions->Bank_ID->EditAttrs["onclick"] = "ew_UpdateOpt.call(this); " . @$deductions->Bank_ID->EditAttrs["onclick"]; ?>
+<div class="ewDropdownList has-feedback">
+	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		<?php echo $deductions->Bank_ID->AdvancedSearch->ViewValue ?>
+	</span>
+	<span class="glyphicon glyphicon-remove form-control-feedback ewDropdownListClear"></span>
+	<span class="form-control-feedback"><span class="caret"></span></span>
+	<div id="dsl_x_Bank_ID" data-repeatcolumn="1" class="dropdown-menu">
+		<div class="ewItems" style="position: relative; overflow-x: hidden;">
+<?php
+$arwrk = $deductions->Bank_ID->EditValue;
+if (is_array($arwrk)) {
+	$rowswrk = count($arwrk);
+	$emptywrk = TRUE;
+	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
+		$selwrk = (strval($deductions->Bank_ID->AdvancedSearch->SearchValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
+		if ($selwrk <> "") {
+			$emptywrk = FALSE;
+?>
+<input type="radio" data-table="deductions" data-field="x_Bank_ID" name="x_Bank_ID" id="x_Bank_ID_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $deductions->Bank_ID->EditAttributes() ?>><?php echo $deductions->Bank_ID->DisplayValue($arwrk[$rowcntwrk]) ?>
+<?php
+		}
+	}
+	if ($emptywrk && strval($deductions->Bank_ID->CurrentValue) <> "") {
+?>
+<input type="radio" data-table="deductions" data-field="x_Bank_ID" name="x_Bank_ID" id="x_Bank_ID_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($deductions->Bank_ID->CurrentValue) ?>" checked<?php echo $deductions->Bank_ID->EditAttributes() ?>><?php echo $deductions->Bank_ID->CurrentValue ?>
+<?php
+    }
+}
+?>
+		</div>
+	</div>
+	<div id="tp_x_Bank_ID" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Bank_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Bank_ID->DisplayValueSeparator) ? json_encode($deductions->Bank_ID->DisplayValueSeparator) : $deductions->Bank_ID->DisplayValueSeparator) ?>" name="x_Bank_ID" id="x_Bank_ID" value="{value}"<?php echo $deductions->Bank_ID->EditAttributes() ?>></div>
+</div>
+<?php
+$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
+$sWhereWrk = "";
+$deductions->Bank_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
+$deductions->Bank_ID->LookupFilters += array("f0" => "`Bank_ID` = {filter_value}", "t0" => "3", "fn0" => "");
+$sSqlWrk = "";
+$deductions->Lookup_Selecting($deductions->Bank_ID, $sWhereWrk); // Call Lookup selecting
+if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+if ($sSqlWrk <> "") $deductions->Bank_ID->LookupFilters["s"] .= $sSqlWrk;
+?>
+<input type="hidden" name="s_x_Bank_ID" id="s_x_Bank_ID" value="<?php echo $deductions->Bank_ID->LookupFilterQuery() ?>">
+</span>
+			</div>
+		</td>
+	</tr>
+<?php } ?>
+<?php } ?>
 <?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
 <?php if (ew_IsMobile() || $deductions_search->IsModal) { ?>
 	<div id="r_Acc_ID" class="form-group">
@@ -1290,9 +1581,11 @@ if (is_array($arwrk)) {
 </div>
 <?php
 $sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
-$sWhereWrk = "";
+$sWhereWrk = "{filter}";
 $deductions->Acc_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $deductions->Acc_ID->LookupFilters += array("f0" => "`PF` = {filter_value}", "t0" => "3", "fn0" => "");
+$deductions->Acc_ID->LookupFilters += array("f1" => "`Bank_ID` IN ({filter_value})", "t1" => "3", "fn1" => "");
+$deductions->Acc_ID->LookupFilters += array("f2" => "`PF` IN ({filter_value})", "t2" => "3", "fn2" => "");
 $sSqlWrk = "";
 $deductions->Lookup_Selecting($deductions->Acc_ID, $sWhereWrk); // Call Lookup selecting
 if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
@@ -1344,9 +1637,11 @@ if (is_array($arwrk)) {
 </div>
 <?php
 $sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
-$sWhereWrk = "";
+$sWhereWrk = "{filter}";
 $deductions->Acc_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $deductions->Acc_ID->LookupFilters += array("f0" => "`PF` = {filter_value}", "t0" => "3", "fn0" => "");
+$deductions->Acc_ID->LookupFilters += array("f1" => "`Bank_ID` IN ({filter_value})", "t1" => "3", "fn1" => "");
+$deductions->Acc_ID->LookupFilters += array("f2" => "`PF` IN ({filter_value})", "t2" => "3", "fn2" => "");
 $sSqlWrk = "";
 $deductions->Lookup_Selecting($deductions->Acc_ID, $sWhereWrk); // Call Lookup selecting
 if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
@@ -1539,6 +1834,118 @@ if (is_array($arwrk)) {
 	</div>
 	<div id="tp_x_TYPE" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_TYPE" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->TYPE->DisplayValueSeparator) ? json_encode($deductions->TYPE->DisplayValueSeparator) : $deductions->TYPE->DisplayValueSeparator) ?>" name="x_TYPE" id="x_TYPE" value="{value}"<?php echo $deductions->TYPE->EditAttributes() ?>></div>
 </div>
+</span>
+			</div>
+		</td>
+	</tr>
+<?php } ?>
+<?php } ?>
+<?php if ($deductions->Batch->Visible) { // Batch ?>
+<?php if (ew_IsMobile() || $deductions_search->IsModal) { ?>
+	<div id="r_Batch" class="form-group">
+		<label for="x_Batch" class="<?php echo $deductions_search->SearchLabelClass ?>"><span id="elh_deductions_Batch"><?php echo $deductions->Batch->FldCaption() ?></span>	
+		<p class="form-control-static ewSearchOperator"><?php echo $Language->Phrase("=") ?><input type="hidden" name="z_Batch" id="z_Batch" value="="></p>
+		</label>
+		<div class="<?php echo $deductions_search->SearchRightColumnClass ?>"><div<?php echo $deductions->Batch->CellAttributes() ?>>
+			<span id="el_deductions_Batch">
+<div class="ewDropdownList has-feedback">
+	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		<?php echo $deductions->Batch->AdvancedSearch->ViewValue ?>
+	</span>
+	<span class="glyphicon glyphicon-remove form-control-feedback ewDropdownListClear"></span>
+	<span class="form-control-feedback"><span class="caret"></span></span>
+	<div id="dsl_x_Batch" data-repeatcolumn="1" class="dropdown-menu">
+		<div class="ewItems" style="position: relative; overflow-x: hidden;">
+<?php
+$arwrk = $deductions->Batch->EditValue;
+if (is_array($arwrk)) {
+	$rowswrk = count($arwrk);
+	$emptywrk = TRUE;
+	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
+		$selwrk = (strval($deductions->Batch->AdvancedSearch->SearchValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
+		if ($selwrk <> "") {
+			$emptywrk = FALSE;
+?>
+<input type="radio" data-table="deductions" data-field="x_Batch" name="x_Batch" id="x_Batch_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $deductions->Batch->EditAttributes() ?>><?php echo $deductions->Batch->DisplayValue($arwrk[$rowcntwrk]) ?>
+<?php
+		}
+	}
+	if ($emptywrk && strval($deductions->Batch->CurrentValue) <> "") {
+?>
+<input type="radio" data-table="deductions" data-field="x_Batch" name="x_Batch" id="x_Batch_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($deductions->Batch->CurrentValue) ?>" checked<?php echo $deductions->Batch->EditAttributes() ?>><?php echo $deductions->Batch->CurrentValue ?>
+<?php
+    }
+}
+?>
+		</div>
+	</div>
+	<div id="tp_x_Batch" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Batch" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Batch->DisplayValueSeparator) ? json_encode($deductions->Batch->DisplayValueSeparator) : $deductions->Batch->DisplayValueSeparator) ?>" name="x_Batch" id="x_Batch" value="{value}"<?php echo $deductions->Batch->EditAttributes() ?>></div>
+</div>
+<?php
+$sSqlWrk = "SELECT `Batch_ID`, `Batch_Number` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `batches`";
+$sWhereWrk = "";
+$deductions->Batch->LookupFilters = array("s" => $sSqlWrk, "d" => "");
+$deductions->Batch->LookupFilters += array("f0" => "`Batch_ID` = {filter_value}", "t0" => "3", "fn0" => "");
+$sSqlWrk = "";
+$deductions->Lookup_Selecting($deductions->Batch, $sWhereWrk); // Call Lookup selecting
+if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+if ($sSqlWrk <> "") $deductions->Batch->LookupFilters["s"] .= $sSqlWrk;
+?>
+<input type="hidden" name="s_x_Batch" id="s_x_Batch" value="<?php echo $deductions->Batch->LookupFilterQuery() ?>">
+</span>
+		</div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_Batch">
+		<td><span id="elh_deductions_Batch"><?php echo $deductions->Batch->FldCaption() ?></span></td>
+		<td><span class="ewSearchOperator"><?php echo $Language->Phrase("=") ?><input type="hidden" name="z_Batch" id="z_Batch" value="="></span></td>
+		<td<?php echo $deductions->Batch->CellAttributes() ?>>
+			<div style="white-space: nowrap;">
+				<span id="el_deductions_Batch">
+<div class="ewDropdownList has-feedback">
+	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+		<?php echo $deductions->Batch->AdvancedSearch->ViewValue ?>
+	</span>
+	<span class="glyphicon glyphicon-remove form-control-feedback ewDropdownListClear"></span>
+	<span class="form-control-feedback"><span class="caret"></span></span>
+	<div id="dsl_x_Batch" data-repeatcolumn="1" class="dropdown-menu">
+		<div class="ewItems" style="position: relative; overflow-x: hidden;">
+<?php
+$arwrk = $deductions->Batch->EditValue;
+if (is_array($arwrk)) {
+	$rowswrk = count($arwrk);
+	$emptywrk = TRUE;
+	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
+		$selwrk = (strval($deductions->Batch->AdvancedSearch->SearchValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
+		if ($selwrk <> "") {
+			$emptywrk = FALSE;
+?>
+<input type="radio" data-table="deductions" data-field="x_Batch" name="x_Batch" id="x_Batch_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $deductions->Batch->EditAttributes() ?>><?php echo $deductions->Batch->DisplayValue($arwrk[$rowcntwrk]) ?>
+<?php
+		}
+	}
+	if ($emptywrk && strval($deductions->Batch->CurrentValue) <> "") {
+?>
+<input type="radio" data-table="deductions" data-field="x_Batch" name="x_Batch" id="x_Batch_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($deductions->Batch->CurrentValue) ?>" checked<?php echo $deductions->Batch->EditAttributes() ?>><?php echo $deductions->Batch->CurrentValue ?>
+<?php
+    }
+}
+?>
+		</div>
+	</div>
+	<div id="tp_x_Batch" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Batch" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Batch->DisplayValueSeparator) ? json_encode($deductions->Batch->DisplayValueSeparator) : $deductions->Batch->DisplayValueSeparator) ?>" name="x_Batch" id="x_Batch" value="{value}"<?php echo $deductions->Batch->EditAttributes() ?>></div>
+</div>
+<?php
+$sSqlWrk = "SELECT `Batch_ID`, `Batch_Number` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `batches`";
+$sWhereWrk = "";
+$deductions->Batch->LookupFilters = array("s" => $sSqlWrk, "d" => "");
+$deductions->Batch->LookupFilters += array("f0" => "`Batch_ID` = {filter_value}", "t0" => "3", "fn0" => "");
+$sSqlWrk = "";
+$deductions->Lookup_Selecting($deductions->Batch, $sWhereWrk); // Call Lookup selecting
+if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+if ($sSqlWrk <> "") $deductions->Batch->LookupFilters["s"] .= $sSqlWrk;
+?>
+<input type="hidden" name="s_x_Batch" id="s_x_Batch" value="<?php echo $deductions->Batch->LookupFilterQuery() ?>">
 </span>
 			</div>
 		</td>
