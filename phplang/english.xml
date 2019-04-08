@@ -458,9 +458,9 @@
 </field>
 <field id="bank_id"><phrase id="fldcaption" value="Bank"/>
 </field>
-<field id="acc_no"><phrase id="fldcaption" value="Account"/>
-</field>
 <field id="bank_name"><phrase id="fldcaption" value="-"/>
+</field>
+<field id="acc_no"><phrase id="fldcaption" value="Account"/>
 </field>
 </table>
 <table id="banks"><phrase id="tblcaption" value="Banks"/>
@@ -472,9 +472,9 @@
 </field>
 <field id="name"><phrase id="fldcaption" value="Name"/>
 </field>
-<field id="city"><phrase id="fldcaption" value="City"/>
-</field>
 <field id="abbreviation"><phrase id="fldcaption" value="Abbreviation"/>
+</field>
+<field id="city"><phrase id="fldcaption" value="City"/>
 </field>
 </table>
 <table id="deductions"><phrase id="tblcaption" value="Deductions"/>

@@ -15,3 +15,66 @@ date/time	script	user	action	table	field	key value	old value	new value
 2019/04/08 12:19:57	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	7		4
 2019/04/08 12:19:57	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	7		
 2019/04/08 12:19:57	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	7		7
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	1		11598
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	1		[MEMO]
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	1		2019
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	1		4
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	1		11598
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	1		11000
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	1		2019-04-08
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	1		
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	1		2
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	1		2
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	1		
+2019/04/08 12:35:40	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	1		1
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	2		11305
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	2		[MEMO]
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	2		2019
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	2		4
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	2		11305
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	2		10710
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	2		2019-04-08
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	2		
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	2		1
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	2		1
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	2		
+2019/04/08 12:53:44	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	2		2
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	3		8961
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	3		[MEMO]
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	3		2019
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	3		4
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	3		8961
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	3		15000
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	3		2019-04-08
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	3		
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	3		1
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	3		1
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	3		
+2019/04/08 13:22:51	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	3		3
+2019/04/08 13:24:04	/bank.deductions/deductionsedit.php	Administrator	U	deductions	MONTH	3	4	5
+2019/04/08 13:24:19	/bank.deductions/deductionsedit.php	Administrator	U	deductions	MONTH	2	4	5
+2019/04/08 13:24:33	/bank.deductions/deductionsedit.php	Administrator	U	deductions	MONTH	1	4	5
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	4		11521
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	4		[MEMO]
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	4		2019
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	4		5
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	4		11521
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	4		5360
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	4		2019-04-08
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	4		
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	4		1
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	4		1
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	4		
+2019/04/08 13:26:04	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	4		4
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	5		7797
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	5		[MEMO]
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	5		2019
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	5		5
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	5		7797
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	5		19500
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	5		2019-04-08
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	5		
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	5		3
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	5		1
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	5		
+2019/04/08 13:30:14	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	5		5
