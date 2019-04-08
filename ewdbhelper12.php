@@ -29,7 +29,7 @@ class cbanking_db extends cDbHelper {
 	var $DbName = 'banking';
 
 	// ADODB (Access/SQL Server)
-	var $CodePage = 0; // Code page
+	var $CodePage = 65001; // Code page
 
 	// Database
 	var $StartQuote = "`";
@@ -40,7 +40,7 @@ class cbanking_db extends cDbHelper {
 	 * Note: Read http://dev.mysql.com/doc/refman/5.0/en/charset-connection.html
 	 * before using this setting.
 	 */
-	var $MySqlCharset = "";
+	var $MySqlCharset = "utf8";
 
 	// Connect to database
 	function &Connect($info = NULL) {

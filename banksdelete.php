@@ -444,11 +444,7 @@ class cbanks_delete extends cbanks {
 		}
 		$this->Branch_Code->setDbValue($rs->fields('Branch_Code'));
 		$this->Name->setDbValue($rs->fields('Name'));
-		if (array_key_exists('EV__Name', $rs->fields)) {
-			$this->Name->VirtualValue = $rs->fields('EV__Name'); // Set up virtual field value
-		} else {
-			$this->Name->VirtualValue = ""; // Clear value
-		}
+		$this->Abbreviation->setDbValue($rs->fields('Abbreviation'));
 		$this->City->setDbValue($rs->fields('City'));
 	}
 
@@ -460,6 +456,7 @@ class cbanks_delete extends cbanks {
 		$this->Bank_Code->DbValue = $row['Bank_Code'];
 		$this->Branch_Code->DbValue = $row['Branch_Code'];
 		$this->Name->DbValue = $row['Name'];
+		$this->Abbreviation->DbValue = $row['Abbreviation'];
 		$this->City->DbValue = $row['City'];
 	}
 
@@ -480,6 +477,7 @@ class cbanks_delete extends cbanks {
 		// Bank_Code
 		// Branch_Code
 		// Name
+		// Abbreviation
 		// City
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
@@ -517,30 +515,12 @@ class cbanks_delete extends cbanks {
 		$this->Branch_Code->ViewCustomAttributes = "";
 
 		// Name
-		if ($this->Name->VirtualValue <> "") {
-			$this->Name->ViewValue = $this->Name->VirtualValue;
-		} else {
-		if (strval($this->Name->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Name->ViewValue = $this->Name->CurrentValue;
-			}
-		} else {
-			$this->Name->ViewValue = NULL;
-		}
-		}
+		$this->Name->ViewValue = $this->Name->CurrentValue;
 		$this->Name->ViewCustomAttributes = "";
+
+		// Abbreviation
+		$this->Abbreviation->ViewValue = $this->Abbreviation->CurrentValue;
+		$this->Abbreviation->ViewCustomAttributes = "";
 
 		// City
 		$this->City->ViewValue = $this->City->CurrentValue;
@@ -560,6 +540,11 @@ class cbanks_delete extends cbanks {
 			$this->Name->LinkCustomAttributes = "";
 			$this->Name->HrefValue = "";
 			$this->Name->TooltipValue = "";
+
+			// Abbreviation
+			$this->Abbreviation->LinkCustomAttributes = "";
+			$this->Abbreviation->HrefValue = "";
+			$this->Abbreviation->TooltipValue = "";
 
 			// City
 			$this->City->LinkCustomAttributes = "";
@@ -767,8 +752,7 @@ fbanksdelete.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
-fbanksdelete.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":["x_Name"],"FilterFields":[],"Options":[],"Template":""};
-fbanksdelete.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+fbanksdelete.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 </script>
@@ -821,6 +805,9 @@ $banks_delete->ShowMessage();
 <?php if ($banks->Name->Visible) { // Name ?>
 		<th><span id="elh_banks_Name" class="banks_Name"><?php echo $banks->Name->FldCaption() ?></span></th>
 <?php } ?>
+<?php if ($banks->Abbreviation->Visible) { // Abbreviation ?>
+		<th><span id="elh_banks_Abbreviation" class="banks_Abbreviation"><?php echo $banks->Abbreviation->FldCaption() ?></span></th>
+<?php } ?>
 <?php if ($banks->City->Visible) { // City ?>
 		<th><span id="elh_banks_City" class="banks_City"><?php echo $banks->City->FldCaption() ?></span></th>
 <?php } ?>
@@ -866,6 +853,14 @@ while (!$banks_delete->Recordset->EOF) {
 <span id="el<?php echo $banks_delete->RowCnt ?>_banks_Name" class="banks_Name">
 <span<?php echo $banks->Name->ViewAttributes() ?>>
 <?php echo $banks->Name->ListViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($banks->Abbreviation->Visible) { // Abbreviation ?>
+		<td<?php echo $banks->Abbreviation->CellAttributes() ?>>
+<span id="el<?php echo $banks_delete->RowCnt ?>_banks_Abbreviation" class="banks_Abbreviation">
+<span<?php echo $banks->Abbreviation->ViewAttributes() ?>>
+<?php echo $banks->Abbreviation->ListViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

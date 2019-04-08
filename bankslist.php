@@ -736,6 +736,7 @@ class cbanks_list extends cbanks {
 		$sFilterList = ew_Concat($sFilterList, $this->Bank_Code->AdvancedSearch->ToJSON(), ","); // Field Bank_Code
 		$sFilterList = ew_Concat($sFilterList, $this->Branch_Code->AdvancedSearch->ToJSON(), ","); // Field Branch_Code
 		$sFilterList = ew_Concat($sFilterList, $this->Name->AdvancedSearch->ToJSON(), ","); // Field Name
+		$sFilterList = ew_Concat($sFilterList, $this->Abbreviation->AdvancedSearch->ToJSON(), ","); // Field Abbreviation
 		$sFilterList = ew_Concat($sFilterList, $this->City->AdvancedSearch->ToJSON(), ","); // Field City
 		if ($this->BasicSearch->Keyword <> "") {
 			$sWrk = "\"" . EW_TABLE_BASIC_SEARCH . "\":\"" . ew_JsEncode2($this->BasicSearch->Keyword) . "\",\"" . EW_TABLE_BASIC_SEARCH_TYPE . "\":\"" . ew_JsEncode2($this->BasicSearch->Type) . "\"";
@@ -779,6 +780,14 @@ class cbanks_list extends cbanks {
 		$this->Name->AdvancedSearch->SearchOperator2 = @$filter["w_Name"];
 		$this->Name->AdvancedSearch->Save();
 
+		// Field Abbreviation
+		$this->Abbreviation->AdvancedSearch->SearchValue = @$filter["x_Abbreviation"];
+		$this->Abbreviation->AdvancedSearch->SearchOperator = @$filter["z_Abbreviation"];
+		$this->Abbreviation->AdvancedSearch->SearchCondition = @$filter["v_Abbreviation"];
+		$this->Abbreviation->AdvancedSearch->SearchValue2 = @$filter["y_Abbreviation"];
+		$this->Abbreviation->AdvancedSearch->SearchOperator2 = @$filter["w_Abbreviation"];
+		$this->Abbreviation->AdvancedSearch->Save();
+
 		// Field City
 		$this->City->AdvancedSearch->SearchValue = @$filter["x_City"];
 		$this->City->AdvancedSearch->SearchOperator = @$filter["z_City"];
@@ -798,6 +807,7 @@ class cbanks_list extends cbanks {
 		$this->BuildSearchSql($sWhere, $this->Bank_Code, $Default, FALSE); // Bank_Code
 		$this->BuildSearchSql($sWhere, $this->Branch_Code, $Default, FALSE); // Branch_Code
 		$this->BuildSearchSql($sWhere, $this->Name, $Default, FALSE); // Name
+		$this->BuildSearchSql($sWhere, $this->Abbreviation, $Default, FALSE); // Abbreviation
 		$this->BuildSearchSql($sWhere, $this->City, $Default, FALSE); // City
 
 		// Set up search parm
@@ -808,6 +818,7 @@ class cbanks_list extends cbanks {
 			$this->Bank_Code->AdvancedSearch->Save(); // Bank_Code
 			$this->Branch_Code->AdvancedSearch->Save(); // Branch_Code
 			$this->Name->AdvancedSearch->Save(); // Name
+			$this->Abbreviation->AdvancedSearch->Save(); // Abbreviation
 			$this->City->AdvancedSearch->Save(); // City
 		}
 		return $sWhere;
@@ -866,6 +877,7 @@ class cbanks_list extends cbanks {
 	function BasicSearchSQL($arKeywords, $type) {
 		$sWhere = "";
 		$this->BuildBasicSearchSQL($sWhere, $this->Name, $arKeywords, $type);
+		$this->BuildBasicSearchSQL($sWhere, $this->Abbreviation, $arKeywords, $type);
 		$this->BuildBasicSearchSQL($sWhere, $this->City, $arKeywords, $type);
 		return $sWhere;
 	}
@@ -998,6 +1010,8 @@ class cbanks_list extends cbanks {
 			return TRUE;
 		if ($this->Name->AdvancedSearch->IssetSession())
 			return TRUE;
+		if ($this->Abbreviation->AdvancedSearch->IssetSession())
+			return TRUE;
 		if ($this->City->AdvancedSearch->IssetSession())
 			return TRUE;
 		return FALSE;
@@ -1032,6 +1046,7 @@ class cbanks_list extends cbanks {
 		$this->Bank_Code->AdvancedSearch->UnsetSession();
 		$this->Branch_Code->AdvancedSearch->UnsetSession();
 		$this->Name->AdvancedSearch->UnsetSession();
+		$this->Abbreviation->AdvancedSearch->UnsetSession();
 		$this->City->AdvancedSearch->UnsetSession();
 	}
 
@@ -1046,6 +1061,7 @@ class cbanks_list extends cbanks {
 		$this->Bank_Code->AdvancedSearch->Load();
 		$this->Branch_Code->AdvancedSearch->Load();
 		$this->Name->AdvancedSearch->Load();
+		$this->Abbreviation->AdvancedSearch->Load();
 		$this->City->AdvancedSearch->Load();
 	}
 
@@ -1059,6 +1075,7 @@ class cbanks_list extends cbanks {
 			$this->UpdateSort($this->Bank_Code); // Bank_Code
 			$this->UpdateSort($this->Branch_Code); // Branch_Code
 			$this->UpdateSort($this->Name); // Name
+			$this->UpdateSort($this->Abbreviation); // Abbreviation
 			$this->UpdateSort($this->City); // City
 			$this->setStartRecordNumber(1); // Reset start position
 		}
@@ -1097,6 +1114,7 @@ class cbanks_list extends cbanks {
 				$this->Bank_Code->setSort("");
 				$this->Branch_Code->setSort("");
 				$this->Name->setSort("");
+				$this->Abbreviation->setSort("");
 				$this->City->setSort("");
 			}
 
@@ -1160,9 +1178,9 @@ class cbanks_list extends cbanks {
 
 		// Drop down button for ListOptions
 		$this->ListOptions->UseImageAndText = TRUE;
-		$this->ListOptions->UseDropDownButton = FALSE;
+		$this->ListOptions->UseDropDownButton = TRUE;
 		$this->ListOptions->DropDownButtonPhrase = $Language->Phrase("ButtonListOptions");
-		$this->ListOptions->UseButtonGroup = TRUE;
+		$this->ListOptions->UseButtonGroup = FALSE;
 		if ($this->ListOptions->UseButtonGroup && ew_IsMobile())
 			$this->ListOptions->UseDropDownButton = TRUE;
 		$this->ListOptions->ButtonClass = "btn-sm"; // Class for button group
@@ -1516,6 +1534,11 @@ class cbanks_list extends cbanks {
 		if ($this->Name->AdvancedSearch->SearchValue <> "") $this->Command = "search";
 		$this->Name->AdvancedSearch->SearchOperator = @$_GET["z_Name"];
 
+		// Abbreviation
+		$this->Abbreviation->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_Abbreviation"]);
+		if ($this->Abbreviation->AdvancedSearch->SearchValue <> "") $this->Command = "search";
+		$this->Abbreviation->AdvancedSearch->SearchOperator = @$_GET["z_Abbreviation"];
+
 		// City
 		$this->City->AdvancedSearch->SearchValue = ew_StripSlashes(@$_GET["x_City"]);
 		if ($this->City->AdvancedSearch->SearchValue <> "") $this->Command = "search";
@@ -1586,11 +1609,7 @@ class cbanks_list extends cbanks {
 		}
 		$this->Branch_Code->setDbValue($rs->fields('Branch_Code'));
 		$this->Name->setDbValue($rs->fields('Name'));
-		if (array_key_exists('EV__Name', $rs->fields)) {
-			$this->Name->VirtualValue = $rs->fields('EV__Name'); // Set up virtual field value
-		} else {
-			$this->Name->VirtualValue = ""; // Clear value
-		}
+		$this->Abbreviation->setDbValue($rs->fields('Abbreviation'));
 		$this->City->setDbValue($rs->fields('City'));
 	}
 
@@ -1602,6 +1621,7 @@ class cbanks_list extends cbanks {
 		$this->Bank_Code->DbValue = $row['Bank_Code'];
 		$this->Branch_Code->DbValue = $row['Branch_Code'];
 		$this->Name->DbValue = $row['Name'];
+		$this->Abbreviation->DbValue = $row['Abbreviation'];
 		$this->City->DbValue = $row['City'];
 	}
 
@@ -1651,6 +1671,7 @@ class cbanks_list extends cbanks {
 		// Bank_Code
 		// Branch_Code
 		// Name
+		// Abbreviation
 		// City
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
@@ -1688,30 +1709,12 @@ class cbanks_list extends cbanks {
 		$this->Branch_Code->ViewCustomAttributes = "";
 
 		// Name
-		if ($this->Name->VirtualValue <> "") {
-			$this->Name->ViewValue = $this->Name->VirtualValue;
-		} else {
-		if (strval($this->Name->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Name->ViewValue = $this->Name->CurrentValue;
-			}
-		} else {
-			$this->Name->ViewValue = NULL;
-		}
-		}
+		$this->Name->ViewValue = $this->Name->CurrentValue;
 		$this->Name->ViewCustomAttributes = "";
+
+		// Abbreviation
+		$this->Abbreviation->ViewValue = $this->Abbreviation->CurrentValue;
+		$this->Abbreviation->ViewCustomAttributes = "";
 
 		// City
 		$this->City->ViewValue = $this->City->CurrentValue;
@@ -1737,6 +1740,13 @@ class cbanks_list extends cbanks {
 			$this->Name->TooltipValue = "";
 			if ($this->Export == "")
 				$this->Name->ViewValue = ew_Highlight($this->HighlightName(), $this->Name->ViewValue, $this->BasicSearch->getKeyword(), $this->BasicSearch->getType(), $this->Name->AdvancedSearch->getValue("x"), "");
+
+			// Abbreviation
+			$this->Abbreviation->LinkCustomAttributes = "";
+			$this->Abbreviation->HrefValue = "";
+			$this->Abbreviation->TooltipValue = "";
+			if ($this->Export == "")
+				$this->Abbreviation->ViewValue = ew_Highlight($this->HighlightName(), $this->Abbreviation->ViewValue, $this->BasicSearch->getKeyword(), $this->BasicSearch->getType(), $this->Abbreviation->AdvancedSearch->getValue("x"), "");
 
 			// City
 			$this->City->LinkCustomAttributes = "";
@@ -1779,6 +1789,7 @@ class cbanks_list extends cbanks {
 		$this->Bank_Code->AdvancedSearch->Load();
 		$this->Branch_Code->AdvancedSearch->Load();
 		$this->Name->AdvancedSearch->Load();
+		$this->Abbreviation->AdvancedSearch->Load();
 		$this->City->AdvancedSearch->Load();
 	}
 
@@ -2037,6 +2048,7 @@ class cbanks_list extends cbanks {
 		$this->AddSearchQueryString($sQry, $this->Bank_Code); // Bank_Code
 		$this->AddSearchQueryString($sQry, $this->Branch_Code); // Branch_Code
 		$this->AddSearchQueryString($sQry, $this->Name); // Name
+		$this->AddSearchQueryString($sQry, $this->Abbreviation); // Abbreviation
 		$this->AddSearchQueryString($sQry, $this->City); // City
 
 		// Build QueryString for pager
@@ -2232,8 +2244,7 @@ fbankslist.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
-fbankslist.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":["x_Name"],"FilterFields":[],"Options":[],"Template":""};
-fbankslist.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+fbankslist.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 var CurrentSearchForm = fbankslistsrch = new ew_Form("fbankslistsrch");
@@ -2374,7 +2385,16 @@ $banks_list->ListOptions->Render("header", "left");
 		<th data-name="Name"><div id="elh_banks_Name" class="banks_Name"><div class="ewTableHeaderCaption"><?php echo $banks->Name->FldCaption() ?></div></div></th>
 	<?php } else { ?>
 		<th data-name="Name"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $banks->SortUrl($banks->Name) ?>',1);"><div id="elh_banks_Name" class="banks_Name">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $banks->Name->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($banks->Name->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($banks->Name->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $banks->Name->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($banks->Name->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($banks->Name->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+        </div></div></th>
+	<?php } ?>
+<?php } ?>		
+<?php if ($banks->Abbreviation->Visible) { // Abbreviation ?>
+	<?php if ($banks->SortUrl($banks->Abbreviation) == "") { ?>
+		<th data-name="Abbreviation"><div id="elh_banks_Abbreviation" class="banks_Abbreviation"><div class="ewTableHeaderCaption"><?php echo $banks->Abbreviation->FldCaption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="Abbreviation"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $banks->SortUrl($banks->Abbreviation) ?>',1);"><div id="elh_banks_Abbreviation" class="banks_Abbreviation">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $banks->Abbreviation->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($banks->Abbreviation->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($banks->Abbreviation->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
@@ -2473,6 +2493,14 @@ $banks_list->ListOptions->Render("body", "left", $banks_list->RowCnt);
 <span id="el<?php echo $banks_list->RowCnt ?>_banks_Name" class="banks_Name">
 <span<?php echo $banks->Name->ViewAttributes() ?>>
 <?php echo $banks->Name->ListViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($banks->Abbreviation->Visible) { // Abbreviation ?>
+		<td data-name="Abbreviation"<?php echo $banks->Abbreviation->CellAttributes() ?>>
+<span id="el<?php echo $banks_list->RowCnt ?>_banks_Abbreviation" class="banks_Abbreviation">
+<span<?php echo $banks->Abbreviation->ViewAttributes() ?>>
+<?php echo $banks->Abbreviation->ListViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>

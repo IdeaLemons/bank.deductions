@@ -458,8 +458,6 @@ class cdeductions_add extends cdeductions {
 		$this->L_Ref->OldValue = $this->L_Ref->CurrentValue;
 		$this->YEAR->CurrentValue = date("Y");;
 		$this->MONTH->CurrentValue = date("m");;
-		$this->Bank_ID->CurrentValue = NULL;
-		$this->Bank_ID->OldValue = $this->Bank_ID->CurrentValue;
 		$this->Acc_ID->CurrentValue = NULL;
 		$this->Acc_ID->OldValue = $this->Acc_ID->CurrentValue;
 		$this->AMOUNT->CurrentValue = NULL;
@@ -491,9 +489,6 @@ class cdeductions_add extends cdeductions {
 		}
 		if (!$this->MONTH->FldIsDetailKey) {
 			$this->MONTH->setFormValue($objForm->GetValue("x_MONTH"));
-		}
-		if (!$this->Bank_ID->FldIsDetailKey) {
-			$this->Bank_ID->setFormValue($objForm->GetValue("x_Bank_ID"));
 		}
 		if (!$this->Acc_ID->FldIsDetailKey) {
 			$this->Acc_ID->setFormValue($objForm->GetValue("x_Acc_ID"));
@@ -528,7 +523,6 @@ class cdeductions_add extends cdeductions {
 		$this->L_Ref->CurrentValue = $this->L_Ref->FormValue;
 		$this->YEAR->CurrentValue = $this->YEAR->FormValue;
 		$this->MONTH->CurrentValue = $this->MONTH->FormValue;
-		$this->Bank_ID->CurrentValue = $this->Bank_ID->FormValue;
 		$this->Acc_ID->CurrentValue = $this->Acc_ID->FormValue;
 		$this->AMOUNT->CurrentValue = $this->AMOUNT->FormValue;
 		$this->STARTED->CurrentValue = $this->STARTED->FormValue;
@@ -579,7 +573,6 @@ class cdeductions_add extends cdeductions {
 		$this->L_Ref->setDbValue($rs->fields('L_Ref'));
 		$this->YEAR->setDbValue($rs->fields('YEAR'));
 		$this->MONTH->setDbValue($rs->fields('MONTH'));
-		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
 		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
 		$this->AMOUNT->setDbValue($rs->fields('AMOUNT'));
 		$this->STARTED->setDbValue($rs->fields('STARTED'));
@@ -598,7 +591,6 @@ class cdeductions_add extends cdeductions {
 		$this->L_Ref->DbValue = $row['L_Ref'];
 		$this->YEAR->DbValue = $row['YEAR'];
 		$this->MONTH->DbValue = $row['MONTH'];
-		$this->Bank_ID->DbValue = $row['Bank_ID'];
 		$this->Acc_ID->DbValue = $row['Acc_ID'];
 		$this->AMOUNT->DbValue = $row['AMOUNT'];
 		$this->STARTED->DbValue = $row['STARTED'];
@@ -650,7 +642,6 @@ class cdeductions_add extends cdeductions {
 		// L_Ref
 		// YEAR
 		// MONTH
-		// Bank_ID
 		// Acc_ID
 		// AMOUNT
 		// STARTED
@@ -714,32 +705,10 @@ class cdeductions_add extends cdeductions {
 		$this->MONTH->CellCssStyle .= "text-align: center;";
 		$this->MONTH->ViewCustomAttributes = "";
 
-		// Bank_ID
-		if (strval($this->Bank_ID->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
-			}
-		} else {
-			$this->Bank_ID->ViewValue = NULL;
-		}
-		$this->Bank_ID->ViewCustomAttributes = "";
-
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+		$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 		$sWhereWrk = "";
 		ew_AddFilter($sWhereWrk, $sFilterWrk);
 		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -748,6 +717,7 @@ class cdeductions_add extends cdeductions {
 			if ($rswrk && !$rswrk->EOF) { // Lookup values found
 				$arwrk = array();
 				$arwrk[1] = $rswrk->fields('DispFld');
+				$arwrk[2] = $rswrk->fields('Disp2Fld');
 				$this->Acc_ID->ViewValue = $this->Acc_ID->DisplayValue($arwrk);
 				$rswrk->Close();
 			} else {
@@ -756,7 +726,7 @@ class cdeductions_add extends cdeductions {
 		} else {
 			$this->Acc_ID->ViewValue = NULL;
 		}
-		$this->Acc_ID->CellCssStyle .= "text-align: right;";
+		$this->Acc_ID->CellCssStyle .= "text-align: left;";
 		$this->Acc_ID->ViewCustomAttributes = "";
 
 		// AMOUNT
@@ -840,11 +810,6 @@ class cdeductions_add extends cdeductions {
 			$this->MONTH->HrefValue = "";
 			$this->MONTH->TooltipValue = "";
 
-			// Bank_ID
-			$this->Bank_ID->LinkCustomAttributes = "";
-			$this->Bank_ID->HrefValue = "";
-			$this->Bank_ID->TooltipValue = "";
-
 			// Acc_ID
 			$this->Acc_ID->LinkCustomAttributes = "";
 			$this->Acc_ID->HrefValue = "";
@@ -921,31 +886,6 @@ class cdeductions_add extends cdeductions {
 			$this->MONTH->EditCustomAttributes = "";
 			$this->MONTH->EditValue = $this->MONTH->Options(TRUE);
 
-			// Bank_ID
-			$this->Bank_ID->EditCustomAttributes = "";
-			if (trim(strval($this->Bank_ID->CurrentValue)) == "") {
-				$sFilterWrk = "0=1";
-			} else {
-				$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-			}
-			$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `banks`";
-			$sWhereWrk = "";
-			ew_AddFilter($sWhereWrk, $sFilterWrk);
-			$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
-			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = ew_HtmlEncode($rswrk->fields('DispFld'));
-				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
-			} else {
-				$this->Bank_ID->ViewValue = $Language->Phrase("PleaseSelect");
-			}
-			$arwrk = ($rswrk) ? $rswrk->GetRows() : array();
-			if ($rswrk) $rswrk->Close();
-			array_unshift($arwrk, array("", $Language->Phrase("PleaseSelect"), "", "", "", "", "", "", ""));
-			$this->Bank_ID->EditValue = $arwrk;
-
 			// Acc_ID
 			$this->Acc_ID->EditCustomAttributes = "";
 			if (trim(strval($this->Acc_ID->CurrentValue)) == "") {
@@ -953,7 +893,7 @@ class cdeductions_add extends cdeductions {
 			} else {
 				$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
 			}
-			$sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `Bank_ID` AS `SelectFilterFld`, `PF` AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
+			$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, `PF` AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
 			$sWhereWrk = "";
 			ew_AddFilter($sWhereWrk, $sFilterWrk);
 			$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -962,6 +902,7 @@ class cdeductions_add extends cdeductions {
 			if ($rswrk && !$rswrk->EOF) { // Lookup values found
 				$arwrk = array();
 				$arwrk[1] = ew_HtmlEncode($rswrk->fields('DispFld'));
+				$arwrk[2] = ew_HtmlEncode($rswrk->fields('Disp2Fld'));
 				$this->Acc_ID->ViewValue = $this->Acc_ID->DisplayValue($arwrk);
 			} else {
 				$this->Acc_ID->ViewValue = $Language->Phrase("PleaseSelect");
@@ -1039,9 +980,6 @@ class cdeductions_add extends cdeductions {
 			// MONTH
 			$this->MONTH->HrefValue = "";
 
-			// Bank_ID
-			$this->Bank_ID->HrefValue = "";
-
 			// Acc_ID
 			$this->Acc_ID->HrefValue = "";
 
@@ -1092,9 +1030,6 @@ class cdeductions_add extends cdeductions {
 		}
 		if (!$this->MONTH->FldIsDetailKey && !is_null($this->MONTH->FormValue) && $this->MONTH->FormValue == "") {
 			ew_AddMessage($gsFormError, str_replace("%s", $this->MONTH->FldCaption(), $this->MONTH->ReqErrMsg));
-		}
-		if (!$this->Bank_ID->FldIsDetailKey && !is_null($this->Bank_ID->FormValue) && $this->Bank_ID->FormValue == "") {
-			ew_AddMessage($gsFormError, str_replace("%s", $this->Bank_ID->FldCaption(), $this->Bank_ID->ReqErrMsg));
 		}
 		if (!$this->Acc_ID->FldIsDetailKey && !is_null($this->Acc_ID->FormValue) && $this->Acc_ID->FormValue == "") {
 			ew_AddMessage($gsFormError, str_replace("%s", $this->Acc_ID->FldCaption(), $this->Acc_ID->ReqErrMsg));
@@ -1153,9 +1088,6 @@ class cdeductions_add extends cdeductions {
 		// MONTH
 		$this->MONTH->SetDbValueDef($rsnew, $this->MONTH->CurrentValue, 0, FALSE);
 
-		// Bank_ID
-		$this->Bank_ID->SetDbValueDef($rsnew, $this->Bank_ID->CurrentValue, 0, FALSE);
-
 		// Acc_ID
 		$this->Acc_ID->SetDbValueDef($rsnew, $this->Acc_ID->CurrentValue, 0, FALSE);
 
@@ -1208,8 +1140,6 @@ class cdeductions_add extends cdeductions {
 			$rs = ($rsold == NULL) ? NULL : $rsold->fields;
 			$this->Row_Inserted($rs, $rsnew);
 			$this->WriteAuditTrailOnAdd($rsnew);
-			if ($this->SendEmail)
-				$this->SendEmailOnAdd($rsnew);
 		}
 		return $AddRow;
 	}
@@ -1263,35 +1193,6 @@ class cdeductions_add extends cdeductions {
 				ew_WriteAuditTrail("log", $dt, $id, $usr, "A", $table, $fldname, $key, "", $newvalue);
 			}
 		}
-	}
-
-	// Send email after add success
-	function SendEmailOnAdd(&$rs) {
-		global $Language;
-		$sTable = 'deductions';
-		$sSubject = $sTable . " " . $Language->Phrase("RecordInserted");
-		$sAction = $Language->Phrase("ActionInserted");
-
-		// Get key value
-		$sKey = "";
-		if ($sKey <> "") $sKey .= $GLOBALS["EW_COMPOSITE_KEY_SEPARATOR"];
-		$sKey .= $rs['Deduction_ID'];
-		$Email = new cEmail();
-		$Email->Load(EW_EMAIL_NOTIFY_TEMPLATE);
-		$Email->ReplaceSender(EW_SENDER_EMAIL); // Replace Sender
-		$Email->ReplaceRecipient(EW_RECIPIENT_EMAIL); // Replace Recipient
-		$Email->ReplaceSubject($sSubject); // Replace Subject
-		$Email->ReplaceContent("<!--table-->", $sTable);
-		$Email->ReplaceContent("<!--key-->", $sKey);
-		$Email->ReplaceContent("<!--action-->", $sAction);
-		$Args = array("rsnew" => $rs);
-		$bEmailSent = FALSE;
-		if ($this->Email_Sending($Email, $Args))
-			$bEmailSent = $Email->Send();
-
-		// Send email failed
-		if (!$bEmailSent)
-			$this->setFailureMessage($Email->SendErrDescription);
 	}
 
 	// Page Load event
@@ -1411,9 +1312,6 @@ fdeductionsadd.Validate = function() {
 			elm = this.GetElements("x" + infix + "_MONTH");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
 				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $deductions->MONTH->FldCaption(), $deductions->MONTH->ReqErrMsg)) ?>");
-			elm = this.GetElements("x" + infix + "_Bank_ID");
-			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
-				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $deductions->Bank_ID->FldCaption(), $deductions->Bank_ID->ReqErrMsg)) ?>");
 			elm = this.GetElements("x" + infix + "_Acc_ID");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
 				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $deductions->Acc_ID->FldCaption(), $deductions->Acc_ID->ReqErrMsg)) ?>");
@@ -1473,8 +1371,7 @@ fdeductionsadd.Lists["x_YEAR"] = {"LinkField":"","Ajax":false,"AutoFill":false,"
 fdeductionsadd.Lists["x_YEAR"].Options = <?php echo json_encode($deductions->YEAR->Options()) ?>;
 fdeductionsadd.Lists["x_MONTH"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsadd.Lists["x_MONTH"].Options = <?php echo json_encode($deductions->MONTH->Options()) ?>;
-fdeductionsadd.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":[],"ChildFields":["x_Acc_ID"],"FilterFields":[],"Options":[],"Template":""};
-fdeductionsadd.Lists["x_Acc_ID"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_Acc_NO","","",""],"ParentFields":["x_Bank_ID","x_PF"],"ChildFields":[],"FilterFields":["x_Bank_ID","x_PF"],"Options":[],"Template":""};
+fdeductionsadd.Lists["x_Acc_ID"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Name","x_Acc_NO","",""],"ParentFields":["x_PF"],"ChildFields":[],"FilterFields":["x_PF"],"Options":[],"Template":""};
 fdeductionsadd.Lists["x_TYPE"] = {"LinkField":"","Ajax":false,"AutoFill":false,"DisplayFields":["","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 fdeductionsadd.Lists["x_TYPE"].Options = <?php echo json_encode($deductions->TYPE->Options()) ?>;
 fdeductionsadd.Lists["x_Batch"] = {"LinkField":"x_Batch_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Batch_Number","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
@@ -1624,60 +1521,6 @@ if (is_array($arwrk)) {
 <?php echo $deductions->MONTH->CustomMsg ?></td>
 	</tr>
 <?php } ?>
-<?php if ($deductions->Bank_ID->Visible) { // Bank_ID ?>
-	<tr id="r_Bank_ID">
-		<td><span id="elh_deductions_Bank_ID"><?php echo $deductions->Bank_ID->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
-		<td<?php echo $deductions->Bank_ID->CellAttributes() ?>>
-<span id="el_deductions_Bank_ID">
-<?php $deductions->Bank_ID->EditAttrs["onclick"] = "ew_UpdateOpt.call(this); " . @$deductions->Bank_ID->EditAttrs["onclick"]; ?>
-<div class="ewDropdownList has-feedback">
-	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-		<?php echo $deductions->Bank_ID->ViewValue ?>
-	</span>
-	<span class="glyphicon glyphicon-remove form-control-feedback ewDropdownListClear"></span>
-	<span class="form-control-feedback"><span class="caret"></span></span>
-	<div id="dsl_x_Bank_ID" data-repeatcolumn="1" class="dropdown-menu">
-		<div class="ewItems" style="position: relative; overflow-x: hidden;">
-<?php
-$arwrk = $deductions->Bank_ID->EditValue;
-if (is_array($arwrk)) {
-	$rowswrk = count($arwrk);
-	$emptywrk = TRUE;
-	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
-		$selwrk = (strval($deductions->Bank_ID->CurrentValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
-		if ($selwrk <> "") {
-			$emptywrk = FALSE;
-?>
-<input type="radio" data-table="deductions" data-field="x_Bank_ID" name="x_Bank_ID" id="x_Bank_ID_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $deductions->Bank_ID->EditAttributes() ?>><?php echo $deductions->Bank_ID->DisplayValue($arwrk[$rowcntwrk]) ?>
-<?php
-		}
-	}
-	if ($emptywrk && strval($deductions->Bank_ID->CurrentValue) <> "") {
-?>
-<input type="radio" data-table="deductions" data-field="x_Bank_ID" name="x_Bank_ID" id="x_Bank_ID_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($deductions->Bank_ID->CurrentValue) ?>" checked<?php echo $deductions->Bank_ID->EditAttributes() ?>><?php echo $deductions->Bank_ID->CurrentValue ?>
-<?php
-    }
-}
-?>
-		</div>
-	</div>
-	<div id="tp_x_Bank_ID" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Bank_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Bank_ID->DisplayValueSeparator) ? json_encode($deductions->Bank_ID->DisplayValueSeparator) : $deductions->Bank_ID->DisplayValueSeparator) ?>" name="x_Bank_ID" id="x_Bank_ID" value="{value}"<?php echo $deductions->Bank_ID->EditAttributes() ?>></div>
-</div>
-<?php
-$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-$sWhereWrk = "";
-$deductions->Bank_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
-$deductions->Bank_ID->LookupFilters += array("f0" => "`Bank_ID` = {filter_value}", "t0" => "3", "fn0" => "");
-$sSqlWrk = "";
-$deductions->Lookup_Selecting($deductions->Bank_ID, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-if ($sSqlWrk <> "") $deductions->Bank_ID->LookupFilters["s"] .= $sSqlWrk;
-?>
-<input type="hidden" name="s_x_Bank_ID" id="s_x_Bank_ID" value="<?php echo $deductions->Bank_ID->LookupFilterQuery() ?>">
-</span>
-<?php echo $deductions->Bank_ID->CustomMsg ?></td>
-	</tr>
-<?php } ?>
 <?php if ($deductions->Acc_ID->Visible) { // Acc_ID ?>
 	<tr id="r_Acc_ID">
 		<td><span id="elh_deductions_Acc_ID"><?php echo $deductions->Acc_ID->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
@@ -1720,12 +1563,11 @@ if (is_array($arwrk)) {
 <button type="button" title="<?php echo ew_HtmlTitle($Language->Phrase("AddLink")) . "&nbsp;" . $deductions->Acc_ID->FldCaption() ?>" onclick="ew_AddOptDialogShow({lnk:this,el:'x_Acc_ID',url:'accountsaddopt.php'});" class="ewAddOptBtn btn btn-default btn-sm" id="aol_x_Acc_ID"><span class="glyphicon glyphicon-plus ewIcon"></span><span class="hide"><?php echo $Language->Phrase("AddLink") ?>&nbsp;<?php echo $deductions->Acc_ID->FldCaption() ?></span></button>
 <?php } ?>
 <?php
-$sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 $sWhereWrk = "{filter}";
 $deductions->Acc_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $deductions->Acc_ID->LookupFilters += array("f0" => "`PF` = {filter_value}", "t0" => "3", "fn0" => "");
-$deductions->Acc_ID->LookupFilters += array("f1" => "`Bank_ID` IN ({filter_value})", "t1" => "3", "fn1" => "");
-$deductions->Acc_ID->LookupFilters += array("f2" => "`PF` IN ({filter_value})", "t2" => "3", "fn2" => "");
+$deductions->Acc_ID->LookupFilters += array("f1" => "`PF` IN ({filter_value})", "t1" => "3", "fn1" => "");
 $sSqlWrk = "";
 $deductions->Lookup_Selecting($deductions->Acc_ID, $sWhereWrk); // Call Lookup selecting
 if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;

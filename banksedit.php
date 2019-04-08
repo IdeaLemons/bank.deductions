@@ -477,6 +477,9 @@ class cbanks_edit extends cbanks {
 		if (!$this->Name->FldIsDetailKey) {
 			$this->Name->setFormValue($objForm->GetValue("x_Name"));
 		}
+		if (!$this->Abbreviation->FldIsDetailKey) {
+			$this->Abbreviation->setFormValue($objForm->GetValue("x_Abbreviation"));
+		}
 		if (!$this->City->FldIsDetailKey) {
 			$this->City->setFormValue($objForm->GetValue("x_City"));
 		}
@@ -492,6 +495,7 @@ class cbanks_edit extends cbanks {
 		$this->Bank_Code->CurrentValue = $this->Bank_Code->FormValue;
 		$this->Branch_Code->CurrentValue = $this->Branch_Code->FormValue;
 		$this->Name->CurrentValue = $this->Name->FormValue;
+		$this->Abbreviation->CurrentValue = $this->Abbreviation->FormValue;
 		$this->City->CurrentValue = $this->City->FormValue;
 	}
 
@@ -533,11 +537,7 @@ class cbanks_edit extends cbanks {
 		}
 		$this->Branch_Code->setDbValue($rs->fields('Branch_Code'));
 		$this->Name->setDbValue($rs->fields('Name'));
-		if (array_key_exists('EV__Name', $rs->fields)) {
-			$this->Name->VirtualValue = $rs->fields('EV__Name'); // Set up virtual field value
-		} else {
-			$this->Name->VirtualValue = ""; // Clear value
-		}
+		$this->Abbreviation->setDbValue($rs->fields('Abbreviation'));
 		$this->City->setDbValue($rs->fields('City'));
 	}
 
@@ -549,6 +549,7 @@ class cbanks_edit extends cbanks {
 		$this->Bank_Code->DbValue = $row['Bank_Code'];
 		$this->Branch_Code->DbValue = $row['Branch_Code'];
 		$this->Name->DbValue = $row['Name'];
+		$this->Abbreviation->DbValue = $row['Abbreviation'];
 		$this->City->DbValue = $row['City'];
 	}
 
@@ -566,6 +567,7 @@ class cbanks_edit extends cbanks {
 		// Bank_Code
 		// Branch_Code
 		// Name
+		// Abbreviation
 		// City
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
@@ -603,30 +605,12 @@ class cbanks_edit extends cbanks {
 		$this->Branch_Code->ViewCustomAttributes = "";
 
 		// Name
-		if ($this->Name->VirtualValue <> "") {
-			$this->Name->ViewValue = $this->Name->VirtualValue;
-		} else {
-		if (strval($this->Name->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Name->ViewValue = $this->Name->CurrentValue;
-			}
-		} else {
-			$this->Name->ViewValue = NULL;
-		}
-		}
+		$this->Name->ViewValue = $this->Name->CurrentValue;
 		$this->Name->ViewCustomAttributes = "";
+
+		// Abbreviation
+		$this->Abbreviation->ViewValue = $this->Abbreviation->CurrentValue;
+		$this->Abbreviation->ViewCustomAttributes = "";
 
 		// City
 		$this->City->ViewValue = $this->City->CurrentValue;
@@ -647,6 +631,11 @@ class cbanks_edit extends cbanks {
 			$this->Name->HrefValue = "";
 			$this->Name->TooltipValue = "";
 
+			// Abbreviation
+			$this->Abbreviation->LinkCustomAttributes = "";
+			$this->Abbreviation->HrefValue = "";
+			$this->Abbreviation->TooltipValue = "";
+
 			// City
 			$this->City->LinkCustomAttributes = "";
 			$this->City->HrefValue = "";
@@ -666,29 +655,16 @@ class cbanks_edit extends cbanks {
 			$this->Branch_Code->PlaceHolder = ew_RemoveHtml($this->Branch_Code->FldCaption());
 
 			// Name
+			$this->Name->EditAttrs["class"] = "form-control";
 			$this->Name->EditCustomAttributes = "";
-			if (trim(strval($this->Name->CurrentValue)) == "") {
-				$sFilterWrk = "0=1";
-			} else {
-				$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-			}
-			$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `Bank_Code` AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `banks`";
-			$sWhereWrk = "";
-			ew_AddFilter($sWhereWrk, $sFilterWrk);
-			$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = ew_HtmlEncode($rswrk->fields('DispFld'));
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-			} else {
-				$this->Name->ViewValue = $Language->Phrase("PleaseSelect");
-			}
-			$arwrk = ($rswrk) ? $rswrk->GetRows() : array();
-			if ($rswrk) $rswrk->Close();
-			array_unshift($arwrk, array("", $Language->Phrase("PleaseSelect"), "", "", "", "", "", "", ""));
-			$this->Name->EditValue = $arwrk;
+			$this->Name->EditValue = ew_HtmlEncode($this->Name->CurrentValue);
+			$this->Name->PlaceHolder = ew_RemoveHtml($this->Name->FldCaption());
+
+			// Abbreviation
+			$this->Abbreviation->EditAttrs["class"] = "form-control";
+			$this->Abbreviation->EditCustomAttributes = "";
+			$this->Abbreviation->EditValue = ew_HtmlEncode($this->Abbreviation->CurrentValue);
+			$this->Abbreviation->PlaceHolder = ew_RemoveHtml($this->Abbreviation->FldCaption());
 
 			// City
 			$this->City->EditAttrs["class"] = "form-control";
@@ -706,6 +682,9 @@ class cbanks_edit extends cbanks {
 
 			// Name
 			$this->Name->HrefValue = "";
+
+			// Abbreviation
+			$this->Abbreviation->HrefValue = "";
 
 			// City
 			$this->City->HrefValue = "";
@@ -790,6 +769,9 @@ class cbanks_edit extends cbanks {
 
 			// Name
 			$this->Name->SetDbValueDef($rsnew, $this->Name->CurrentValue, "", $this->Name->ReadOnly);
+
+			// Abbreviation
+			$this->Abbreviation->SetDbValueDef($rsnew, $this->Abbreviation->CurrentValue, NULL, $this->Abbreviation->ReadOnly);
 
 			// City
 			$this->City->SetDbValueDef($rsnew, $this->City->CurrentValue, "", $this->City->ReadOnly);
@@ -992,8 +974,7 @@ fbanksedit.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
-fbanksedit.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":["x_Name"],"FilterFields":[],"Options":[],"Template":""};
-fbanksedit.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":["x_Bank_Code"],"ChildFields":[],"FilterFields":["x_Bank_Code"],"Options":[],"Template":""};
+fbanksedit.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 </script>
@@ -1025,7 +1006,7 @@ $banks_edit->ShowMessage();
 		<td<?php echo $banks->Bank_Code->CellAttributes() ?>>
 <span id="el_banks_Bank_Code">
 <?php
-$wrkonchange = trim("ew_UpdateOpt.call(this); " . @$banks->Bank_Code->EditAttrs["onchange"]);
+$wrkonchange = trim(" " . @$banks->Bank_Code->EditAttrs["onchange"]);
 if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
 $banks->Bank_Code->EditAttrs["onchange"] = "";
 ?>
@@ -1064,53 +1045,19 @@ fbanksedit.CreateAutoSuggest({"id":"x_Bank_Code","forceSelect":false});
 		<td><span id="elh_banks_Name"><?php echo $banks->Name->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $banks->Name->CellAttributes() ?>>
 <span id="el_banks_Name">
-<div class="ewDropdownList has-feedback">
-	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-		<?php echo $banks->Name->ViewValue ?>
-	</span>
-	<span class="glyphicon glyphicon-remove form-control-feedback ewDropdownListClear"></span>
-	<span class="form-control-feedback"><span class="caret"></span></span>
-	<div id="dsl_x_Name" data-repeatcolumn="1" class="dropdown-menu">
-		<div class="ewItems" style="position: relative; overflow-x: hidden;">
-<?php
-$arwrk = $banks->Name->EditValue;
-if (is_array($arwrk)) {
-	$rowswrk = count($arwrk);
-	$emptywrk = TRUE;
-	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
-		$selwrk = (strval($banks->Name->CurrentValue) == strval($arwrk[$rowcntwrk][0])) ? " checked" : "";
-		if ($selwrk <> "") {
-			$emptywrk = FALSE;
-?>
-<input type="radio" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name_<?php echo $rowcntwrk ?>" value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?><?php echo $banks->Name->EditAttributes() ?>><?php echo $banks->Name->DisplayValue($arwrk[$rowcntwrk]) ?>
-<?php
-		}
-	}
-	if ($emptywrk && strval($banks->Name->CurrentValue) <> "") {
-?>
-<input type="radio" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name_<?php echo $rowswrk ?>" value="<?php echo ew_HtmlEncode($banks->Name->CurrentValue) ?>" checked<?php echo $banks->Name->EditAttributes() ?>><?php echo $banks->Name->CurrentValue ?>
-<?php
-    }
-}
-?>
-		</div>
-	</div>
-	<div id="tp_x_Name" class="ewTemplate"><input type="radio" data-table="banks" data-field="x_Name" data-value-separator="<?php echo ew_HtmlEncode(is_array($banks->Name->DisplayValueSeparator) ? json_encode($banks->Name->DisplayValueSeparator) : $banks->Name->DisplayValueSeparator) ?>" name="x_Name" id="x_Name" value="{value}"<?php echo $banks->Name->EditAttributes() ?>></div>
-</div>
-<?php
-$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-$sWhereWrk = "{filter}";
-$banks->Name->LookupFilters = array("s" => $sSqlWrk, "d" => "");
-$banks->Name->LookupFilters += array("f0" => "`Bank_Code` = {filter_value}", "t0" => "3", "fn0" => "");
-$banks->Name->LookupFilters += array("f1" => "`Bank_Code` IN ({filter_value})", "t1" => "3", "fn1" => "");
-$sSqlWrk = "";
-$banks->Lookup_Selecting($banks->Name, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-if ($sSqlWrk <> "") $banks->Name->LookupFilters["s"] .= $sSqlWrk;
-?>
-<input type="hidden" name="s_x_Name" id="s_x_Name" value="<?php echo $banks->Name->LookupFilterQuery() ?>">
+<input type="text" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($banks->Name->getPlaceHolder()) ?>" value="<?php echo $banks->Name->EditValue ?>"<?php echo $banks->Name->EditAttributes() ?>>
 </span>
 <?php echo $banks->Name->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php if ($banks->Abbreviation->Visible) { // Abbreviation ?>
+	<tr id="r_Abbreviation">
+		<td><span id="elh_banks_Abbreviation"><?php echo $banks->Abbreviation->FldCaption() ?></span></td>
+		<td<?php echo $banks->Abbreviation->CellAttributes() ?>>
+<span id="el_banks_Abbreviation">
+<input type="text" data-table="banks" data-field="x_Abbreviation" name="x_Abbreviation" id="x_Abbreviation" size="8" maxlength="8" placeholder="<?php echo ew_HtmlEncode($banks->Abbreviation->getPlaceHolder()) ?>" value="<?php echo $banks->Abbreviation->EditValue ?>"<?php echo $banks->Abbreviation->EditAttributes() ?>>
+</span>
+<?php echo $banks->Abbreviation->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 <?php if ($banks->City->Visible) { // City ?>

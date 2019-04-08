@@ -405,6 +405,7 @@ class cbanks_search extends cbanks {
 		$this->BuildSearchUrl($sSrchUrl, $this->Bank_Code); // Bank_Code
 		$this->BuildSearchUrl($sSrchUrl, $this->Branch_Code); // Branch_Code
 		$this->BuildSearchUrl($sSrchUrl, $this->Name); // Name
+		$this->BuildSearchUrl($sSrchUrl, $this->Abbreviation); // Abbreviation
 		$this->BuildSearchUrl($sSrchUrl, $this->City); // City
 		if ($sSrchUrl <> "") $sSrchUrl .= "&";
 		$sSrchUrl .= "cmd=search";
@@ -484,6 +485,10 @@ class cbanks_search extends cbanks {
 		$this->Name->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_Name"));
 		$this->Name->AdvancedSearch->SearchOperator = $objForm->GetValue("z_Name");
 
+		// Abbreviation
+		$this->Abbreviation->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_Abbreviation"));
+		$this->Abbreviation->AdvancedSearch->SearchOperator = $objForm->GetValue("z_Abbreviation");
+
 		// City
 		$this->City->AdvancedSearch->SearchValue = ew_StripSlashes($objForm->GetValue("x_City"));
 		$this->City->AdvancedSearch->SearchOperator = $objForm->GetValue("z_City");
@@ -503,6 +508,7 @@ class cbanks_search extends cbanks {
 		// Bank_Code
 		// Branch_Code
 		// Name
+		// Abbreviation
 		// City
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
@@ -540,30 +546,12 @@ class cbanks_search extends cbanks {
 		$this->Branch_Code->ViewCustomAttributes = "";
 
 		// Name
-		if ($this->Name->VirtualValue <> "") {
-			$this->Name->ViewValue = $this->Name->VirtualValue;
-		} else {
-		if (strval($this->Name->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Name->ViewValue = $this->Name->CurrentValue;
-			}
-		} else {
-			$this->Name->ViewValue = NULL;
-		}
-		}
+		$this->Name->ViewValue = $this->Name->CurrentValue;
 		$this->Name->ViewCustomAttributes = "";
+
+		// Abbreviation
+		$this->Abbreviation->ViewValue = $this->Abbreviation->CurrentValue;
+		$this->Abbreviation->ViewCustomAttributes = "";
 
 		// City
 		$this->City->ViewValue = $this->City->CurrentValue;
@@ -583,6 +571,11 @@ class cbanks_search extends cbanks {
 			$this->Name->LinkCustomAttributes = "";
 			$this->Name->HrefValue = "";
 			$this->Name->TooltipValue = "";
+
+			// Abbreviation
+			$this->Abbreviation->LinkCustomAttributes = "";
+			$this->Abbreviation->HrefValue = "";
+			$this->Abbreviation->TooltipValue = "";
 
 			// City
 			$this->City->LinkCustomAttributes = "";
@@ -607,6 +600,12 @@ class cbanks_search extends cbanks {
 			$this->Name->EditCustomAttributes = "";
 			$this->Name->EditValue = ew_HtmlEncode($this->Name->AdvancedSearch->SearchValue);
 			$this->Name->PlaceHolder = ew_RemoveHtml($this->Name->FldCaption());
+
+			// Abbreviation
+			$this->Abbreviation->EditAttrs["class"] = "form-control";
+			$this->Abbreviation->EditCustomAttributes = "";
+			$this->Abbreviation->EditValue = ew_HtmlEncode($this->Abbreviation->AdvancedSearch->SearchValue);
+			$this->Abbreviation->PlaceHolder = ew_RemoveHtml($this->Abbreviation->FldCaption());
 
 			// City
 			$this->City->EditAttrs["class"] = "form-control";
@@ -656,6 +655,7 @@ class cbanks_search extends cbanks {
 		$this->Bank_Code->AdvancedSearch->Load();
 		$this->Branch_Code->AdvancedSearch->Load();
 		$this->Name->AdvancedSearch->Load();
+		$this->Abbreviation->AdvancedSearch->Load();
 		$this->City->AdvancedSearch->Load();
 	}
 
@@ -782,8 +782,7 @@ fbankssearch.ValidateRequired = false;
 <?php } ?>
 
 // Dynamic selection lists
-fbankssearch.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":["x_Name"],"FilterFields":[],"Options":[],"Template":""};
-fbankssearch.Lists["x_Name"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","","",""],"ParentFields":["x_Bank_Code"],"ChildFields":[],"FilterFields":["x_Bank_Code"],"Options":[],"Template":""};
+fbankssearch.Lists["x_Bank_Code"] = {"LinkField":"x_Bank_Code","Ajax":true,"AutoFill":false,"DisplayFields":["x_Bank_Code","","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 // Validate function for search
@@ -845,7 +844,7 @@ $banks_search->ShowMessage();
 		<div class="<?php echo $banks_search->SearchRightColumnClass ?>"><div<?php echo $banks->Bank_Code->CellAttributes() ?>>
 			<span id="el_banks_Bank_Code">
 <?php
-$wrkonchange = trim("ew_UpdateOpt.call(this); " . @$banks->Bank_Code->EditAttrs["onchange"]);
+$wrkonchange = trim(" " . @$banks->Bank_Code->EditAttrs["onchange"]);
 if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
 $banks->Bank_Code->EditAttrs["onchange"] = "";
 ?>
@@ -876,7 +875,7 @@ fbankssearch.CreateAutoSuggest({"id":"x_Bank_Code","forceSelect":false});
 			<div style="white-space: nowrap;">
 				<span id="el_banks_Bank_Code">
 <?php
-$wrkonchange = trim("ew_UpdateOpt.call(this); " . @$banks->Bank_Code->EditAttrs["onchange"]);
+$wrkonchange = trim(" " . @$banks->Bank_Code->EditAttrs["onchange"]);
 if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
 $banks->Bank_Code->EditAttrs["onchange"] = "";
 ?>
@@ -936,7 +935,7 @@ fbankssearch.CreateAutoSuggest({"id":"x_Bank_Code","forceSelect":false});
 		</label>
 		<div class="<?php echo $banks_search->SearchRightColumnClass ?>"><div<?php echo $banks->Name->CellAttributes() ?>>
 			<span id="el_banks_Name">
-<input type="text" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name" size="30" placeholder="<?php echo ew_HtmlEncode($banks->Name->getPlaceHolder()) ?>" value="<?php echo $banks->Name->EditValue ?>"<?php echo $banks->Name->EditAttributes() ?>>
+<input type="text" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($banks->Name->getPlaceHolder()) ?>" value="<?php echo $banks->Name->EditValue ?>"<?php echo $banks->Name->EditAttributes() ?>>
 </span>
 		</div></div>
 	</div>
@@ -947,7 +946,33 @@ fbankssearch.CreateAutoSuggest({"id":"x_Bank_Code","forceSelect":false});
 		<td<?php echo $banks->Name->CellAttributes() ?>>
 			<div style="white-space: nowrap;">
 				<span id="el_banks_Name">
-<input type="text" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name" size="30" placeholder="<?php echo ew_HtmlEncode($banks->Name->getPlaceHolder()) ?>" value="<?php echo $banks->Name->EditValue ?>"<?php echo $banks->Name->EditAttributes() ?>>
+<input type="text" data-table="banks" data-field="x_Name" name="x_Name" id="x_Name" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($banks->Name->getPlaceHolder()) ?>" value="<?php echo $banks->Name->EditValue ?>"<?php echo $banks->Name->EditAttributes() ?>>
+</span>
+			</div>
+		</td>
+	</tr>
+<?php } ?>
+<?php } ?>
+<?php if ($banks->Abbreviation->Visible) { // Abbreviation ?>
+<?php if (ew_IsMobile() || $banks_search->IsModal) { ?>
+	<div id="r_Abbreviation" class="form-group">
+		<label for="x_Abbreviation" class="<?php echo $banks_search->SearchLabelClass ?>"><span id="elh_banks_Abbreviation"><?php echo $banks->Abbreviation->FldCaption() ?></span>	
+		<p class="form-control-static ewSearchOperator"><?php echo $Language->Phrase("LIKE") ?><input type="hidden" name="z_Abbreviation" id="z_Abbreviation" value="LIKE"></p>
+		</label>
+		<div class="<?php echo $banks_search->SearchRightColumnClass ?>"><div<?php echo $banks->Abbreviation->CellAttributes() ?>>
+			<span id="el_banks_Abbreviation">
+<input type="text" data-table="banks" data-field="x_Abbreviation" name="x_Abbreviation" id="x_Abbreviation" size="8" maxlength="8" placeholder="<?php echo ew_HtmlEncode($banks->Abbreviation->getPlaceHolder()) ?>" value="<?php echo $banks->Abbreviation->EditValue ?>"<?php echo $banks->Abbreviation->EditAttributes() ?>>
+</span>
+		</div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_Abbreviation">
+		<td><span id="elh_banks_Abbreviation"><?php echo $banks->Abbreviation->FldCaption() ?></span></td>
+		<td><span class="ewSearchOperator"><?php echo $Language->Phrase("LIKE") ?><input type="hidden" name="z_Abbreviation" id="z_Abbreviation" value="LIKE"></span></td>
+		<td<?php echo $banks->Abbreviation->CellAttributes() ?>>
+			<div style="white-space: nowrap;">
+				<span id="el_banks_Abbreviation">
+<input type="text" data-table="banks" data-field="x_Abbreviation" name="x_Abbreviation" id="x_Abbreviation" size="8" maxlength="8" placeholder="<?php echo ew_HtmlEncode($banks->Abbreviation->getPlaceHolder()) ?>" value="<?php echo $banks->Abbreviation->EditValue ?>"<?php echo $banks->Abbreviation->EditAttributes() ?>>
 </span>
 			</div>
 		</td>

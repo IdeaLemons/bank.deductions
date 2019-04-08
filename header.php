@@ -22,6 +22,7 @@ if (ew_IsResponsiveLayout()) {
 <html>
 <head>
 	<title><?php echo $Language->ProjectPhrase("BodyTitle") ?></title>
+<meta charset="utf-8">
 <?php if (@$gsExport == "" || @$gsExport == "print") { ?>
 <link rel="stylesheet" type="text/css" href="<?php echo $EW_RELATIVE_PATH ?>bootstrap3/css/<?php echo ew_CssFile("bootstrap.css") ?>">
 <!-- Optional theme -->
@@ -119,6 +120,7 @@ currentDate='<?php echo ew_CurrentDate(); ?>';
 <?php } ?>
 </script>
 <?php } ?>
+<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="<?php echo ew_ConvertFullUrl("favicon.ico") ?>"><link rel="icon" type="image/vnd.microsoft.icon" href="<?php echo ew_ConvertFullUrl("favicon.ico") ?>">
 <meta name="generator" content="PHPMaker v12.0.2">
 </head>
 <body>

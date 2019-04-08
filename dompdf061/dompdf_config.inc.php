@@ -5,7 +5,7 @@
  * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @author  Helmut Tischer <htischer@weihenstephan.org>
- * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
+ * @author  Fabien MÃƒÂ©nager <fabien.menager@gmail.com>
  * @autho   Brian Sweeney <eclecticgeek@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */

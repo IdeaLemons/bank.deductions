@@ -474,6 +474,9 @@ class caccounts_edit extends caccounts {
 		if (!$this->Bank_ID->FldIsDetailKey) {
 			$this->Bank_ID->setFormValue($objForm->GetValue("x_Bank_ID"));
 		}
+		if (!$this->Bank_Name->FldIsDetailKey) {
+			$this->Bank_Name->setFormValue($objForm->GetValue("x_Bank_Name"));
+		}
 		if (!$this->Acc_NO->FldIsDetailKey) {
 			$this->Acc_NO->setFormValue($objForm->GetValue("x_Acc_NO"));
 		}
@@ -488,6 +491,7 @@ class caccounts_edit extends caccounts {
 		$this->Acc_ID->CurrentValue = $this->Acc_ID->FormValue;
 		$this->PF->CurrentValue = $this->PF->FormValue;
 		$this->Bank_ID->CurrentValue = $this->Bank_ID->FormValue;
+		$this->Bank_Name->CurrentValue = $this->Bank_Name->FormValue;
 		$this->Acc_NO->CurrentValue = $this->Acc_NO->FormValue;
 	}
 
@@ -533,6 +537,7 @@ class caccounts_edit extends caccounts {
 		} else {
 			$this->Bank_ID->VirtualValue = ""; // Clear value
 		}
+		$this->Bank_Name->setDbValue($rs->fields('Bank_Name'));
 		$this->Acc_NO->setDbValue($rs->fields('Acc_NO'));
 	}
 
@@ -543,6 +548,7 @@ class caccounts_edit extends caccounts {
 		$this->Acc_ID->DbValue = $row['Acc_ID'];
 		$this->PF->DbValue = $row['PF'];
 		$this->Bank_ID->DbValue = $row['Bank_ID'];
+		$this->Bank_Name->DbValue = $row['Bank_Name'];
 		$this->Acc_NO->DbValue = $row['Acc_NO'];
 	}
 
@@ -559,6 +565,7 @@ class caccounts_edit extends caccounts {
 		// Acc_ID
 		// PF
 		// Bank_ID
+		// Bank_Name
 		// Acc_NO
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
@@ -596,7 +603,6 @@ class caccounts_edit extends caccounts {
 		if ($this->Bank_ID->VirtualValue <> "") {
 			$this->Bank_ID->ViewValue = $this->Bank_ID->VirtualValue;
 		} else {
-			$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
 		if (strval($this->Bank_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
 		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
@@ -620,6 +626,10 @@ class caccounts_edit extends caccounts {
 		}
 		$this->Bank_ID->ViewCustomAttributes = "";
 
+		// Bank_Name
+		$this->Bank_Name->ViewValue = $this->Bank_Name->CurrentValue;
+		$this->Bank_Name->ViewCustomAttributes = "";
+
 		// Acc_NO
 		$this->Acc_NO->ViewValue = $this->Acc_NO->CurrentValue;
 		$this->Acc_NO->ViewCustomAttributes = "";
@@ -633,6 +643,11 @@ class caccounts_edit extends caccounts {
 			$this->Bank_ID->LinkCustomAttributes = "";
 			$this->Bank_ID->HrefValue = "";
 			$this->Bank_ID->TooltipValue = "";
+
+			// Bank_Name
+			$this->Bank_Name->LinkCustomAttributes = "";
+			$this->Bank_Name->HrefValue = "";
+			$this->Bank_Name->TooltipValue = "";
 
 			// Acc_NO
 			$this->Acc_NO->LinkCustomAttributes = "";
@@ -649,8 +664,27 @@ class caccounts_edit extends caccounts {
 			// Bank_ID
 			$this->Bank_ID->EditAttrs["class"] = "form-control";
 			$this->Bank_ID->EditCustomAttributes = "";
-			$this->Bank_ID->EditValue = ew_HtmlEncode($this->Bank_ID->CurrentValue);
-			$this->Bank_ID->PlaceHolder = ew_RemoveHtml($this->Bank_ID->FldCaption());
+			if (trim(strval($this->Bank_ID->CurrentValue)) == "") {
+				$sFilterWrk = "0=1";
+			} else {
+				$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
+			}
+			$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `banks`";
+			$sWhereWrk = "";
+			ew_AddFilter($sWhereWrk, $sFilterWrk);
+			$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			$arwrk = ($rswrk) ? $rswrk->GetRows() : array();
+			if ($rswrk) $rswrk->Close();
+			array_unshift($arwrk, array("", $Language->Phrase("PleaseSelect"), "", "", "", "", "", "", ""));
+			$this->Bank_ID->EditValue = $arwrk;
+
+			// Bank_Name
+			$this->Bank_Name->EditAttrs["class"] = "form-control";
+			$this->Bank_Name->EditCustomAttributes = "";
+			$this->Bank_Name->EditValue = ew_HtmlEncode($this->Bank_Name->CurrentValue);
+			$this->Bank_Name->PlaceHolder = ew_RemoveHtml($this->Bank_Name->FldCaption());
 
 			// Acc_NO
 			$this->Acc_NO->EditAttrs["class"] = "form-control";
@@ -665,6 +699,9 @@ class caccounts_edit extends caccounts {
 
 			// Bank_ID
 			$this->Bank_ID->HrefValue = "";
+
+			// Bank_Name
+			$this->Bank_Name->HrefValue = "";
 
 			// Acc_NO
 			$this->Acc_NO->HrefValue = "";
@@ -695,6 +732,9 @@ class caccounts_edit extends caccounts {
 		}
 		if (!$this->Bank_ID->FldIsDetailKey && !is_null($this->Bank_ID->FormValue) && $this->Bank_ID->FormValue == "") {
 			ew_AddMessage($gsFormError, str_replace("%s", $this->Bank_ID->FldCaption(), $this->Bank_ID->ReqErrMsg));
+		}
+		if (!$this->Bank_Name->FldIsDetailKey && !is_null($this->Bank_Name->FormValue) && $this->Bank_Name->FormValue == "") {
+			ew_AddMessage($gsFormError, str_replace("%s", $this->Bank_Name->FldCaption(), $this->Bank_Name->ReqErrMsg));
 		}
 		if (!$this->Acc_NO->FldIsDetailKey && !is_null($this->Acc_NO->FormValue) && $this->Acc_NO->FormValue == "") {
 			ew_AddMessage($gsFormError, str_replace("%s", $this->Acc_NO->FldCaption(), $this->Acc_NO->ReqErrMsg));
@@ -740,6 +780,9 @@ class caccounts_edit extends caccounts {
 
 			// Bank_ID
 			$this->Bank_ID->SetDbValueDef($rsnew, $this->Bank_ID->CurrentValue, 0, $this->Bank_ID->ReadOnly);
+
+			// Bank_Name
+			$this->Bank_Name->SetDbValueDef($rsnew, $this->Bank_Name->CurrentValue, "", $this->Bank_Name->ReadOnly);
 
 			// Acc_NO
 			$this->Acc_NO->SetDbValueDef($rsnew, $this->Acc_NO->CurrentValue, "", $this->Acc_NO->ReadOnly);
@@ -900,6 +943,9 @@ faccountsedit.Validate = function() {
 			elm = this.GetElements("x" + infix + "_Bank_ID");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
 				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $accounts->Bank_ID->FldCaption(), $accounts->Bank_ID->ReqErrMsg)) ?>");
+			elm = this.GetElements("x" + infix + "_Bank_Name");
+			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
+				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $accounts->Bank_Name->FldCaption(), $accounts->Bank_Name->ReqErrMsg)) ?>");
 			elm = this.GetElements("x" + infix + "_Acc_NO");
 			if (elm && !ew_IsHidden(elm) && !ew_HasValue(elm))
 				return this.OnError(elm, "<?php echo ew_JsEncode2(str_replace("%s", $accounts->Acc_NO->FldCaption(), $accounts->Acc_NO->ReqErrMsg)) ?>");
@@ -937,7 +983,7 @@ faccountsedit.ValidateRequired = false;
 
 // Dynamic selection lists
 faccountsedit.Lists["x_PF"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_PF","x_Name","x_NIC",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-faccountsedit.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","x_City","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+faccountsedit.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":true,"DisplayFields":["x_Name","x_City","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 </script>
@@ -997,32 +1043,36 @@ faccountsedit.CreateAutoSuggest({"id":"x_PF","forceSelect":false});
 		<td><span id="elh_accounts_Bank_ID"><?php echo $accounts->Bank_ID->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $accounts->Bank_ID->CellAttributes() ?>>
 <span id="el_accounts_Bank_ID">
+<?php $accounts->Bank_ID->EditAttrs["onchange"] = "ew_AutoFill(this); " . @$accounts->Bank_ID->EditAttrs["onchange"]; ?>
+<select data-table="accounts" data-field="x_Bank_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($accounts->Bank_ID->DisplayValueSeparator) ? json_encode($accounts->Bank_ID->DisplayValueSeparator) : $accounts->Bank_ID->DisplayValueSeparator) ?>" id="x_Bank_ID" name="x_Bank_ID"<?php echo $accounts->Bank_ID->EditAttributes() ?>>
 <?php
-$wrkonchange = trim(" " . @$accounts->Bank_ID->EditAttrs["onchange"]);
-if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchange) . "\"";
-$accounts->Bank_ID->EditAttrs["onchange"] = "";
+if (is_array($accounts->Bank_ID->EditValue)) {
+	$arwrk = $accounts->Bank_ID->EditValue;
+	$rowswrk = count($arwrk);
+	$emptywrk = TRUE;
+	for ($rowcntwrk = 0; $rowcntwrk < $rowswrk; $rowcntwrk++) {
+		$selwrk = ew_SameStr($accounts->Bank_ID->CurrentValue, $arwrk[$rowcntwrk][0]) ? " selected" : "";
+		if ($selwrk <> "") $emptywrk = FALSE;		
 ?>
-<span id="as_x_Bank_ID" style="white-space: nowrap; z-index: 8970">
-	<input type="text" name="sv_x_Bank_ID" id="sv_x_Bank_ID" value="<?php echo $accounts->Bank_ID->EditValue ?>" size="30" placeholder="<?php echo ew_HtmlEncode($accounts->Bank_ID->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($accounts->Bank_ID->getPlaceHolder()) ?>"<?php echo $accounts->Bank_ID->EditAttributes() ?>>
-</span>
-<input type="hidden" data-table="accounts" data-field="x_Bank_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($accounts->Bank_ID->DisplayValueSeparator) ? json_encode($accounts->Bank_ID->DisplayValueSeparator) : $accounts->Bank_ID->DisplayValueSeparator) ?>" name="x_Bank_ID" id="x_Bank_ID" value="<?php echo ew_HtmlEncode($accounts->Bank_ID->CurrentValue) ?>"<?php echo $wrkonchange ?>>
+<option value="<?php echo ew_HtmlEncode($arwrk[$rowcntwrk][0]) ?>"<?php echo $selwrk ?>>
+<?php echo $accounts->Bank_ID->DisplayValue($arwrk[$rowcntwrk]) ?>
+</option>
 <?php
-$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld` FROM `banks`";
-$sWhereWrk = "`Name` LIKE '{query_value}%' OR CONCAT(`Name`,'" . ew_ValueSeparator(1, $Page->Bank_ID) . "',`City`) LIKE '{query_value}%'";
-$accounts->Lookup_Selecting($accounts->Bank_ID, $sWhereWrk); // Call Lookup selecting
-if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-$sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
+	}
+	if ($emptywrk && strval($accounts->Bank_ID->CurrentValue) <> "") {
 ?>
-<input type="hidden" name="q_x_Bank_ID" id="q_x_Bank_ID" value="s=<?php echo ew_Encrypt($sSqlWrk) ?>&d=">
-<script type="text/javascript">
-faccountsedit.CreateAutoSuggest({"id":"x_Bank_ID","forceSelect":false});
-</script>
+<option value="<?php echo ew_HtmlEncode($accounts->Bank_ID->CurrentValue) ?>" selected><?php echo $accounts->Bank_ID->CurrentValue ?></option>
+<?php
+    }
+}
+?>
+</select>
 <?php if (AllowAdd(CurrentProjectID() . "banks")) { ?>
 <button type="button" title="<?php echo ew_HtmlTitle($Language->Phrase("AddLink")) . "&nbsp;" . $accounts->Bank_ID->FldCaption() ?>" onclick="ew_AddOptDialogShow({lnk:this,el:'x_Bank_ID',url:'banksaddopt.php'});" class="ewAddOptBtn btn btn-default btn-sm" id="aol_x_Bank_ID"><span class="glyphicon glyphicon-plus ewIcon"></span><span class="hide"><?php echo $Language->Phrase("AddLink") ?>&nbsp;<?php echo $accounts->Bank_ID->FldCaption() ?></span></button>
 <?php } ?>
 <?php
 $sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-$sWhereWrk = "{filter}";
+$sWhereWrk = "";
 $accounts->Bank_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $accounts->Bank_ID->LookupFilters += array("f0" => "`Bank_ID` = {filter_value}", "t0" => "3", "fn0" => "");
 $sSqlWrk = "";
@@ -1031,8 +1081,19 @@ if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
 if ($sSqlWrk <> "") $accounts->Bank_ID->LookupFilters["s"] .= $sSqlWrk;
 ?>
 <input type="hidden" name="s_x_Bank_ID" id="s_x_Bank_ID" value="<?php echo $accounts->Bank_ID->LookupFilterQuery() ?>">
+<input type="hidden" name="ln_x_Bank_ID" id="ln_x_Bank_ID" value="x_Bank_Name">
 </span>
 <?php echo $accounts->Bank_ID->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php if ($accounts->Bank_Name->Visible) { // Bank_Name ?>
+	<tr id="r_Bank_Name">
+		<td><span id="elh_accounts_Bank_Name"><?php echo $accounts->Bank_Name->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
+		<td<?php echo $accounts->Bank_Name->CellAttributes() ?>>
+<span id="el_accounts_Bank_Name">
+<input type="text" data-table="accounts" data-field="x_Bank_Name" name="x_Bank_Name" id="x_Bank_Name" size="30" maxlength="50" placeholder="<?php echo ew_HtmlEncode($accounts->Bank_Name->getPlaceHolder()) ?>" value="<?php echo $accounts->Bank_Name->EditValue ?>"<?php echo $accounts->Bank_Name->EditAttributes() ?>>
+</span>
+<?php echo $accounts->Bank_Name->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 <?php if ($accounts->Acc_NO->Visible) { // Acc_NO ?>

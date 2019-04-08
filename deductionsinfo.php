@@ -12,7 +12,6 @@ class cdeductions extends cTable {
 	var $L_Ref;
 	var $YEAR;
 	var $MONTH;
-	var $Bank_ID;
 	var $Acc_ID;
 	var $AMOUNT;
 	var $STARTED;
@@ -44,7 +43,7 @@ class cdeductions extends cTable {
 		$this->ExportExcelPageSize = ""; // Page size (PHPExcel only)
 		$this->DetailAdd = TRUE; // Allow detail add
 		$this->DetailEdit = FALSE; // Allow detail edit
-		$this->DetailView = FALSE; // Allow detail view
+		$this->DetailView = TRUE; // Allow detail view
 		$this->ShowMultipleDetails = FALSE; // Show multiple details
 		$this->GridAddRowCount = 5;
 		$this->AllowAddDeleteRow = ew_AllowAddDeleteRow(); // Allow add/delete row
@@ -76,11 +75,6 @@ class cdeductions extends cTable {
 		$this->MONTH->OptionCount = 12;
 		$this->MONTH->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
 		$this->fields['MONTH'] = &$this->MONTH;
-
-		// Bank_ID
-		$this->Bank_ID = new cField('deductions', 'deductions', 'x_Bank_ID', 'Bank_ID', '`Bank_ID`', '`Bank_ID`', 3, -1, FALSE, '`Bank_ID`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
-		$this->Bank_ID->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
-		$this->fields['Bank_ID'] = &$this->Bank_ID;
 
 		// Acc_ID
 		$this->Acc_ID = new cField('deductions', 'deductions', 'x_Acc_ID', 'Acc_ID', '`Acc_ID`', '`Acc_ID`', 3, -1, FALSE, '`Acc_ID`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
@@ -643,7 +637,6 @@ class cdeductions extends cTable {
 		$this->L_Ref->setDbValue($rs->fields('L_Ref'));
 		$this->YEAR->setDbValue($rs->fields('YEAR'));
 		$this->MONTH->setDbValue($rs->fields('MONTH'));
-		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
 		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
 		$this->AMOUNT->setDbValue($rs->fields('AMOUNT'));
 		$this->STARTED->setDbValue($rs->fields('STARTED'));
@@ -669,7 +662,6 @@ class cdeductions extends cTable {
 		// L_Ref
 		// YEAR
 		// MONTH
-		// Bank_ID
 		// Acc_ID
 		// AMOUNT
 		// STARTED
@@ -735,32 +727,10 @@ class cdeductions extends cTable {
 		$this->MONTH->CellCssStyle .= "text-align: center;";
 		$this->MONTH->ViewCustomAttributes = "";
 
-		// Bank_ID
-		if (strval($this->Bank_ID->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
-			}
-		} else {
-			$this->Bank_ID->ViewValue = NULL;
-		}
-		$this->Bank_ID->ViewCustomAttributes = "";
-
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `PF`, `Acc_NO` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+		$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 		$sWhereWrk = "";
 		ew_AddFilter($sWhereWrk, $sFilterWrk);
 		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -769,6 +739,7 @@ class cdeductions extends cTable {
 			if ($rswrk && !$rswrk->EOF) { // Lookup values found
 				$arwrk = array();
 				$arwrk[1] = $rswrk->fields('DispFld');
+				$arwrk[2] = $rswrk->fields('Disp2Fld');
 				$this->Acc_ID->ViewValue = $this->Acc_ID->DisplayValue($arwrk);
 				$rswrk->Close();
 			} else {
@@ -777,7 +748,7 @@ class cdeductions extends cTable {
 		} else {
 			$this->Acc_ID->ViewValue = NULL;
 		}
-		$this->Acc_ID->CellCssStyle .= "text-align: right;";
+		$this->Acc_ID->CellCssStyle .= "text-align: left;";
 		$this->Acc_ID->ViewCustomAttributes = "";
 
 		// AMOUNT
@@ -866,11 +837,6 @@ class cdeductions extends cTable {
 		$this->MONTH->HrefValue = "";
 		$this->MONTH->TooltipValue = "";
 
-		// Bank_ID
-		$this->Bank_ID->LinkCustomAttributes = "";
-		$this->Bank_ID->HrefValue = "";
-		$this->Bank_ID->TooltipValue = "";
-
 		// Acc_ID
 		$this->Acc_ID->LinkCustomAttributes = "";
 		$this->Acc_ID->HrefValue = "";
@@ -943,9 +909,6 @@ class cdeductions extends cTable {
 		$this->MONTH->EditCustomAttributes = "";
 		$this->MONTH->EditValue = $this->MONTH->Options(TRUE);
 
-		// Bank_ID
-		$this->Bank_ID->EditCustomAttributes = "";
-
 		// Acc_ID
 		$this->Acc_ID->EditCustomAttributes = "";
 
@@ -1012,7 +975,6 @@ class cdeductions extends cTable {
 					if ($this->L_Ref->Exportable) $Doc->ExportCaption($this->L_Ref);
 					if ($this->YEAR->Exportable) $Doc->ExportCaption($this->YEAR);
 					if ($this->MONTH->Exportable) $Doc->ExportCaption($this->MONTH);
-					if ($this->Bank_ID->Exportable) $Doc->ExportCaption($this->Bank_ID);
 					if ($this->Acc_ID->Exportable) $Doc->ExportCaption($this->Acc_ID);
 					if ($this->AMOUNT->Exportable) $Doc->ExportCaption($this->AMOUNT);
 					if ($this->STARTED->Exportable) $Doc->ExportCaption($this->STARTED);
@@ -1024,7 +986,6 @@ class cdeductions extends cTable {
 					if ($this->PF->Exportable) $Doc->ExportCaption($this->PF);
 					if ($this->YEAR->Exportable) $Doc->ExportCaption($this->YEAR);
 					if ($this->MONTH->Exportable) $Doc->ExportCaption($this->MONTH);
-					if ($this->Bank_ID->Exportable) $Doc->ExportCaption($this->Bank_ID);
 					if ($this->Acc_ID->Exportable) $Doc->ExportCaption($this->Acc_ID);
 					if ($this->AMOUNT->Exportable) $Doc->ExportCaption($this->AMOUNT);
 					if ($this->STARTED->Exportable) $Doc->ExportCaption($this->STARTED);
@@ -1067,7 +1028,6 @@ class cdeductions extends cTable {
 						if ($this->L_Ref->Exportable) $Doc->ExportField($this->L_Ref);
 						if ($this->YEAR->Exportable) $Doc->ExportField($this->YEAR);
 						if ($this->MONTH->Exportable) $Doc->ExportField($this->MONTH);
-						if ($this->Bank_ID->Exportable) $Doc->ExportField($this->Bank_ID);
 						if ($this->Acc_ID->Exportable) $Doc->ExportField($this->Acc_ID);
 						if ($this->AMOUNT->Exportable) $Doc->ExportField($this->AMOUNT);
 						if ($this->STARTED->Exportable) $Doc->ExportField($this->STARTED);
@@ -1079,7 +1039,6 @@ class cdeductions extends cTable {
 						if ($this->PF->Exportable) $Doc->ExportField($this->PF);
 						if ($this->YEAR->Exportable) $Doc->ExportField($this->YEAR);
 						if ($this->MONTH->Exportable) $Doc->ExportField($this->MONTH);
-						if ($this->Bank_ID->Exportable) $Doc->ExportField($this->Bank_ID);
 						if ($this->Acc_ID->Exportable) $Doc->ExportField($this->Acc_ID);
 						if ($this->AMOUNT->Exportable) $Doc->ExportField($this->AMOUNT);
 						if ($this->STARTED->Exportable) $Doc->ExportField($this->STARTED);

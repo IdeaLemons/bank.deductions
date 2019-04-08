@@ -11,6 +11,7 @@ class cbanks extends cTable {
 	var $Bank_Code;
 	var $Branch_Code;
 	var $Name;
+	var $Abbreviation;
 	var $City;
 
 	//
@@ -59,8 +60,12 @@ class cbanks extends cTable {
 		$this->fields['Branch_Code'] = &$this->Branch_Code;
 
 		// Name
-		$this->Name = new cField('banks', 'banks', 'x_Name', 'Name', '`Name`', '`Name`', 200, -1, FALSE, '`EV__Name`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
+		$this->Name = new cField('banks', 'banks', 'x_Name', 'Name', '`Name`', '`Name`', 200, -1, FALSE, '`Name`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
 		$this->fields['Name'] = &$this->Name;
+
+		// Abbreviation
+		$this->Abbreviation = new cField('banks', 'banks', 'x_Abbreviation', 'Abbreviation', '`Abbreviation`', '`Abbreviation`', 201, -1, FALSE, '`Abbreviation`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->fields['Abbreviation'] = &$this->Abbreviation;
 
 		// City
 		$this->City = new cField('banks', 'banks', 'x_City', 'City', '`City`', '`City`', 200, -1, FALSE, '`City`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
@@ -127,7 +132,7 @@ class cbanks extends cTable {
 	function getSqlSelectList() { // Select for List page
 		$select = "";
 		$select = "SELECT * FROM (" .
-			"SELECT *, (SELECT DISTINCT `Bank_Code` FROM `banks` `EW_TMP_LOOKUPTABLE` WHERE `EW_TMP_LOOKUPTABLE`.`Bank_Code` = `banks`.`Bank_Code` LIMIT 1) AS `EV__Bank_Code`, (SELECT DISTINCT `Name` FROM `banks` `EW_TMP_LOOKUPTABLE` WHERE `EW_TMP_LOOKUPTABLE`.`Bank_Code` = `banks`.`Name` LIMIT 1) AS `EV__Name` FROM `banks`" .
+			"SELECT *, (SELECT DISTINCT `Bank_Code` FROM `banks` `EW_TMP_LOOKUPTABLE` WHERE `EW_TMP_LOOKUPTABLE`.`Bank_Code` = `banks`.`Bank_Code` LIMIT 1) AS `EV__Bank_Code` FROM `banks`" .
 			") `EW_TMP_TABLE`";
 		return ($this->_SqlSelectList <> "") ? $this->_SqlSelectList : $select;
 	}
@@ -280,14 +285,6 @@ class cbanks extends cTable {
 			strpos($sWhere, " " . $this->Bank_Code->FldVirtualExpression . " ") !== FALSE)
 			return TRUE;
 		if (strpos($sOrderBy, " " . $this->Bank_Code->FldVirtualExpression . " ") !== FALSE)
-			return TRUE;
-		if ($this->BasicSearch->getKeyword() <> "")
-			return TRUE;
-		if ($this->Name->AdvancedSearch->SearchValue <> "" ||
-			$this->Name->AdvancedSearch->SearchValue2 <> "" ||
-			strpos($sWhere, " " . $this->Name->FldVirtualExpression . " ") !== FALSE)
-			return TRUE;
-		if (strpos($sOrderBy, " " . $this->Name->FldVirtualExpression . " ") !== FALSE)
 			return TRUE;
 		return FALSE;
 	}
@@ -597,6 +594,7 @@ class cbanks extends cTable {
 		$this->Bank_Code->setDbValue($rs->fields('Bank_Code'));
 		$this->Branch_Code->setDbValue($rs->fields('Branch_Code'));
 		$this->Name->setDbValue($rs->fields('Name'));
+		$this->Abbreviation->setDbValue($rs->fields('Abbreviation'));
 		$this->City->setDbValue($rs->fields('City'));
 	}
 
@@ -615,6 +613,7 @@ class cbanks extends cTable {
 		// Bank_Code
 		// Branch_Code
 		// Name
+		// Abbreviation
 		// City
 		// Bank_ID
 
@@ -654,30 +653,12 @@ class cbanks extends cTable {
 		$this->Branch_Code->ViewCustomAttributes = "";
 
 		// Name
-		if ($this->Name->VirtualValue <> "") {
-			$this->Name->ViewValue = $this->Name->VirtualValue;
-		} else {
-		if (strval($this->Name->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_Code`" . ew_SearchString("=", $this->Name->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `Bank_Code`, `Name` AS `DispFld`, '' AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Name, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$this->Name->ViewValue = $this->Name->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Name->ViewValue = $this->Name->CurrentValue;
-			}
-		} else {
-			$this->Name->ViewValue = NULL;
-		}
-		}
+		$this->Name->ViewValue = $this->Name->CurrentValue;
 		$this->Name->ViewCustomAttributes = "";
+
+		// Abbreviation
+		$this->Abbreviation->ViewValue = $this->Abbreviation->CurrentValue;
+		$this->Abbreviation->ViewCustomAttributes = "";
 
 		// City
 		$this->City->ViewValue = $this->City->CurrentValue;
@@ -702,6 +683,11 @@ class cbanks extends cTable {
 		$this->Name->LinkCustomAttributes = "";
 		$this->Name->HrefValue = "";
 		$this->Name->TooltipValue = "";
+
+		// Abbreviation
+		$this->Abbreviation->LinkCustomAttributes = "";
+		$this->Abbreviation->HrefValue = "";
+		$this->Abbreviation->TooltipValue = "";
 
 		// City
 		$this->City->LinkCustomAttributes = "";
@@ -738,7 +724,16 @@ class cbanks extends cTable {
 		$this->Branch_Code->PlaceHolder = ew_RemoveHtml($this->Branch_Code->FldCaption());
 
 		// Name
+		$this->Name->EditAttrs["class"] = "form-control";
 		$this->Name->EditCustomAttributes = "";
+		$this->Name->EditValue = $this->Name->CurrentValue;
+		$this->Name->PlaceHolder = ew_RemoveHtml($this->Name->FldCaption());
+
+		// Abbreviation
+		$this->Abbreviation->EditAttrs["class"] = "form-control";
+		$this->Abbreviation->EditCustomAttributes = "";
+		$this->Abbreviation->EditValue = $this->Abbreviation->CurrentValue;
+		$this->Abbreviation->PlaceHolder = ew_RemoveHtml($this->Abbreviation->FldCaption());
 
 		// City
 		$this->City->EditAttrs["class"] = "form-control";
@@ -776,11 +771,13 @@ class cbanks extends cTable {
 					if ($this->Bank_Code->Exportable) $Doc->ExportCaption($this->Bank_Code);
 					if ($this->Branch_Code->Exportable) $Doc->ExportCaption($this->Branch_Code);
 					if ($this->Name->Exportable) $Doc->ExportCaption($this->Name);
+					if ($this->Abbreviation->Exportable) $Doc->ExportCaption($this->Abbreviation);
 					if ($this->City->Exportable) $Doc->ExportCaption($this->City);
 				} else {
 					if ($this->Bank_Code->Exportable) $Doc->ExportCaption($this->Bank_Code);
 					if ($this->Branch_Code->Exportable) $Doc->ExportCaption($this->Branch_Code);
 					if ($this->Name->Exportable) $Doc->ExportCaption($this->Name);
+					if ($this->Abbreviation->Exportable) $Doc->ExportCaption($this->Abbreviation);
 					if ($this->City->Exportable) $Doc->ExportCaption($this->City);
 				}
 				$Doc->EndExportRow();
@@ -816,11 +813,13 @@ class cbanks extends cTable {
 						if ($this->Bank_Code->Exportable) $Doc->ExportField($this->Bank_Code);
 						if ($this->Branch_Code->Exportable) $Doc->ExportField($this->Branch_Code);
 						if ($this->Name->Exportable) $Doc->ExportField($this->Name);
+						if ($this->Abbreviation->Exportable) $Doc->ExportField($this->Abbreviation);
 						if ($this->City->Exportable) $Doc->ExportField($this->City);
 					} else {
 						if ($this->Bank_Code->Exportable) $Doc->ExportField($this->Bank_Code);
 						if ($this->Branch_Code->Exportable) $Doc->ExportField($this->Branch_Code);
 						if ($this->Name->Exportable) $Doc->ExportField($this->Name);
+						if ($this->Abbreviation->Exportable) $Doc->ExportField($this->Abbreviation);
 						if ($this->City->Exportable) $Doc->ExportField($this->City);
 					}
 					$Doc->EndExportRow();

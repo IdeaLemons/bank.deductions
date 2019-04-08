@@ -10,6 +10,7 @@ class caccounts extends cTable {
 	var $Acc_ID;
 	var $PF;
 	var $Bank_ID;
+	var $Bank_Name;
 	var $Acc_NO;
 
 	//
@@ -53,9 +54,13 @@ class caccounts extends cTable {
 		$this->fields['PF'] = &$this->PF;
 
 		// Bank_ID
-		$this->Bank_ID = new cField('accounts', 'accounts', 'x_Bank_ID', 'Bank_ID', '`Bank_ID`', '`Bank_ID`', 3, -1, FALSE, '`EV__Bank_ID`', TRUE, FALSE, TRUE, 'FORMATTED TEXT', 'TEXT');
+		$this->Bank_ID = new cField('accounts', 'accounts', 'x_Bank_ID', 'Bank_ID', '`Bank_ID`', '`Bank_ID`', 3, -1, FALSE, '`EV__Bank_ID`', TRUE, TRUE, TRUE, 'FORMATTED TEXT', 'SELECT');
 		$this->Bank_ID->FldDefaultErrMsg = $Language->Phrase("IncorrectInteger");
 		$this->fields['Bank_ID'] = &$this->Bank_ID;
+
+		// Bank_Name
+		$this->Bank_Name = new cField('accounts', 'accounts', 'x_Bank_Name', 'Bank_Name', '`Bank_Name`', '`Bank_Name`', 200, -1, FALSE, '`Bank_Name`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->fields['Bank_Name'] = &$this->Bank_Name;
 
 		// Acc_NO
 		$this->Acc_NO = new cField('accounts', 'accounts', 'x_Acc_NO', 'Acc_NO', '`Acc_NO`', '`Acc_NO`', 200, -1, FALSE, '`Acc_NO`', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
@@ -589,6 +594,7 @@ class caccounts extends cTable {
 		$this->Acc_ID->setDbValue($rs->fields('Acc_ID'));
 		$this->PF->setDbValue($rs->fields('PF'));
 		$this->Bank_ID->setDbValue($rs->fields('Bank_ID'));
+		$this->Bank_Name->setDbValue($rs->fields('Bank_Name'));
 		$this->Acc_NO->setDbValue($rs->fields('Acc_NO'));
 	}
 
@@ -606,6 +612,7 @@ class caccounts extends cTable {
 
 		// PF
 		// Bank_ID
+		// Bank_Name
 		// Acc_NO
 		// Acc_ID
 
@@ -645,7 +652,6 @@ class caccounts extends cTable {
 		if ($this->Bank_ID->VirtualValue <> "") {
 			$this->Bank_ID->ViewValue = $this->Bank_ID->VirtualValue;
 		} else {
-			$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
 		if (strval($this->Bank_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
 		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
@@ -669,6 +675,10 @@ class caccounts extends cTable {
 		}
 		$this->Bank_ID->ViewCustomAttributes = "";
 
+		// Bank_Name
+		$this->Bank_Name->ViewValue = $this->Bank_Name->CurrentValue;
+		$this->Bank_Name->ViewCustomAttributes = "";
+
 		// Acc_NO
 		$this->Acc_NO->ViewValue = $this->Acc_NO->CurrentValue;
 		$this->Acc_NO->ViewCustomAttributes = "";
@@ -687,6 +697,11 @@ class caccounts extends cTable {
 		$this->Bank_ID->LinkCustomAttributes = "";
 		$this->Bank_ID->HrefValue = "";
 		$this->Bank_ID->TooltipValue = "";
+
+		// Bank_Name
+		$this->Bank_Name->LinkCustomAttributes = "";
+		$this->Bank_Name->HrefValue = "";
+		$this->Bank_Name->TooltipValue = "";
 
 		// Acc_NO
 		$this->Acc_NO->LinkCustomAttributes = "";
@@ -719,8 +734,12 @@ class caccounts extends cTable {
 		// Bank_ID
 		$this->Bank_ID->EditAttrs["class"] = "form-control";
 		$this->Bank_ID->EditCustomAttributes = "";
-		$this->Bank_ID->EditValue = $this->Bank_ID->CurrentValue;
-		$this->Bank_ID->PlaceHolder = ew_RemoveHtml($this->Bank_ID->FldCaption());
+
+		// Bank_Name
+		$this->Bank_Name->EditAttrs["class"] = "form-control";
+		$this->Bank_Name->EditCustomAttributes = "";
+		$this->Bank_Name->EditValue = $this->Bank_Name->CurrentValue;
+		$this->Bank_Name->PlaceHolder = ew_RemoveHtml($this->Bank_Name->FldCaption());
 
 		// Acc_NO
 		$this->Acc_NO->EditAttrs["class"] = "form-control";
@@ -757,10 +776,11 @@ class caccounts extends cTable {
 				if ($ExportPageType == "view") {
 					if ($this->PF->Exportable) $Doc->ExportCaption($this->PF);
 					if ($this->Bank_ID->Exportable) $Doc->ExportCaption($this->Bank_ID);
+					if ($this->Bank_Name->Exportable) $Doc->ExportCaption($this->Bank_Name);
 					if ($this->Acc_NO->Exportable) $Doc->ExportCaption($this->Acc_NO);
 				} else {
 					if ($this->PF->Exportable) $Doc->ExportCaption($this->PF);
-					if ($this->Bank_ID->Exportable) $Doc->ExportCaption($this->Bank_ID);
+					if ($this->Bank_Name->Exportable) $Doc->ExportCaption($this->Bank_Name);
 					if ($this->Acc_NO->Exportable) $Doc->ExportCaption($this->Acc_NO);
 				}
 				$Doc->EndExportRow();
@@ -795,10 +815,11 @@ class caccounts extends cTable {
 					if ($ExportPageType == "view") {
 						if ($this->PF->Exportable) $Doc->ExportField($this->PF);
 						if ($this->Bank_ID->Exportable) $Doc->ExportField($this->Bank_ID);
+						if ($this->Bank_Name->Exportable) $Doc->ExportField($this->Bank_Name);
 						if ($this->Acc_NO->Exportable) $Doc->ExportField($this->Acc_NO);
 					} else {
 						if ($this->PF->Exportable) $Doc->ExportField($this->PF);
-						if ($this->Bank_ID->Exportable) $Doc->ExportField($this->Bank_ID);
+						if ($this->Bank_Name->Exportable) $Doc->ExportField($this->Bank_Name);
 						if ($this->Acc_NO->Exportable) $Doc->ExportField($this->Acc_NO);
 					}
 					$Doc->EndExportRow();
@@ -819,6 +840,26 @@ class caccounts extends cTable {
 	function GetAutoFill($id, $val) {
 		$rsarr = array();
 		$rowcnt = 0;
+		if (preg_match('/^x(\d)*_Bank_ID$/', $id)) {
+			$conn = &$this->Connection();
+			$sSqlWrk = "SELECT `Name` AS FIELD0 FROM `banks`";
+			$sWhereWrk = "(`Bank_ID` = " . ew_QuotedValue($val, EW_DATATYPE_NUMBER, $this->DBID) . ")";
+			$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+			if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			if ($rs = ew_LoadRecordset($sSqlWrk, $conn)) {
+				while ($rs && !$rs->EOF) {
+					$ar = array();
+					$this->Bank_Name->setDbValue($rs->fields[0]);
+					$this->RowType == EW_ROWTYPE_EDIT;
+					$this->RenderEditRow();
+					$ar[] = ($this->Bank_Name->AutoFillOriginalValue) ? $this->Bank_Name->CurrentValue : $this->Bank_Name->EditValue;
+					$rowcnt += 1;
+					$rsarr[] = $ar;
+					$rs->MoveNext();
+				}
+				$rs->Close();
+			}
+		}
 
 		// Output
 		if (is_array($rsarr) && $rowcnt > 0) {

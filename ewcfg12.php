@@ -29,9 +29,9 @@ define("EW_CONFIG_FILE_FOLDER", EW_PROJECT_NAME . "", TRUE); // Config file name
 define("EW_PROJECT_ID", "{163802B9-268A-4AFB-8FD6-7A7D18262A99}", TRUE); // Project ID (GUID)
 $EW_RELATED_PROJECT_ID = "";
 $EW_RELATED_LANGUAGE_FOLDER = "";
-define("EW_RANDOM_KEY", '7zadohte9L4Bkm4z', TRUE); // Random key for encryption
+define("EW_RANDOM_KEY", 'TRyAjh7zjl99QMmw', TRUE); // Random key for encryption
 define("EW_PROJECT_STYLESHEET_FILENAME", "phpcss/Bank_deductions.css", TRUE); // Project stylesheet file name
-define("EW_CHARSET", "", TRUE); // Project charset
+define("EW_CHARSET", "utf-8", TRUE); // Project charset
 define("EW_EMAIL_CHARSET", EW_CHARSET, TRUE); // Email charset
 define("EW_EMAIL_KEYWORD_SEPARATOR", "", TRUE); // Email keyword separator
 $EW_COMPOSITE_KEY_SEPARATOR = ","; // Composite key separator
@@ -39,7 +39,7 @@ define("EW_HIGHLIGHT_COMPARE", TRUE, TRUE); // Highlight compare mode, TRUE(case
 if (!function_exists('xml_parser_create') && !class_exists("DOMDocument")) die("This script requires PHP XML Parser or DOM.");
 define('EW_USE_DOM_XML', ((!function_exists('xml_parser_create') && class_exists("DOMDocument")) || FALSE), TRUE);
 if (!isset($ADODB_OUTP)) $ADODB_OUTP = 'ew_SetDebugMsg';
-define("EW_FONT_SIZE", 14, TRUE);
+define("EW_FONT_SIZE", 15, TRUE);
 define("EW_TMP_IMAGE_FONT", "DejaVuSans", TRUE); // Font for temp files
 
 // Set up font path
@@ -56,7 +56,7 @@ $EW_CONN[0] = &$EW_CONN["DB"];
 $EW_ERROR_FN = 'ew_ErrorFn';
 
 // ADODB (Access/SQL Server)
-define("EW_CODEPAGE", 0, TRUE); // Code page
+define("EW_CODEPAGE", 65001, TRUE); // Code page
 
 /**
  * Character encoding
@@ -65,7 +65,7 @@ define("EW_CODEPAGE", 0, TRUE); // Code page
  * functions are enabled and your encoding is supported. See PHP manual for
  * details.
  */
-define("EW_ENCODING", "", TRUE); // Character encoding
+define("EW_ENCODING", "UTF-8", TRUE); // Character encoding
 define("EW_IS_DOUBLE_BYTE", in_array(EW_ENCODING, array("GBK", "BIG5", "SHIFT_JIS")), TRUE); // Double-byte character encoding
 define("EW_FILE_SYSTEM_ENCODING", "", TRUE); // File system encoding
 
@@ -85,7 +85,7 @@ define("EW_DB_QUOTE_END", "`", TRUE);
  * Note: Read http://dev.mysql.com/doc/refman/5.0/en/charset-connection.html
  * before using this setting.
  */
-define("EW_MYSQL_CHARSET", "", TRUE);
+define("EW_MYSQL_CHARSET", "utf8", TRUE);
 
 /**
  * Password (MD5 and case-sensitivity)

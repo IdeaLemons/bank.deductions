@@ -720,6 +720,7 @@ class caccounts_list extends caccounts {
 		$sFilterList = "";
 		$sFilterList = ew_Concat($sFilterList, $this->PF->AdvancedSearch->ToJSON(), ","); // Field PF
 		$sFilterList = ew_Concat($sFilterList, $this->Bank_ID->AdvancedSearch->ToJSON(), ","); // Field Bank_ID
+		$sFilterList = ew_Concat($sFilterList, $this->Bank_Name->AdvancedSearch->ToJSON(), ","); // Field Bank_Name
 		$sFilterList = ew_Concat($sFilterList, $this->Acc_NO->AdvancedSearch->ToJSON(), ","); // Field Acc_NO
 		if ($this->BasicSearch->Keyword <> "") {
 			$sWrk = "\"" . EW_TABLE_BASIC_SEARCH . "\":\"" . ew_JsEncode2($this->BasicSearch->Keyword) . "\",\"" . EW_TABLE_BASIC_SEARCH_TYPE . "\":\"" . ew_JsEncode2($this->BasicSearch->Type) . "\"";
@@ -755,6 +756,14 @@ class caccounts_list extends caccounts {
 		$this->Bank_ID->AdvancedSearch->SearchOperator2 = @$filter["w_Bank_ID"];
 		$this->Bank_ID->AdvancedSearch->Save();
 
+		// Field Bank_Name
+		$this->Bank_Name->AdvancedSearch->SearchValue = @$filter["x_Bank_Name"];
+		$this->Bank_Name->AdvancedSearch->SearchOperator = @$filter["z_Bank_Name"];
+		$this->Bank_Name->AdvancedSearch->SearchCondition = @$filter["v_Bank_Name"];
+		$this->Bank_Name->AdvancedSearch->SearchValue2 = @$filter["y_Bank_Name"];
+		$this->Bank_Name->AdvancedSearch->SearchOperator2 = @$filter["w_Bank_Name"];
+		$this->Bank_Name->AdvancedSearch->Save();
+
 		// Field Acc_NO
 		$this->Acc_NO->AdvancedSearch->SearchValue = @$filter["x_Acc_NO"];
 		$this->Acc_NO->AdvancedSearch->SearchOperator = @$filter["z_Acc_NO"];
@@ -769,6 +778,7 @@ class caccounts_list extends caccounts {
 	// Return basic search SQL
 	function BasicSearchSQL($arKeywords, $type) {
 		$sWhere = "";
+		$this->BuildBasicSearchSQL($sWhere, $this->Bank_Name, $arKeywords, $type);
 		$this->BuildBasicSearchSQL($sWhere, $this->Acc_NO, $arKeywords, $type);
 		return $sWhere;
 	}
@@ -935,7 +945,7 @@ class caccounts_list extends caccounts {
 			$this->CurrentOrder = ew_StripSlashes(@$_GET["order"]);
 			$this->CurrentOrderType = @$_GET["ordertype"];
 			$this->UpdateSort($this->PF); // PF
-			$this->UpdateSort($this->Bank_ID); // Bank_ID
+			$this->UpdateSort($this->Bank_Name); // Bank_Name
 			$this->UpdateSort($this->Acc_NO); // Acc_NO
 			$this->setStartRecordNumber(1); // Reset start position
 		}
@@ -948,7 +958,6 @@ class caccounts_list extends caccounts {
 			if ($this->getSqlOrderBy() <> "") {
 				$sOrderBy = $this->getSqlOrderBy();
 				$this->setSessionOrderBy($sOrderBy);
-				$this->Bank_ID->setSort("ASC");
 			}
 		}
 	}
@@ -972,7 +981,7 @@ class caccounts_list extends caccounts {
 				$this->setSessionOrderBy($sOrderBy);
 				$this->setSessionOrderByList($sOrderBy);
 				$this->PF->setSort("");
-				$this->Bank_ID->setSort("");
+				$this->Bank_Name->setSort("");
 				$this->Acc_NO->setSort("");
 			}
 
@@ -1036,9 +1045,9 @@ class caccounts_list extends caccounts {
 
 		// Drop down button for ListOptions
 		$this->ListOptions->UseImageAndText = TRUE;
-		$this->ListOptions->UseDropDownButton = FALSE;
+		$this->ListOptions->UseDropDownButton = TRUE;
 		$this->ListOptions->DropDownButtonPhrase = $Language->Phrase("ButtonListOptions");
-		$this->ListOptions->UseButtonGroup = TRUE;
+		$this->ListOptions->UseButtonGroup = FALSE;
 		if ($this->ListOptions->UseButtonGroup && ew_IsMobile())
 			$this->ListOptions->UseDropDownButton = TRUE;
 		$this->ListOptions->ButtonClass = "btn-sm"; // Class for button group
@@ -1426,6 +1435,7 @@ class caccounts_list extends caccounts {
 		} else {
 			$this->Bank_ID->VirtualValue = ""; // Clear value
 		}
+		$this->Bank_Name->setDbValue($rs->fields('Bank_Name'));
 		$this->Acc_NO->setDbValue($rs->fields('Acc_NO'));
 	}
 
@@ -1436,6 +1446,7 @@ class caccounts_list extends caccounts {
 		$this->Acc_ID->DbValue = $row['Acc_ID'];
 		$this->PF->DbValue = $row['PF'];
 		$this->Bank_ID->DbValue = $row['Bank_ID'];
+		$this->Bank_Name->DbValue = $row['Bank_Name'];
 		$this->Acc_NO->DbValue = $row['Acc_NO'];
 	}
 
@@ -1484,6 +1495,7 @@ class caccounts_list extends caccounts {
 
 		// PF
 		// Bank_ID
+		// Bank_Name
 		// Acc_NO
 
 		if ($this->RowType == EW_ROWTYPE_VIEW) { // View row
@@ -1517,33 +1529,9 @@ class caccounts_list extends caccounts {
 		}
 		$this->PF->ViewCustomAttributes = "";
 
-		// Bank_ID
-		if ($this->Bank_ID->VirtualValue <> "") {
-			$this->Bank_ID->ViewValue = $this->Bank_ID->VirtualValue;
-		} else {
-			$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
-		if (strval($this->Bank_ID->CurrentValue) <> "") {
-			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
-		$sWhereWrk = "";
-		ew_AddFilter($sWhereWrk, $sFilterWrk);
-		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
-		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
-			$rswrk = Conn()->Execute($sSqlWrk);
-			if ($rswrk && !$rswrk->EOF) { // Lookup values found
-				$arwrk = array();
-				$arwrk[1] = $rswrk->fields('DispFld');
-				$arwrk[2] = $rswrk->fields('Disp2Fld');
-				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
-				$rswrk->Close();
-			} else {
-				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
-			}
-		} else {
-			$this->Bank_ID->ViewValue = NULL;
-		}
-		}
-		$this->Bank_ID->ViewCustomAttributes = "";
+		// Bank_Name
+		$this->Bank_Name->ViewValue = $this->Bank_Name->CurrentValue;
+		$this->Bank_Name->ViewCustomAttributes = "";
 
 		// Acc_NO
 		$this->Acc_NO->ViewValue = $this->Acc_NO->CurrentValue;
@@ -1554,10 +1542,10 @@ class caccounts_list extends caccounts {
 			$this->PF->HrefValue = "";
 			$this->PF->TooltipValue = "";
 
-			// Bank_ID
-			$this->Bank_ID->LinkCustomAttributes = "";
-			$this->Bank_ID->HrefValue = "";
-			$this->Bank_ID->TooltipValue = "";
+			// Bank_Name
+			$this->Bank_Name->LinkCustomAttributes = "";
+			$this->Bank_Name->HrefValue = "";
+			$this->Bank_Name->TooltipValue = "";
 
 			// Acc_NO
 			$this->Acc_NO->LinkCustomAttributes = "";
@@ -2017,7 +2005,6 @@ faccountslist.ValidateRequired = false;
 
 // Dynamic selection lists
 faccountslist.Lists["x_PF"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_PF","x_Name","x_NIC",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
-faccountslist.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","x_City","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 var CurrentSearchForm = faccountslistsrch = new ew_Form("faccountslistsrch");
@@ -2144,12 +2131,12 @@ $accounts_list->ListOptions->Render("header", "left");
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
-<?php if ($accounts->Bank_ID->Visible) { // Bank_ID ?>
-	<?php if ($accounts->SortUrl($accounts->Bank_ID) == "") { ?>
-		<th data-name="Bank_ID"><div id="elh_accounts_Bank_ID" class="accounts_Bank_ID"><div class="ewTableHeaderCaption"><?php echo $accounts->Bank_ID->FldCaption() ?></div></div></th>
+<?php if ($accounts->Bank_Name->Visible) { // Bank_Name ?>
+	<?php if ($accounts->SortUrl($accounts->Bank_Name) == "") { ?>
+		<th data-name="Bank_Name"><div id="elh_accounts_Bank_Name" class="accounts_Bank_Name"><div class="ewTableHeaderCaption"><?php echo $accounts->Bank_Name->FldCaption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="Bank_ID"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $accounts->SortUrl($accounts->Bank_ID) ?>',1);"><div id="elh_accounts_Bank_ID" class="accounts_Bank_ID">
-			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $accounts->Bank_ID->FldCaption() ?></span><span class="ewTableHeaderSort"><?php if ($accounts->Bank_ID->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($accounts->Bank_ID->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
+		<th data-name="Bank_Name"><div class="ewPointer" onclick="ew_Sort(event,'<?php echo $accounts->SortUrl($accounts->Bank_Name) ?>',1);"><div id="elh_accounts_Bank_Name" class="accounts_Bank_Name">
+			<div class="ewTableHeaderBtn"><span class="ewTableHeaderCaption"><?php echo $accounts->Bank_Name->FldCaption() ?><?php echo $Language->Phrase("SrchLegend") ?></span><span class="ewTableHeaderSort"><?php if ($accounts->Bank_Name->getSort() == "ASC") { ?><span class="caret ewSortUp"></span><?php } elseif ($accounts->Bank_Name->getSort() == "DESC") { ?><span class="caret"></span><?php } ?></span></div>
         </div></div></th>
 	<?php } ?>
 <?php } ?>		
@@ -2235,11 +2222,11 @@ $accounts_list->ListOptions->Render("body", "left", $accounts_list->RowCnt);
 </span>
 <a id="<?php echo $accounts_list->PageObjName . "_row_" . $accounts_list->RowCnt ?>"></a></td>
 	<?php } ?>
-	<?php if ($accounts->Bank_ID->Visible) { // Bank_ID ?>
-		<td data-name="Bank_ID"<?php echo $accounts->Bank_ID->CellAttributes() ?>>
-<span id="el<?php echo $accounts_list->RowCnt ?>_accounts_Bank_ID" class="accounts_Bank_ID">
-<span<?php echo $accounts->Bank_ID->ViewAttributes() ?>>
-<?php echo $accounts->Bank_ID->ListViewValue() ?></span>
+	<?php if ($accounts->Bank_Name->Visible) { // Bank_Name ?>
+		<td data-name="Bank_Name"<?php echo $accounts->Bank_Name->CellAttributes() ?>>
+<span id="el<?php echo $accounts_list->RowCnt ?>_accounts_Bank_Name" class="accounts_Bank_Name">
+<span<?php echo $accounts->Bank_Name->ViewAttributes() ?>>
+<?php echo $accounts->Bank_Name->ListViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>
