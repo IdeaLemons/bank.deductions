@@ -39,7 +39,8 @@
 // Write your global startup script here
 // document.write("page loaded");
 
-$("#ewFooterRow").html('<div class="ewFooterText"><a href="http://www.idealemons.com"><img style="width:32px; height:32px;" src="./phpimages/favicon-32x32.png" alt="Idea Lemons"></a><a style="color:#fff;" href="http://www.idealemons.com"> ©2017 www.idealemons.com</a><a style="color:#fff;" href="http://www.facebook.com/wwarnapura"> [W.M.W. Warnapura]</a>. All rights reserved.</div>');
+$("#ewHeaderRow").html('<img src="phpimages/idealemonslogo.png" alt="IDEALEMONS">'); // add HTML or text to header
+$("#ewFooterRow").html('<div class="ewFooterText"><a href="http://www.idealemons.com"><img style="width:32px; height:32px;" src="./phpimages/favicon-32x32.png" alt="Idea Lemons"></a>&nbsp;<a style="color:#fff;" href="http://www.idealemons.com">©2017 www.idealemons.com</a>&nbsp;<a style="color:#fff;" href="http://www.facebook.com/wwarnapura">PF-8705</a>. All rights reserved.</div>');
 <?php if(Security()->IsAdmin()!= TRUE){ ?>
 
 	//$(".ewMenuRow").remove();

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 08, 2019 at 10:36 AM
+-- Generation Time: Apr 09, 2019 at 10:31 AM
 -- Server version: 5.7.21
 -- PHP Version: 5.6.35
 
@@ -36,18 +36,34 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `Bank_Name` varchar(50) NOT NULL,
   `Acc_NO` varchar(50) NOT NULL,
   PRIMARY KEY (`Acc_ID`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `accounts`
 --
 
 INSERT INTO `accounts` (`Acc_ID`, `PF`, `Bank_ID`, `Bank_Name`, `Acc_NO`) VALUES
-(1, 11598, 1707, 'NSB', '109060156710'),
+(1, 11598, 1820, 'NSB', '109060156710'),
 (2, 11305, 2046, 'NSB', '100130343498'),
 (4, 8961, 3582, 'RDB', '616010505588'),
-(5, 11521, 1714, 'NSB', '100210421065'),
-(6, 7797, 3282, 'SDB', '2015235');
+(5, 11521, 1835, 'NSB', '100210421065'),
+(6, 7797, 3282, 'SDB', '2015235'),
+(7, 12106, 3254, 'SDB', '2386490'),
+(8, 7819, 3583, 'NSB', '101430116238'),
+(9, 7914, 117, 'BOC', '76291056'),
+(10, 6226, 3507, 'SMIB', '007020003346'),
+(11, 10828, 261, 'BOC', '76002242'),
+(12, 11506, 2044, 'NSB', '100880280119'),
+(13, 4117, 1863, 'NSB', '107480126772'),
+(14, 4595, 241, 'BOC', '72545738'),
+(15, 6340, 1820, 'NSB', '100058867054'),
+(16, 6340, 1820, 'NSB', '109068859221'),
+(17, 12610, 2381, 'People\'s', '200170010073'),
+(18, 12433, 130, 'BOC', '82943849'),
+(19, 9294, 2044, 'NSB', '100880304107'),
+(20, 11818, 1944, 'NSB', '100418031240'),
+(21, 6212, 2332, 'People\'s', '200380637840'),
+(22, 9452, 68, 'BOC', '73350008');
 
 -- --------------------------------------------------------
 
@@ -64,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `banks` (
   `Abbreviation` text,
   `City` varchar(50) NOT NULL,
   PRIMARY KEY (`Bank_ID`)
-) ENGINE=MyISAM AUTO_INCREMENT=3583 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3584 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `banks`
@@ -3656,7 +3672,8 @@ INSERT INTO `banks` (`Bank_ID`, `Bank_Code`, `Branch_Code`, `Name`, `Abbreviatio
 (3579, 7302, 17, 'Union Bank of Colombo PLC', NULL, 'Wennappuwa'),
 (3580, 7816, 1, 'Vallibel Finance PLC', NULL, 'Head Office'),
 (3581, 7719, 713, 'National Savings Bank', 'NSB', 'Tangalle'),
-(3582, 7755, 816, 'Regional Development Bank', 'RDB', 'Kattankudy');
+(3582, 7755, 816, 'Regional Development Bank', 'RDB', 'Kattankudy'),
+(3583, 7719, 143, 'National Savings Bank', 'NSB', 'Udugama');
 
 -- --------------------------------------------------------
 
@@ -3708,7 +3725,7 @@ CREATE TABLE IF NOT EXISTS `deductions` (
   `Batch` int(11) NOT NULL,
   `NOTES` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`Deduction_ID`)
-) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `deductions`
@@ -3719,7 +3736,25 @@ INSERT INTO `deductions` (`Deduction_ID`, `PF`, `L_Ref`, `YEAR`, `MONTH`, `Acc_I
 (2, 11305, '2', 2019, 5, 11305, '10710', '2019-04-08', NULL, 1, 1, NULL),
 (3, 8961, '3', 2019, 5, 8961, '15000', '2019-04-08', NULL, 1, 1, NULL),
 (4, 11521, '4', 2019, 5, 11521, '5360', '2019-04-08', NULL, 1, 1, NULL),
-(5, 7797, '5', 2019, 5, 7797, '19500', '2019-04-08', NULL, 3, 1, NULL);
+(5, 7797, '5', 2019, 5, 7797, '19500', '2019-04-08', NULL, 3, 1, NULL),
+(6, 12106, '6', 2019, 5, 12106, '26000', '2019-04-09', NULL, 1, 1, NULL),
+(7, 7819, '7', 2019, 5, 7819, '10720', '2019-04-09', NULL, 1, 1, NULL),
+(8, 7914, '8', 2019, 5, 7914, '30000', '2019-04-09', NULL, 1, 1, NULL),
+(9, 6226, '9', 2019, 5, 6226, '9700', '2019-04-09', NULL, 2, 3, NULL),
+(10, 10828, '10', 2019, 5, 10828, '22000', '2019-04-09', NULL, 2, 1, NULL),
+(11, 11506, '11', 2019, 5, 11506, '5500', '2019-04-09', NULL, 1, 3, NULL),
+(12, 4117, '12', 2019, 5, 4117, '3500', '2019-04-09', NULL, 1, 2, NULL),
+(13, 4595, '13', 2019, 5, 4595, '28000', '2019-04-09', NULL, 2, 1, NULL),
+(14, 6340, '14', 2019, 5, 6340, '5000', '2019-04-09', NULL, 4, 2, 'Stop personal deposit'),
+(15, 6340, '15', 2019, 5, 6340, '5400', '2019-04-09', NULL, 4, 3, NULL),
+(16, 6340, '16', 2019, 5, 6340, '5500', '2019-04-09', NULL, 1, 4, NULL),
+(17, 12610, '17', 2019, 5, 12610, '4600', '2019-04-09', NULL, 1, 1, NULL),
+(18, 12433, '18', 2019, 5, 12433, '20000', '2019-04-09', NULL, 1, 1, NULL),
+(19, 9294, '19', 2019, 5, 9294, '7000', '2019-04-09', NULL, 1, 3, NULL),
+(20, 11818, '20', 2019, 5, 11818, '6000', '2019-04-09', NULL, 1, 2, NULL),
+(21, 6212, '21', 2019, 5, 6212, '12700', '2019-04-09', NULL, 4, 2, NULL),
+(22, 6212, '22', 2019, 5, 6212, '30000', '2019-04-09', NULL, 2, 1, NULL),
+(23, 9452, '23', 2019, 5, 9452, '5000', '2019-04-09', NULL, 4, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -10130,12 +10165,13 @@ INSERT INTO `userlevelpermissions` (`userlevelid`, `tablename`, `permission`) VA
 (-2, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}emp', 0),
 (-2, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}userlevelpermissions', 0),
 (-2, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}userlevels', 0),
-(0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}accounts', 37),
-(0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}banks', 37),
+(0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}accounts', 109),
+(0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}banks', 109),
 (0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}deductions', 111),
 (0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}emp', 0),
 (0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}userlevelpermissions', 0),
-(0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}userlevels', 0);
+(0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}userlevels', 0),
+(0, '{163802B9-268A-4AFB-8FD6-7A7D18262A99}batches', 0);
 
 -- --------------------------------------------------------
 

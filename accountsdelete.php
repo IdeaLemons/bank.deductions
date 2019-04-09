@@ -513,6 +513,33 @@ class caccounts_delete extends caccounts {
 		}
 		$this->PF->ViewCustomAttributes = "";
 
+		// Bank_ID
+		if ($this->Bank_ID->VirtualValue <> "") {
+			$this->Bank_ID->ViewValue = $this->Bank_ID->VirtualValue;
+		} else {
+		if (strval($this->Bank_ID->CurrentValue) <> "") {
+			$sFilterWrk = "`Bank_ID`" . ew_SearchString("=", $this->Bank_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
+		$sSqlWrk = "SELECT `Bank_ID`, `Name` AS `DispFld`, `City` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `banks`";
+		$sWhereWrk = "";
+		ew_AddFilter($sWhereWrk, $sFilterWrk);
+		$this->Lookup_Selecting($this->Bank_ID, $sWhereWrk); // Call Lookup selecting
+		if ($sWhereWrk <> "") $sSqlWrk .= " WHERE " . $sWhereWrk;
+			$rswrk = Conn()->Execute($sSqlWrk);
+			if ($rswrk && !$rswrk->EOF) { // Lookup values found
+				$arwrk = array();
+				$arwrk[1] = $rswrk->fields('DispFld');
+				$arwrk[2] = $rswrk->fields('Disp2Fld');
+				$this->Bank_ID->ViewValue = $this->Bank_ID->DisplayValue($arwrk);
+				$rswrk->Close();
+			} else {
+				$this->Bank_ID->ViewValue = $this->Bank_ID->CurrentValue;
+			}
+		} else {
+			$this->Bank_ID->ViewValue = NULL;
+		}
+		}
+		$this->Bank_ID->ViewCustomAttributes = "";
+
 		// Bank_Name
 		$this->Bank_Name->ViewValue = $this->Bank_Name->CurrentValue;
 		$this->Bank_Name->ViewCustomAttributes = "";
@@ -525,6 +552,11 @@ class caccounts_delete extends caccounts {
 			$this->PF->LinkCustomAttributes = "";
 			$this->PF->HrefValue = "";
 			$this->PF->TooltipValue = "";
+
+			// Bank_ID
+			$this->Bank_ID->LinkCustomAttributes = "";
+			$this->Bank_ID->HrefValue = "";
+			$this->Bank_ID->TooltipValue = "";
 
 			// Bank_Name
 			$this->Bank_Name->LinkCustomAttributes = "";
@@ -738,6 +770,7 @@ faccountsdelete.ValidateRequired = false;
 
 // Dynamic selection lists
 faccountsdelete.Lists["x_PF"] = {"LinkField":"x_PF","Ajax":true,"AutoFill":false,"DisplayFields":["x_PF","x_Name","x_NIC",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
+faccountsdelete.Lists["x_Bank_ID"] = {"LinkField":"x_Bank_ID","Ajax":true,"AutoFill":false,"DisplayFields":["x_Name","x_City","",""],"ParentFields":[],"ChildFields":[],"FilterFields":[],"Options":[],"Template":""};
 
 // Form object for search
 </script>
@@ -784,6 +817,9 @@ $accounts_delete->ShowMessage();
 <?php if ($accounts->PF->Visible) { // PF ?>
 		<th><span id="elh_accounts_PF" class="accounts_PF"><?php echo $accounts->PF->FldCaption() ?></span></th>
 <?php } ?>
+<?php if ($accounts->Bank_ID->Visible) { // Bank_ID ?>
+		<th><span id="elh_accounts_Bank_ID" class="accounts_Bank_ID"><?php echo $accounts->Bank_ID->FldCaption() ?></span></th>
+<?php } ?>
 <?php if ($accounts->Bank_Name->Visible) { // Bank_Name ?>
 		<th><span id="elh_accounts_Bank_Name" class="accounts_Bank_Name"><?php echo $accounts->Bank_Name->FldCaption() ?></span></th>
 <?php } ?>
@@ -816,6 +852,14 @@ while (!$accounts_delete->Recordset->EOF) {
 <span id="el<?php echo $accounts_delete->RowCnt ?>_accounts_PF" class="accounts_PF">
 <span<?php echo $accounts->PF->ViewAttributes() ?>>
 <?php echo $accounts->PF->ListViewValue() ?></span>
+</span>
+</td>
+<?php } ?>
+<?php if ($accounts->Bank_ID->Visible) { // Bank_ID ?>
+		<td<?php echo $accounts->Bank_ID->CellAttributes() ?>>
+<span id="el<?php echo $accounts_delete->RowCnt ?>_accounts_Bank_ID" class="accounts_Bank_ID">
+<span<?php echo $accounts->Bank_ID->ViewAttributes() ?>>
+<?php echo $accounts->Bank_ID->ListViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

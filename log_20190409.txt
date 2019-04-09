@@ -1,0 +1,224 @@
+date/time	script	user	action	table	field	key value	old value	new value
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	6		12106
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	6		[MEMO]
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	6		2019
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	6		4
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	6		12106
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	6		26000
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	6		2019-04-09
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	6		
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	6		1
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	6		1
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	6		
+2019/04/09 09:55:39	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	6		6
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	7		7819
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	7		[MEMO]
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	7		2019
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	7		4
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	7		7819
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	7		10720
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	7		2019-04-09
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	7		
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	7		1
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	7		1
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	7		
+2019/04/09 10:33:49	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	7		7
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	8		7914
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	8		[MEMO]
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	8		2019
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	8		5
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	8		7914
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	8		30000
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	8		2019-04-09
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	8		
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	8		1
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	8		1
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	8		
+2019/04/09 10:35:41	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	8		8
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	9		6226
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	9		[MEMO]
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	9		2019
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	9		5
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	9		6226
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	9		9700
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	9		2019-04-09
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	9		
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	9		2
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	9		3
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	9		
+2019/04/09 10:41:22	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	9		9
+2019/04/09 10:41:57	/bank.deductions/deductionsedit.php	9141	U	deductions	MONTH	7	4	5
+2019/04/09 10:42:11	/bank.deductions/deductionsedit.php	9141	U	deductions	MONTH	6	4	5
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	10		10828
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	10		[MEMO]
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	10		2019
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	10		5
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	10		10828
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	10		22000
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	10		2019-04-09
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	10		
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	10		2
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	10		1
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	10		
+2019/04/09 11:27:42	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	10		10
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	11		11506
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	11		[MEMO]
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	11		2019
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	11		5
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	11		11506
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	11		5500
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	11		2019-04-09
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	11		
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	11		1
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	11		3
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	11		
+2019/04/09 12:13:10	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	11		11
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	12		4117
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	12		[MEMO]
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	12		2019
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	12		5
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	12		4117
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	12		3500
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	12		2019-04-09
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	12		
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	12		1
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	12		2
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	12		
+2019/04/09 12:15:00	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	12		12
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	13		4595
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	13		[MEMO]
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	13		2019
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	13		5
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	13		4595
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	13		28000
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	13		2019-04-09
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	13		
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	13		2
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	13		1
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	13		
+2019/04/09 12:29:52	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	13		13
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	14		6340
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	14		[MEMO]
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	14		2019
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	14		5
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	14		6340
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	14		5000
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	14		2019-04-09
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	14		
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	14		4
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	14		2
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	14		Stop personal deposit
+2019/04/09 12:51:18	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	14		14
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	15		6340
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	15		[MEMO]
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	15		2019
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	15		5
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	15		6340
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	15		5400
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	15		2019-04-09
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	15		
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	15		4
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	15		3
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	15		
+2019/04/09 13:12:11	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	15		15
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	16		6340
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	16		[MEMO]
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	16		2019
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	16		5
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	16		0
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	16		5500
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	16		2019-04-09
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	16		
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	16		1
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	16		4
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	16		
+2019/04/09 15:03:30	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	16		16
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	17		12610
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	17		[MEMO]
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	17		2019
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	17		5
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	17		12610
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	17		4600
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	17		2019-04-09
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	17		
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	17		1
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	17		1
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	17		
+2019/04/09 15:05:41	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	17		17
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	18		12433
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	18		[MEMO]
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	18		2019
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	18		5
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	18		12433
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	18		20000
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	18		2019-04-09
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	18		
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	18		1
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	18		1
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	18		
+2019/04/09 15:07:12	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	18		18
+2019/04/09 15:08:24	/bank.deductions/deductionsedit.php	9141	U	deductions	Acc_ID	16	0	6340
+2019/04/09 15:12:30	/bank.deductions/deductionsedit.php	Administrator	U	deductions	Acc_ID	16	6340	0
+2019/04/09 15:12:40	/bank.deductions/deductionsedit.php	Administrator	U	deductions	Acc_ID	16	0	6340
+2019/04/09 15:16:07	/bank.deductions/deductionsedit.php	Administrator	U	deductions	Acc_ID	16	6340	0
+2019/04/09 15:17:03	/bank.deductions/deductionsedit.php	Administrator	U	deductions	Acc_ID	16	0	6340
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	19		9294
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	19		[MEMO]
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	19		2019
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	19		5
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	19		9294
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	19		7000
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	19		2019-04-09
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	19		
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	19		1
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	19		3
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	19		
+2019/04/09 15:36:25	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	19		19
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	PF	20		11818
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	L_Ref	20		[MEMO]
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	YEAR	20		2019
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	MONTH	20		5
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Acc_ID	20		11818
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	AMOUNT	20		6000
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	STARTED	20		2019-04-09
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	ENDED	20		
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	TYPE	20		1
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Batch	20		2
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	NOTES	20		
+2019/04/09 15:38:35	/bank.deductions/deductionsadd.php	Administrator	A	deductions	Deduction_ID	20		20
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	21		6212
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	21		[MEMO]
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	21		2019
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	21		5
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	21		6212
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	21		12700
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	21		2019-04-09
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	21		
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	21		4
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	21		2
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	21		
+2019/04/09 15:53:34	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	21		21
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	22		6212
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	22		[MEMO]
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	22		2019
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	22		5
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	22		6212
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	22		30000
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	22		2019-04-09
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	22		
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	22		2
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	22		1
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	22		
+2019/04/09 15:55:17	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	22		22
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	PF	23		9452
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	L_Ref	23		[MEMO]
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	YEAR	23		2019
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	MONTH	23		5
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	Acc_ID	23		9452
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	AMOUNT	23		5000
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	STARTED	23		2019-04-09
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	ENDED	23		
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	TYPE	23		4
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	Batch	23		3
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	NOTES	23		
+2019/04/09 15:57:23	/bank.deductions/deductionsadd.php	9141	A	deductions	Deduction_ID	23		23

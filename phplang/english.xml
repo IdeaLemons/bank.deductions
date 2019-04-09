@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ew-language date="2019/4/8" version="12.0.0" id="en" name="English" desc="English" author="e.World Technology Ltd.">
+<ew-language date="2019/4/9" version="12.0.0" id="en" name="English" desc="English" author="e.World Technology Ltd.">
 	<locale>
 		<phrase id="locale" value=""/><!-- *** system locale for this language -->
 		<phrase id="use_system_locale" value="1"/><!-- *** change to "0" to disable system locale and use the following settings *** -->
@@ -458,7 +458,7 @@
 </field>
 <field id="bank_id"><phrase id="fldcaption" value="Bank"/>
 </field>
-<field id="bank_name"><phrase id="fldcaption" value="-"/>
+<field id="bank_name"><phrase id="fldcaption" value="Abbr."/>
 </field>
 <field id="acc_no"><phrase id="fldcaption" value="Account"/>
 </field>

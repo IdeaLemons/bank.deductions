@@ -421,11 +421,7 @@ class cdeductions_edit extends cdeductions {
 		}
 
 		// Render the record
-		if ($this->CurrentAction == "F") { // Confirm page
-			$this->RowType = EW_ROWTYPE_VIEW; // Render as View
-		} else {
-			$this->RowType = EW_ROWTYPE_EDIT; // Render as Edit
-		}
+		$this->RowType = EW_ROWTYPE_EDIT; // Render as Edit
 		$this->ResetAttrs();
 		$this->RenderRow();
 	}
@@ -688,7 +684,7 @@ class cdeductions_edit extends cdeductions {
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+		$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 		$sWhereWrk = "";
 		ew_AddFilter($sWhereWrk, $sFilterWrk);
 		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -873,7 +869,7 @@ class cdeductions_edit extends cdeductions {
 			} else {
 				$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
 			}
-			$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, `PF` AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
+			$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `PF` AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
 			$sWhereWrk = "";
 			ew_AddFilter($sWhereWrk, $sFilterWrk);
 			$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -1421,9 +1417,6 @@ $deductions_edit->ShowMessage();
 <?php } ?>
 <input type="hidden" name="t" value="deductions">
 <input type="hidden" name="a_edit" id="a_edit" value="U">
-<?php if ($deductions->CurrentAction == "F") { // Confirm page ?>
-<input type="hidden" name="a_confirm" id="a_confirm" value="F">
-<?php } ?>
 <div class="ewDesktop">
 <div>
 <table id="tbl_deductionsedit" class="table table-bordered table-striped ewDesktopTable">
@@ -1431,7 +1424,6 @@ $deductions_edit->ShowMessage();
 	<tr id="r_PF">
 		<td><span id="elh_deductions_PF"><?php echo $deductions->PF->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $deductions->PF->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_PF">
 <?php
 $wrkonchange = trim("ew_UpdateOpt.call(this); " . @$deductions->PF->EditAttrs["onchange"]);
@@ -1439,7 +1431,7 @@ if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchang
 $deductions->PF->EditAttrs["onchange"] = "";
 ?>
 <span id="as_x_PF" style="white-space: nowrap; z-index: 8980">
-	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="20" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
 </span>
 <input type="hidden" data-table="deductions" data-field="x_PF" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->PF->DisplayValueSeparator) ? json_encode($deductions->PF->DisplayValueSeparator) : $deductions->PF->DisplayValueSeparator) ?>" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($deductions->PF->CurrentValue) ?>"<?php echo $wrkonchange ?>>
 <?php
@@ -1454,20 +1446,6 @@ $sSqlWrk .= " LIMIT " . EW_AUTO_SUGGEST_MAX_ENTRIES;
 fdeductionsedit.CreateAutoSuggest({"id":"x_PF","forceSelect":true});
 </script>
 </span>
-<?php } else { ?>
-<span id="el_deductions_PF">
-<span<?php echo $deductions->PF->ViewAttributes() ?>>
-<?php if ((!ew_EmptyStr($deductions->PF->TooltipValue)) && $deductions->PF->LinkAttributes() <> "") { ?>
-<a<?php echo $deductions->PF->LinkAttributes() ?>><p class="form-control-static"><?php echo $deductions->PF->ViewValue ?></p></a>
-<?php } else { ?>
-<p class="form-control-static"><?php echo $deductions->PF->ViewValue ?></p>
-<?php } ?>
-<span id="tt_deductions_x_PF" style="display: none">
-<?php echo $deductions->PF->TooltipValue ?>
-</span></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_PF" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($deductions->PF->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->PF->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1475,17 +1453,9 @@ fdeductionsedit.CreateAutoSuggest({"id":"x_PF","forceSelect":true});
 	<tr id="r_L_Ref">
 		<td><span id="elh_deductions_L_Ref"><?php echo $deductions->L_Ref->FldCaption() ?></span></td>
 		<td<?php echo $deductions->L_Ref->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_L_Ref">
 <input type="text" data-table="deductions" data-field="x_L_Ref" name="x_L_Ref" id="x_L_Ref" placeholder="<?php echo ew_HtmlEncode($deductions->L_Ref->getPlaceHolder()) ?>" value="<?php echo $deductions->L_Ref->EditValue ?>"<?php echo $deductions->L_Ref->EditAttributes() ?>>
 </span>
-<?php } else { ?>
-<span id="el_deductions_L_Ref">
-<span<?php echo $deductions->L_Ref->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->L_Ref->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_L_Ref" name="x_L_Ref" id="x_L_Ref" value="<?php echo ew_HtmlEncode($deductions->L_Ref->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->L_Ref->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1493,7 +1463,6 @@ fdeductionsedit.CreateAutoSuggest({"id":"x_PF","forceSelect":true});
 	<tr id="r_YEAR">
 		<td><span id="elh_deductions_YEAR"><?php echo $deductions->YEAR->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $deductions->YEAR->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_YEAR">
 <div class="ewDropdownList has-feedback">
 	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -1528,13 +1497,6 @@ if (is_array($arwrk)) {
 	<div id="tp_x_YEAR" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_YEAR" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->YEAR->DisplayValueSeparator) ? json_encode($deductions->YEAR->DisplayValueSeparator) : $deductions->YEAR->DisplayValueSeparator) ?>" name="x_YEAR" id="x_YEAR" value="{value}"<?php echo $deductions->YEAR->EditAttributes() ?>></div>
 </div>
 </span>
-<?php } else { ?>
-<span id="el_deductions_YEAR">
-<span<?php echo $deductions->YEAR->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->YEAR->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_YEAR" name="x_YEAR" id="x_YEAR" value="<?php echo ew_HtmlEncode($deductions->YEAR->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->YEAR->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1542,7 +1504,6 @@ if (is_array($arwrk)) {
 	<tr id="r_MONTH">
 		<td><span id="elh_deductions_MONTH"><?php echo $deductions->MONTH->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $deductions->MONTH->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_MONTH">
 <div class="ewDropdownList has-feedback">
 	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -1577,13 +1538,6 @@ if (is_array($arwrk)) {
 	<div id="tp_x_MONTH" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_MONTH" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->MONTH->DisplayValueSeparator) ? json_encode($deductions->MONTH->DisplayValueSeparator) : $deductions->MONTH->DisplayValueSeparator) ?>" name="x_MONTH" id="x_MONTH" value="{value}"<?php echo $deductions->MONTH->EditAttributes() ?>></div>
 </div>
 </span>
-<?php } else { ?>
-<span id="el_deductions_MONTH">
-<span<?php echo $deductions->MONTH->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->MONTH->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_MONTH" name="x_MONTH" id="x_MONTH" value="<?php echo ew_HtmlEncode($deductions->MONTH->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->MONTH->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1591,7 +1545,6 @@ if (is_array($arwrk)) {
 	<tr id="r_Acc_ID">
 		<td><span id="elh_deductions_Acc_ID"><?php echo $deductions->Acc_ID->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $deductions->Acc_ID->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_Acc_ID">
 <div class="ewDropdownList has-feedback">
 	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -1630,7 +1583,7 @@ if (is_array($arwrk)) {
 <button type="button" title="<?php echo ew_HtmlTitle($Language->Phrase("AddLink")) . "&nbsp;" . $deductions->Acc_ID->FldCaption() ?>" onclick="ew_AddOptDialogShow({lnk:this,el:'x_Acc_ID',url:'accountsaddopt.php'});" class="ewAddOptBtn btn btn-default btn-sm" id="aol_x_Acc_ID"><span class="glyphicon glyphicon-plus ewIcon"></span><span class="hide"><?php echo $Language->Phrase("AddLink") ?>&nbsp;<?php echo $deductions->Acc_ID->FldCaption() ?></span></button>
 <?php } ?>
 <?php
-$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 $sWhereWrk = "{filter}";
 $deductions->Acc_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $deductions->Acc_ID->LookupFilters += array("f0" => "`PF` = {filter_value}", "t0" => "3", "fn0" => "");
@@ -1642,13 +1595,6 @@ if ($sSqlWrk <> "") $deductions->Acc_ID->LookupFilters["s"] .= $sSqlWrk;
 ?>
 <input type="hidden" name="s_x_Acc_ID" id="s_x_Acc_ID" value="<?php echo $deductions->Acc_ID->LookupFilterQuery() ?>">
 </span>
-<?php } else { ?>
-<span id="el_deductions_Acc_ID">
-<span<?php echo $deductions->Acc_ID->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->Acc_ID->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_Acc_ID" name="x_Acc_ID" id="x_Acc_ID" value="<?php echo ew_HtmlEncode($deductions->Acc_ID->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->Acc_ID->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1656,17 +1602,9 @@ if ($sSqlWrk <> "") $deductions->Acc_ID->LookupFilters["s"] .= $sSqlWrk;
 	<tr id="r_AMOUNT">
 		<td><span id="elh_deductions_AMOUNT"><?php echo $deductions->AMOUNT->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $deductions->AMOUNT->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_AMOUNT">
 <input type="text" data-table="deductions" data-field="x_AMOUNT" name="x_AMOUNT" id="x_AMOUNT" size="30" placeholder="<?php echo ew_HtmlEncode($deductions->AMOUNT->getPlaceHolder()) ?>" value="<?php echo $deductions->AMOUNT->EditValue ?>"<?php echo $deductions->AMOUNT->EditAttributes() ?>>
 </span>
-<?php } else { ?>
-<span id="el_deductions_AMOUNT">
-<span<?php echo $deductions->AMOUNT->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->AMOUNT->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_AMOUNT" name="x_AMOUNT" id="x_AMOUNT" value="<?php echo ew_HtmlEncode($deductions->AMOUNT->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->AMOUNT->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1674,7 +1612,6 @@ if ($sSqlWrk <> "") $deductions->Acc_ID->LookupFilters["s"] .= $sSqlWrk;
 	<tr id="r_STARTED">
 		<td><span id="elh_deductions_STARTED"><?php echo $deductions->STARTED->FldCaption() ?></span></td>
 		<td<?php echo $deductions->STARTED->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_STARTED">
 <input type="text" data-table="deductions" data-field="x_STARTED" data-format="5" name="x_STARTED" id="x_STARTED" placeholder="<?php echo ew_HtmlEncode($deductions->STARTED->getPlaceHolder()) ?>" value="<?php echo $deductions->STARTED->EditValue ?>"<?php echo $deductions->STARTED->EditAttributes() ?>>
 <?php if (!$deductions->STARTED->ReadOnly && !$deductions->STARTED->Disabled && !isset($deductions->STARTED->EditAttrs["readonly"]) && !isset($deductions->STARTED->EditAttrs["disabled"])) { ?>
@@ -1683,13 +1620,6 @@ ew_CreateCalendar("fdeductionsedit", "x_STARTED", "%Y/%m/%d");
 </script>
 <?php } ?>
 </span>
-<?php } else { ?>
-<span id="el_deductions_STARTED">
-<span<?php echo $deductions->STARTED->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->STARTED->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_STARTED" name="x_STARTED" id="x_STARTED" value="<?php echo ew_HtmlEncode($deductions->STARTED->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->STARTED->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1697,7 +1627,6 @@ ew_CreateCalendar("fdeductionsedit", "x_STARTED", "%Y/%m/%d");
 	<tr id="r_ENDED">
 		<td><span id="elh_deductions_ENDED"><?php echo $deductions->ENDED->FldCaption() ?></span></td>
 		<td<?php echo $deductions->ENDED->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_ENDED">
 <input type="text" data-table="deductions" data-field="x_ENDED" data-format="5" name="x_ENDED" id="x_ENDED" placeholder="<?php echo ew_HtmlEncode($deductions->ENDED->getPlaceHolder()) ?>" value="<?php echo $deductions->ENDED->EditValue ?>"<?php echo $deductions->ENDED->EditAttributes() ?>>
 <?php if (!$deductions->ENDED->ReadOnly && !$deductions->ENDED->Disabled && !isset($deductions->ENDED->EditAttrs["readonly"]) && !isset($deductions->ENDED->EditAttrs["disabled"])) { ?>
@@ -1706,13 +1635,6 @@ ew_CreateCalendar("fdeductionsedit", "x_ENDED", "%Y/%m/%d");
 </script>
 <?php } ?>
 </span>
-<?php } else { ?>
-<span id="el_deductions_ENDED">
-<span<?php echo $deductions->ENDED->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->ENDED->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_ENDED" name="x_ENDED" id="x_ENDED" value="<?php echo ew_HtmlEncode($deductions->ENDED->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->ENDED->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1720,7 +1642,6 @@ ew_CreateCalendar("fdeductionsedit", "x_ENDED", "%Y/%m/%d");
 	<tr id="r_TYPE">
 		<td><span id="elh_deductions_TYPE"><?php echo $deductions->TYPE->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $deductions->TYPE->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_TYPE">
 <div class="ewDropdownList has-feedback">
 	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -1755,13 +1676,6 @@ if (is_array($arwrk)) {
 	<div id="tp_x_TYPE" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_TYPE" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->TYPE->DisplayValueSeparator) ? json_encode($deductions->TYPE->DisplayValueSeparator) : $deductions->TYPE->DisplayValueSeparator) ?>" name="x_TYPE" id="x_TYPE" value="{value}"<?php echo $deductions->TYPE->EditAttributes() ?>></div>
 </div>
 </span>
-<?php } else { ?>
-<span id="el_deductions_TYPE">
-<span<?php echo $deductions->TYPE->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->TYPE->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_TYPE" name="x_TYPE" id="x_TYPE" value="<?php echo ew_HtmlEncode($deductions->TYPE->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->TYPE->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1769,7 +1683,6 @@ if (is_array($arwrk)) {
 	<tr id="r_Batch">
 		<td><span id="elh_deductions_Batch"><?php echo $deductions->Batch->FldCaption() ?><?php echo $Language->Phrase("FieldRequiredIndicator") ?></span></td>
 		<td<?php echo $deductions->Batch->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_Batch">
 <div class="ewDropdownList has-feedback">
 	<span class="form-control dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -1816,13 +1729,6 @@ if ($sSqlWrk <> "") $deductions->Batch->LookupFilters["s"] .= $sSqlWrk;
 ?>
 <input type="hidden" name="s_x_Batch" id="s_x_Batch" value="<?php echo $deductions->Batch->LookupFilterQuery() ?>">
 </span>
-<?php } else { ?>
-<span id="el_deductions_Batch">
-<span<?php echo $deductions->Batch->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->Batch->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_Batch" name="x_Batch" id="x_Batch" value="<?php echo ew_HtmlEncode($deductions->Batch->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->Batch->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1830,17 +1736,9 @@ if ($sSqlWrk <> "") $deductions->Batch->LookupFilters["s"] .= $sSqlWrk;
 	<tr id="r_NOTES">
 		<td><span id="elh_deductions_NOTES"><?php echo $deductions->NOTES->FldCaption() ?></span></td>
 		<td<?php echo $deductions->NOTES->CellAttributes() ?>>
-<?php if ($deductions->CurrentAction <> "F") { ?>
 <span id="el_deductions_NOTES">
 <textarea data-table="deductions" data-field="x_NOTES" name="x_NOTES" id="x_NOTES" cols="35" rows="4" placeholder="<?php echo ew_HtmlEncode($deductions->NOTES->getPlaceHolder()) ?>"<?php echo $deductions->NOTES->EditAttributes() ?>><?php echo $deductions->NOTES->EditValue ?></textarea>
 </span>
-<?php } else { ?>
-<span id="el_deductions_NOTES">
-<span<?php echo $deductions->NOTES->ViewAttributes() ?>>
-<p class="form-control-static"><?php echo $deductions->NOTES->ViewValue ?></p></span>
-</span>
-<input type="hidden" data-table="deductions" data-field="x_NOTES" name="x_NOTES" id="x_NOTES" value="<?php echo ew_HtmlEncode($deductions->NOTES->FormValue) ?>">
-<?php } ?>
 <?php echo $deductions->NOTES->CustomMsg ?></td>
 	</tr>
 <?php } ?>
@@ -1848,13 +1746,8 @@ if ($sSqlWrk <> "") $deductions->Batch->LookupFilters["s"] .= $sSqlWrk;
 </div>
 <input type="hidden" data-table="deductions" data-field="x_Deduction_ID" name="x_Deduction_ID" id="x_Deduction_ID" value="<?php echo ew_HtmlEncode($deductions->Deduction_ID->CurrentValue) ?>">
 <div class="ewDesktopButton">
-<?php if ($deductions->CurrentAction <> "F") { // Confirm page ?>
-<button class="btn btn-primary ewButton" name="btnAction" id="btnAction" type="submit" onclick="this.form.a_edit.value='F';"><?php echo $Language->Phrase("SaveBtn") ?></button>
+<button class="btn btn-primary ewButton" name="btnAction" id="btnAction" type="submit"><?php echo $Language->Phrase("SaveBtn") ?></button>
 <button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="button" data-href="<?php echo $deductions_edit->getReturnUrl() ?>"><?php echo $Language->Phrase("CancelBtn") ?></button>
-<?php } else { ?>
-<button class="btn btn-primary ewButton" name="btnAction" id="btnAction" type="submit"><?php echo $Language->Phrase("ConfirmBtn") ?></button>
-<button class="btn btn-default ewButton" name="btnCancel" id="btnCancel" type="submit" onclick="this.form.a_edit.value='X';"><?php echo $Language->Phrase("CancelBtn") ?></button>
-<?php } ?>
 </div>
 </div>
 </form>

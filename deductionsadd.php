@@ -708,7 +708,7 @@ class cdeductions_add extends cdeductions {
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+		$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 		$sWhereWrk = "";
 		ew_AddFilter($sWhereWrk, $sFilterWrk);
 		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -893,7 +893,7 @@ class cdeductions_add extends cdeductions {
 			} else {
 				$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
 			}
-			$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, `PF` AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
+			$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `PF` AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
 			$sWhereWrk = "";
 			ew_AddFilter($sWhereWrk, $sFilterWrk);
 			$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -1422,7 +1422,7 @@ if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchang
 $deductions->PF->EditAttrs["onchange"] = "";
 ?>
 <span id="as_x_PF" style="white-space: nowrap; z-index: 8980">
-	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="20" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
 </span>
 <input type="hidden" data-table="deductions" data-field="x_PF" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->PF->DisplayValueSeparator) ? json_encode($deductions->PF->DisplayValueSeparator) : $deductions->PF->DisplayValueSeparator) ?>" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($deductions->PF->CurrentValue) ?>"<?php echo $wrkonchange ?>>
 <?php
@@ -1574,7 +1574,7 @@ if (is_array($arwrk)) {
 <button type="button" title="<?php echo ew_HtmlTitle($Language->Phrase("AddLink")) . "&nbsp;" . $deductions->Acc_ID->FldCaption() ?>" onclick="ew_AddOptDialogShow({lnk:this,el:'x_Acc_ID',url:'accountsaddopt.php'});" class="ewAddOptBtn btn btn-default btn-sm" id="aol_x_Acc_ID"><span class="glyphicon glyphicon-plus ewIcon"></span><span class="hide"><?php echo $Language->Phrase("AddLink") ?>&nbsp;<?php echo $deductions->Acc_ID->FldCaption() ?></span></button>
 <?php } ?>
 <?php
-$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 $sWhereWrk = "{filter}";
 $deductions->Acc_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $deductions->Acc_ID->LookupFilters += array("f0" => "`PF` = {filter_value}", "t0" => "3", "fn0" => "");

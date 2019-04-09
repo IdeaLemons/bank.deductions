@@ -615,7 +615,7 @@ class cdeductions_search extends cdeductions {
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+		$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 		$sWhereWrk = "";
 		ew_AddFilter($sWhereWrk, $sFilterWrk);
 		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -780,7 +780,7 @@ class cdeductions_search extends cdeductions {
 			} else {
 				$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->AdvancedSearch->SearchValue, EW_DATATYPE_NUMBER, "");
 			}
-			$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, '' AS `SelectFilterFld`, `PF` AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
+			$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld`, `PF` AS `SelectFilterFld`, '' AS `SelectFilterFld2`, '' AS `SelectFilterFld3`, '' AS `SelectFilterFld4` FROM `accounts`";
 			$sWhereWrk = "";
 			ew_AddFilter($sWhereWrk, $sFilterWrk);
 			$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -1114,7 +1114,7 @@ if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchang
 $deductions->PF->EditAttrs["onchange"] = "";
 ?>
 <span id="as_x_PF" style="white-space: nowrap; z-index: 8980">
-	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="20" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
 </span>
 <input type="hidden" data-table="deductions" data-field="x_PF" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->PF->DisplayValueSeparator) ? json_encode($deductions->PF->DisplayValueSeparator) : $deductions->PF->DisplayValueSeparator) ?>" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($deductions->PF->AdvancedSearch->SearchValue) ?>"<?php echo $wrkonchange ?>>
 <?php
@@ -1144,7 +1144,7 @@ if ($wrkonchange <> "") $wrkonchange = " onchange=\"" . ew_JsEncode2($wrkonchang
 $deductions->PF->EditAttrs["onchange"] = "";
 ?>
 <span id="as_x_PF" style="white-space: nowrap; z-index: 8980">
-	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="6" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
+	<input type="text" name="sv_x_PF" id="sv_x_PF" value="<?php echo $deductions->PF->EditValue ?>" size="20" placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>" data-placeholder="<?php echo ew_HtmlEncode($deductions->PF->getPlaceHolder()) ?>"<?php echo $deductions->PF->EditAttributes() ?>>
 </span>
 <input type="hidden" data-table="deductions" data-field="x_PF" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->PF->DisplayValueSeparator) ? json_encode($deductions->PF->DisplayValueSeparator) : $deductions->PF->DisplayValueSeparator) ?>" name="x_PF" id="x_PF" value="<?php echo ew_HtmlEncode($deductions->PF->AdvancedSearch->SearchValue) ?>"<?php echo $wrkonchange ?>>
 <?php
@@ -1408,7 +1408,7 @@ if (is_array($arwrk)) {
 	<div id="tp_x_Acc_ID" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Acc_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Acc_ID->DisplayValueSeparator) ? json_encode($deductions->Acc_ID->DisplayValueSeparator) : $deductions->Acc_ID->DisplayValueSeparator) ?>" name="x_Acc_ID" id="x_Acc_ID" value="{value}"<?php echo $deductions->Acc_ID->EditAttributes() ?>></div>
 </div>
 <?php
-$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 $sWhereWrk = "{filter}";
 $deductions->Acc_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $deductions->Acc_ID->LookupFilters += array("f0" => "`PF` = {filter_value}", "t0" => "3", "fn0" => "");
@@ -1463,7 +1463,7 @@ if (is_array($arwrk)) {
 	<div id="tp_x_Acc_ID" class="ewTemplate"><input type="radio" data-table="deductions" data-field="x_Acc_ID" data-value-separator="<?php echo ew_HtmlEncode(is_array($deductions->Acc_ID->DisplayValueSeparator) ? json_encode($deductions->Acc_ID->DisplayValueSeparator) : $deductions->Acc_ID->DisplayValueSeparator) ?>" name="x_Acc_ID" id="x_Acc_ID" value="{value}"<?php echo $deductions->Acc_ID->EditAttributes() ?>></div>
 </div>
 <?php
-$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 $sWhereWrk = "{filter}";
 $deductions->Acc_ID->LookupFilters = array("s" => $sSqlWrk, "d" => "");
 $deductions->Acc_ID->LookupFilters += array("f0" => "`PF` = {filter_value}", "t0" => "3", "fn0" => "");

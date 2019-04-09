@@ -1892,7 +1892,7 @@ class cdeductions_list extends cdeductions {
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+		$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 		$sWhereWrk = "";
 		ew_AddFilter($sWhereWrk, $sFilterWrk);
 		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting

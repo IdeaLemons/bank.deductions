@@ -281,6 +281,8 @@ class caccounts extends cTable {
 			return TRUE;
 		if (strpos($sOrderBy, " " . $this->PF->FldVirtualExpression . " ") !== FALSE)
 			return TRUE;
+		if ($this->BasicSearch->getKeyword() <> "")
+			return TRUE;
 		if ($this->Bank_ID->AdvancedSearch->SearchValue <> "" ||
 			$this->Bank_ID->AdvancedSearch->SearchValue2 <> "" ||
 			strpos($sWhere, " " . $this->Bank_ID->FldVirtualExpression . " ") !== FALSE)
@@ -780,6 +782,7 @@ class caccounts extends cTable {
 					if ($this->Acc_NO->Exportable) $Doc->ExportCaption($this->Acc_NO);
 				} else {
 					if ($this->PF->Exportable) $Doc->ExportCaption($this->PF);
+					if ($this->Bank_ID->Exportable) $Doc->ExportCaption($this->Bank_ID);
 					if ($this->Bank_Name->Exportable) $Doc->ExportCaption($this->Bank_Name);
 					if ($this->Acc_NO->Exportable) $Doc->ExportCaption($this->Acc_NO);
 				}
@@ -819,6 +822,7 @@ class caccounts extends cTable {
 						if ($this->Acc_NO->Exportable) $Doc->ExportField($this->Acc_NO);
 					} else {
 						if ($this->PF->Exportable) $Doc->ExportField($this->PF);
+						if ($this->Bank_ID->Exportable) $Doc->ExportField($this->Bank_ID);
 						if ($this->Bank_Name->Exportable) $Doc->ExportField($this->Bank_Name);
 						if ($this->Acc_NO->Exportable) $Doc->ExportField($this->Acc_NO);
 					}

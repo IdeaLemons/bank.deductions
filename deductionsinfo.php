@@ -730,7 +730,7 @@ class cdeductions extends cTable {
 		// Acc_ID
 		if (strval($this->Acc_ID->CurrentValue) <> "") {
 			$sFilterWrk = "`PF`" . ew_SearchString("=", $this->Acc_ID->CurrentValue, EW_DATATYPE_NUMBER, "");
-		$sSqlWrk = "SELECT DISTINCT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
+		$sSqlWrk = "SELECT `PF`, `Bank_Name` AS `DispFld`, `Acc_NO` AS `Disp2Fld`, '' AS `Disp3Fld`, '' AS `Disp4Fld` FROM `accounts`";
 		$sWhereWrk = "";
 		ew_AddFilter($sWhereWrk, $sFilterWrk);
 		$this->Lookup_Selecting($this->Acc_ID, $sWhereWrk); // Call Lookup selecting
@@ -1233,14 +1233,19 @@ class cdeductions extends cTable {
 
 	// Row Rendered event
 	function Row_Rendered() {
-	if ($this->TYPE->ViewValue == "NEW") // List page only
+	if ($this->TYPE->ViewValue == "NEW"){
 			$this->RowAttrs["class"] = "success";
-	if ($this->TYPE->ViewValue == "CHANGE") // List page only
+			$this->TYPE->CellAttrs["style"] = "background-color: Green; color: #fff";
+	} elseif ($this->TYPE->ViewValue == "CHANGE"){
 			$this->RowAttrs["class"] = "info";
-	if ($this->TYPE->ViewValue == "CONTINUE") // List page only
+			$this->TYPE->CellAttrs["style"] = "background-color: Blue; color: #fff";
+	} elseif ($this->TYPE->ViewValue == "CONTINUE"){
 			$this->RowAttrs["class"] = "warning";
-	if ($this->TYPE->ViewValue == "DELETE") // List page only
+			$this->TYPE->CellAttrs["style"] = "background-color: Yellow; color: #000";
+	} elseif ($this->TYPE->ViewValue == "DELETE"){
 			$this->RowAttrs["class"] = "danger";
+			$this->TYPE->CellAttrs["style"] = "background-color: Red; color: #fff";
+	}
 	}
 
 	// User ID Filtering event
